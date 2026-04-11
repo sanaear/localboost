@@ -94,3 +94,12 @@ model TranslationCache {
 
   @@id([cache_key, lang])
 }
+
+model InactivityTracking {
+  id               Int      @id @default(autoincrement())
+  business_id      Int      @unique
+  last_updated_at  DateTime?
+  last_notified_at DateTime?
+
+  business Business @relation(fields: [business_id], references: [id])
+}
