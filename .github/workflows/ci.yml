@@ -48,7 +48,7 @@ jobs:
 
       - name: Build backend (TypeScript check)
         working-directory: backend
-        run: npx tsc --noEmit --ignoreDeprecations 6.0
+        run: npx tsc --noEmit 
 
   test:
     runs-on: ubuntu-latest
