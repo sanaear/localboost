@@ -13,13 +13,13 @@
 
 ## Database Schema
 ### Tables
-- users
-- businesses
-- reviews
-- categories
-- analytics_events
-- translations_cache
-- inactivity_tracking
+- User
+- Business
+- Review
+- Category
+- Analytics_events
+- Translations_cache
+- InactivityTracking
 ### ORM
 - Prisma
 ### Commands
