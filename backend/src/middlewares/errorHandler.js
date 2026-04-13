@@ -5,4 +5,4 @@ const errorHandler = (err, req, res) => {
     message: err.message || "Internal Server Error"
   });
 };
-export default errorHandler;
+module.exports = errorHandler;

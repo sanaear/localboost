@@ -48,7 +48,7 @@ model Business {
   lat           Float?
   lng           Float?
   description   String?
-  search_vector Unsupported("tsvector")?
+  // search_vector Unsupported("tsvector")?
   images        String[]
   status        String?
 
