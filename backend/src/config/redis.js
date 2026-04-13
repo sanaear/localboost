@@ -7,6 +7,5 @@ const redis = new Redis({
 
 redis.on("connect", () => {
   return "Redis connected";
-  // console.log("Redis connected");
 });
 export default redis;
