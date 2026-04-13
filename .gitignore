@@ -79,3 +79,4 @@ Thumbs.db
 # Vercel / Deploy
 # =========================
 .vercel
+/generated/prisma

@@ -27,47 +27,50 @@ model User {
 }
 
 model Category {
-  id        Int     @id @default(autoincrement())
-  name_ar   String?
-  name_fr   String?
-  name_en   String?
-  name_es   String?
-  icon      String?
+  id      Int     @id @default(autoincrement())
+  name_ar String?
+  name_fr String?
+  name_en String?
+  name_es String?
+  icon    String?
 
   businesses Business[]
 }
 
 model Business {
-  id          Int      @id @default(autoincrement())
+  id          Int  @id @default(autoincrement())
   user_id     Int
   category_id Int?
-  name        String
-  city        String?
-  region      String?
-  lat         Float?
-  lng         Float?
-  description String?
-  images      String[]
-  status      String?
+  region_id   Int?
 
-  user     User     @relation(fields: [user_id], references: [id])
-  category Category? @relation(fields: [category_id], references: [id])
+  name          String
+  city          String?
+  lat           Float?
+  lng           Float?
+  description   String?
+  search_vector Unsupported("tsvector")?
+  images        String[]
+  status        String?
 
-  reviews           Review[]
-  analytics_events  AnalyticsEvent[]
-  inactivity        InactivityTracking?
+  user      User      @relation(fields: [user_id], references: [id])
+  category  Category? @relation(fields: [category_id], references: [id])
+  regionRel Region?   @relation(fields: [region_id], references: [id])
+
+  reviews          Review[]
+  analytics_events AnalyticsEvent[]
+  inactivity       InactivityTracking?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
 
 model Review {
-  id                 Int      @id @default(autoincrement())
-  user_id            Int
-  business_id        Int
-  rating             Int
-  content            String?
-  moderation_status  String?
+  id                Int     @id @default(autoincrement())
+  user_id           Int
+  business_id       Int
+  rating            Int
+  content           String?
+  moderation_status String?
 
   user     User     @relation(fields: [user_id], references: [id])
   business Business @relation(fields: [business_id], references: [id])
@@ -87,19 +90,26 @@ model AnalyticsEvent {
 }
 
 model TranslationCache {
-  cache_key String
-  lang      String
-  value     String
+  cache_key  String
+  lang       String
+  value      String
   created_at DateTime @default(now())
 
   @@id([cache_key, lang])
 }
 
 model InactivityTracking {
-  id               Int      @id @default(autoincrement())
-  business_id      Int      @unique
+  id               Int       @id @default(autoincrement())
+  business_id      Int       @unique
   last_updated_at  DateTime?
   last_notified_at DateTime?
 
   business Business @relation(fields: [business_id], references: [id])
+}
+
+model Region {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  businesses Business[]
 }

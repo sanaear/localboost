@@ -1,3 +1,4 @@
-router.get("/", (req, res) => {
-  res.send("Get all categories");
+router.get("/", async (req, res) => {
+  const data = await prisma.category.findMany();
+  res.json(data);
 });
