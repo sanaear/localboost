@@ -1,5 +1,5 @@
-import express from "express";
-import prisma from "../../config/db.js";
+const express = require("express");
+const prisma = require("../../config/db.js");
 const router = express.Router();
 
 // GET all
@@ -39,4 +39,4 @@ router.delete("/:id", async (req, res) => {
   res.json({ message: "Deleted" });
 });
 
-export default router;
+module.exports = router;

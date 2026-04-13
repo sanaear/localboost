@@ -1,5 +1,5 @@
-import express from "express";
-import prisma from "../../config/db.js";
+const express = require("express");
+const prisma = require("../../config/db.js");
 
 const router = express.Router();
 
@@ -56,4 +56,4 @@ router.get("/near", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

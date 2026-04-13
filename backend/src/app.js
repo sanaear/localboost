@@ -1,11 +1,11 @@
-import express from "express";
-import cors from "cors";
-import rateLimit from "express-rate-limit";
+const express = require('express');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
-import errorHandler from "./middlewares/errorHandler.js";
-import authRoutes from "./modules/auth/auth.routes.js";
-import userRoutes from "./modules/users/users.routes.js";
-import businessRoutes from "./modules/businesses/business.routes.js";
+const errorHandler = require('./middlewares/errorHandler.js');
+const authRoutes = require('./modules/auth/auth.routes.js');
+const userRoutes = require('./modules/users/users.routes.js');
+const businessRoutes = require('./modules/businesses/businesses.routes.js');
 
 const app = express();
 
@@ -24,4 +24,4 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/businesses", businessRoutes);
 
 app.use(errorHandler);
-export default app;
+module.exports = app;
