@@ -103,3 +103,10 @@ model InactivityTracking {
 
   business Business @relation(fields: [business_id], references: [id])
 }
+
+model Region {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  businesses Business[]
+}
