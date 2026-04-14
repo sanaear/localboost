@@ -1,7 +1,8 @@
 # Sprint 1 :
 Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
-### LB-126 → LB-129
+
 ## API LocalBoost
+### (LB-80) =====> LB-126 → LB-129
 ### Structure
 - modules/:     architecture par domaine
 - middlewares/: middlewares globaux
@@ -13,9 +14,9 @@ Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
 ### Stack
 - Node.js
 - Express.js
-
+---
 ## Database Schema
-### LB-130 → LB-134
+### (LB-81) =====> LB-130 → LB-134
 ### Tables
 - User
 - Business
@@ -37,16 +38,16 @@ Run studio:
 ```
 ### Redis
 ```Used for caching translations & queries```
-
+---
 # Sprint 2 : 
-### LB-152 → LB-158
+### (LB-84) =====> LB-152 → LB-158
 API REST — CRUD commerces, utilisateurs, catégories, régions
 - GET /api/v1/businesses
 Retourne tous les commerces
 - GET /api/v1/businesses/search?q=restaurant
 - GET /api/v1/businesses/near?lat=35&lng=-5&distance=10
-
-### LB-159 → LB-162
+---
+### (LB-85) =====> LB-159 → LB-162
 Register → hash password → save user
 Login → verify password → generate:
    - accessToken (15min)
@@ -60,7 +61,7 @@ Refresh:
 ---
 
 # Sprint 3
-### LB-210 → LB-212
+### (LB-97) =====> LB-210 → LB-212
 ✔ CRUD reviews
 ✔ moderation pipeline
 ✔ rating average
@@ -73,6 +74,24 @@ Refresh:
             ↓
     Only approved reviews visible
 ```
+
+### (LB-99) =====> LB-217 → LB-220
+## Email Notification
+
+Trigger:
+- When review status = approved
+
+Flow:
+Review approved → fetch business owner → send email
+
+Service:
+- Nodemailer (SMTP Gmail)
+
+Template:
+- HTML dynamic with variables:
+  - businessName
+  - rating
+  - content
 ---
 
 
