@@ -1,0 +1,16 @@
+{
+  "name": "mon-projet-global",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "test:frontend": "npm test -w frontend",
+    "test:backend": "npm test -w backend",
+    "test:all": "npm test --workspaces",
+    "start:frontend": "npm start -w frontend",
+    "start:backend": "npm start -w backend"
+  }
+}
