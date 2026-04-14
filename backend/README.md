@@ -58,38 +58,55 @@ Protected route:
 Refresh:
    send refreshToken → get new accessToken
 ---
+
+# Sprint 3
+### LB-210 → LB-212
+✔ CRUD reviews
+✔ moderation pipeline
+✔ rating average
+✔ protected routes
+### Pipeline Moderation
+```
+    User submits review → status = pending
+            ↓
+    Admin review → approve / reject
+            ↓
+    Only approved reviews visible
+```
 ---
-## 📋 Liste complète des routes API LocalBoost
+
+
+# 📋 Liste complète des routes API LocalBoost
 
 ### 🔐 **Authentication** (`/api/v1/auth`)
 ```
 | Méthode | Route | Description | Auth | Body |
 |---------|-------|-------------|------|------|
-| **POST** | `/register` | Créer un nouvel utilisateur | ❌ | `{ "email", "password", "role" }` |
-| **POST** | `/login`    | Connexion utilisateur       | ❌ | `{ "email", "password" }` |
-| **POST** | `/refresh`  | Rafraîchir le token         | ❌ | `{ "refreshToken" }` |
+| POST | `/register` | Créer un nouvel utilisateur | ❌ | `{ "email", "password", "role" }` |
+| POST | `/login`    | Connexion utilisateur       | ❌ | `{ "email", "password" }` |
+| POST | `/refresh`  | Rafraîchir le token         | ❌ | `{ "refreshToken" }` |
 ```
 ---
 
 ### 👥 **Users** (`/api/v1/users`)
 ```
-| Méthode | Route | Description | Auth | Restrictions |
-|---------|-------|-------------|------|-------------|
-| **GET** | `/`   | Récupérer tous les utilisateurs | ✅ | Admin only |
-| **GET** | `/:id`| Récupérer un utilisateur | ✅ | User sees own, Admin sees all |
-| **POST** | `/`  | Créer un utilisateur | ✅ | Admin only |
-| **PUT** | `/:id`| Modifier un utilisateur | ✅ | User modifies own, Admin modifies all |
-| **DELETE** | `/:id` | Supprimer un utilisateur | ✅ | Admin only |
+| Méthode | Route | Description                     | Auth| Restrictions |
+|---------|-------|---------------------------------|-----|-------------|
+| GET     | `/`   | Récupérer tous les utilisateurs | ✅ | Admin only |
+| GET     | `/:id`| Récupérer un utilisateur        | ✅ | User sees own, Admin sees all |
+| POST    | `/`   | Créer un utilisateur            | ✅ | Admin only |
+| PUT     | `/:id`| Modifier un utilisateur         | ✅ | User modifies own, Admin modifies all |
+| DELETE  | `/:id`| Supprimer un utilisateur        | ✅ | Admin only |
 ```
 ---
 
 ### 🏢 **Businesses** (`/api/v1/businesses`)
 ```
-| Méthode | Route | Description | Auth | Query Params |
-|---------|-------|-------------|------|------------|
-| **GET** | `/` | Récupérer toutes les entreprises | ❌ | - |
-| **GET** | `/search` | Recherche full-text | ❌ | `?q=searchterm` |
-| **GET** | `/near` | Filtrer par localisation (Haversine) | ❌ | `?lat=48.8&lng=2.3&distance=10` |
+| Méthode | Route    | Description                          | Auth | Query Params |
+|---------|----------|--------------------------------------|------|------------|
+| GET     | `/`      | Récupérer toutes les entreprises     | ❌  | - |
+| GET     | `/search`| Recherche full-text                  | ❌  | `?q=searchterm` |
+| GET     | `/near`  | Filtrer par localisation (Haversine) | ❌  | `?lat=48.8&lng=2.3&distance=10` |
 ```
 ---
 
@@ -97,7 +114,7 @@ Refresh:
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
-| **GET** | `/` | Récupérer toutes les catégories | ❌ |
+| GET     | `/`   | Récupérer toutes les catégories | ❌ |
 ```
 ---
 
@@ -105,7 +122,7 @@ Refresh:
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
-| **GET** | `/` | Récupérer tous les avis | ❌ |
+| GET     | `/`   | Récupérer tous les avis | ❌ |
 ```
 ---
 

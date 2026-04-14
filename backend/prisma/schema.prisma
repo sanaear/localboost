@@ -65,12 +65,12 @@ model Business {
 }
 
 model Review {
-  id                Int     @id @default(autoincrement())
-  user_id           Int
-  business_id       Int
-  rating            Int
-  content           String?
-  moderation_status String?
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  business_id        Int
+  rating             Int
+  content            String?
+  moderation_status  String?  // pending, approved, rejected
 
   user     User     @relation(fields: [user_id], references: [id])
   business Business @relation(fields: [business_id], references: [id])
