@@ -1,4 +1,10 @@
+const express = require("express");
+const prisma = require("../../config/db.js");
+const router = express.Router();
+
 router.get("/", async (req, res) => {
-  const data = await prisma.category.findMany();
-  res.json(data);
+  const categories = await prisma.category.findMany();
+  res.json(categories);
 });
+
+module.exports = router;
