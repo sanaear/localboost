@@ -8,7 +8,7 @@ const protect = (req, res, next) => {
     const decoded = jwt.verify(token, ACCESS_SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(403).json({ message: "Invalid token" });
   }
 };

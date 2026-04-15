@@ -1,6 +1,5 @@
 const express = require("express");
 const prisma = require("../../config/db.js");
-const { protect } = require("../../middlewares/authMiddleware.js");
 
 const router = express.Router();
 
