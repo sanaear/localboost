@@ -34,7 +34,7 @@ const refreshToken = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
     const newAccessToken = generateAccessToken(user);
     res.json({ accessToken: newAccessToken });
-  } catch {
+  } catch (err) {
     return res.status(403).json({ message: "Invalid refresh token" });
   }
 };
