@@ -14,17 +14,25 @@ router.get("/", async (req, res) => {
   res.json(businesses);
 });
 
-// 🔍 SEARCH (Full-text)
+// 🔍 SEARCH (Name / description)
 router.get("/search", async (req, res) => {
   const { q } = req.query;
 
   try {
-    const result = await prisma.$queryRaw`
-      SELECT * FROM businesses
-      WHERE search_vector @@ to_tsquery(${q})
-    `;
+    const businesses = await prisma.business.findMany({
+      where: {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } }
+        ]
+      },
+      include: {
+        category: true,
+        user: true
+      }
+    });
 
-    res.json(result);
+    res.json(businesses);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -40,14 +48,23 @@ router.get("/near", async (req, res) => {
       SELECT *, (
         6371 * acos(
           cos(radians(${lat})) *
-          cos(radians(lat)) *
-          cos(radians(lng) - radians(${lng})) +
+          cos(radians("lat")) *
+          cos(radians("lng") - radians(${lng})) +
           sin(radians(${lat})) *
-          sin(radians(lat))
+          sin(radians("lat"))
         )
       ) AS distance
-      FROM businesses
-      HAVING distance < ${distance}
+      FROM public."Business"
+      WHERE "lat" IS NOT NULL AND "lng" IS NOT NULL
+      AND (
+        6371 * acos(
+          cos(radians(${lat})) *
+          cos(radians("lat")) *
+          cos(radians("lng") - radians(${lng})) +
+          sin(radians(${lat})) *
+          sin(radians("lat"))
+        )
+      ) < ${distance}
       ORDER BY distance;
     `;
 

@@ -147,7 +147,7 @@ Template:
 
 ## 🧪 **Exemples de test avec Postman**
 
-### 1️⃣ **Inscription**
+### 1️: **Inscription**
 ```
 POST http://localhost:5000/api/v1/auth/register
 Content-Type: application/json
@@ -162,7 +162,7 @@ Content-Type: application/json
 
 ---
 
-### 2️⃣ **Connexion**
+### 2️: **Connexion**
 ```
 POST http://localhost:5000/api/v1/auth/login
 Content-Type: application/json
@@ -176,7 +176,7 @@ Content-Type: application/json
 
 ---
 
-### 3️⃣ **Rafraîchir le Token**
+### 3️: **Rafraîchir le Token**
 ```
 POST http://localhost:5000/api/v1/auth/refresh
 Content-Type: application/json
@@ -189,7 +189,7 @@ Content-Type: application/json
 
 ---
 
-### 4️⃣ **Récupérer les Entreprises**
+### 4️: **Récupérer les Entreprises**
 ```
 GET http://localhost:5000/api/v1/businesses
 ```
@@ -197,7 +197,7 @@ GET http://localhost:5000/api/v1/businesses
 
 ---
 
-### 5️⃣ **Recherche Entreprises**
+### 5️: **Recherche Entreprises**
 ```
 GET http://localhost:5000/api/v1/businesses/search?q=restaurant
 ```
@@ -205,7 +205,7 @@ GET http://localhost:5000/api/v1/businesses/search?q=restaurant
 
 ---
 
-### 6️⃣ **Entreprises à proximité**
+### 6️: **Entreprises à proximité**
 ```
 GET http://localhost:5000/api/v1/businesses/near?lat=48.8566&lng=2.3522&distance=5
 ```
@@ -213,7 +213,7 @@ GET http://localhost:5000/api/v1/businesses/near?lat=48.8566&lng=2.3522&distance
 
 ---
 
-### 7️⃣ **Consulter le profil (Protégé)**
+### 7️: **Consulter le profil (Protégé)**
 ```
 GET http://localhost:5000/api/v1/users/3
 Authorization: Bearer eyJ...
@@ -223,7 +223,7 @@ Authorization: Bearer eyJ...
 
 ---
 
-### 8️⃣ **Tous les utilisateurs (Admin)**
+### 8️: **Tous les utilisateurs (Admin)**
 ```
 GET http://localhost:5000/api/v1/users
 Authorization: Bearer eyJ... (admin token)
@@ -232,7 +232,7 @@ Authorization: Bearer eyJ... (admin token)
 
 ---
 
-### 9️⃣ **Récupérer les Catégories**
+### 9️: **Récupérer les Catégories**
 ```
 GET http://localhost:5000/api/v1/categories
 ```
@@ -240,8 +240,22 @@ GET http://localhost:5000/api/v1/categories
 
 ---
 
-### 🔟 **Récupérer les Avis**
+### 10: **Récupérer les Avis**
 ```
 GET http://localhost:5000/api/v1/reviews
 ```
 **Response**: `{ message: "Get all reviews" }`
+
+---
+
+### 11: **Vérification du système d'envoi d'email**
+```
+POST /api/v1/test/test-email
+{
+  "to": "recipient@example.com",
+  "businessName": "Nom du commerce",
+  "rating": 5,
+  "content": "Contenu de l'avis"
+}
+```
+**Response**: `{ message Email }`
