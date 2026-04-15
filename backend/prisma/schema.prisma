@@ -9,12 +9,20 @@ datasource db {
 
 model User {
   id             Int        @id @default(autoincrement())
-  email          String     @unique
-  password_hash  String
   role           String
   preferred_lang String?
+  first_name     String?
+  last_name      String?
+  email          String     @unique
+  password_hash  String
+  date_of_birth  DateTime?
+  gender         String?
+  phone          String?
+  address        String?
+  profile_image  String?
   created_at     DateTime   @default(now())
   updated_at     DateTime   @updatedAt
+
   businesses     Business[]
   reviews        Review[]
 }
