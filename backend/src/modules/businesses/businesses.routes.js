@@ -1,6 +1,5 @@
 const express = require("express");
 const prisma = require("../../config/db.js");
-const { protect } = require("../../middlewares/authMiddleware.js");
 
 const router = express.Router();
 
@@ -14,17 +13,25 @@ router.get("/", async (req, res) => {
   res.json(businesses);
 });
 
-// 🔍 SEARCH (Full-text)
+// 🔍 SEARCH (Name / description)
 router.get("/search", async (req, res) => {
   const { q } = req.query;
 
   try {
-    const result = await prisma.$queryRaw`
-      SELECT * FROM businesses
-      WHERE search_vector @@ to_tsquery(${q})
-    `;
+    const businesses = await prisma.business.findMany({
+      where: {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } }
+        ]
+      },
+      include: {
+        category: true,
+        user: true
+      }
+    });
 
-    res.json(result);
+    res.json(businesses);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -35,19 +42,36 @@ router.get("/search", async (req, res) => {
 router.get("/near", async (req, res) => {
   const { lat, lng, distance } = req.query;
 
+  const latNum = parseFloat(lat);
+  const lngNum = parseFloat(lng);
+  const distNum = parseFloat(distance);
+
+  if (isNaN(latNum) || isNaN(lngNum) || isNaN(distNum)) {
+    return res.status(400).json({ error: "Invalid lat, lng, or distance parameters" });
+  }
+
   try {
     const result = await prisma.$queryRaw`
       SELECT *, (
         6371 * acos(
-          cos(radians(${lat})) *
-          cos(radians(lat)) *
-          cos(radians(lng) - radians(${lng})) +
-          sin(radians(${lat})) *
-          sin(radians(lat))
+          cos(radians(${latNum})) *
+          cos(radians("lat")) *
+          cos(radians("lng") - radians(${lngNum})) +
+          sin(radians(${latNum})) *
+          sin(radians("lat"))
         )
       ) AS distance
-      FROM businesses
-      HAVING distance < ${distance}
+      FROM public."Business"
+      WHERE "lat" IS NOT NULL AND "lng" IS NOT NULL
+      AND (
+        6371 * acos(
+          cos(radians(${latNum})) *
+          cos(radians("lat")) *
+          cos(radians("lng") - radians(${lngNum})) +
+          sin(radians(${latNum})) *
+          sin(radians("lat"))
+        )
+      ) < ${distNum}
       ORDER BY distance;
     `;
 

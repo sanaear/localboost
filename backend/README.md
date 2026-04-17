@@ -1,7 +1,8 @@
 # Sprint 1 :
 Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
-### LB-126 → LB-129
+
 ## API LocalBoost
+### (LB-80) =====> LB-126 → LB-129
 ### Structure
 - modules/:     architecture par domaine
 - middlewares/: middlewares globaux
@@ -13,9 +14,9 @@ Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
 ### Stack
 - Node.js
 - Express.js
-
+---
 ## Database Schema
-### LB-130 → LB-134
+### (LB-81) =====> LB-130 → LB-134
 ### Tables
 - User
 - Business
@@ -37,16 +38,16 @@ Run studio:
 ```
 ### Redis
 ```Used for caching translations & queries```
-
+---
 # Sprint 2 : 
-### LB-152 → LB-158
+### (LB-84) =====> LB-152 → LB-158
 API REST — CRUD commerces, utilisateurs, catégories, régions
 - GET /api/v1/businesses
 Retourne tous les commerces
 - GET /api/v1/businesses/search?q=restaurant
 - GET /api/v1/businesses/near?lat=35&lng=-5&distance=10
-
-### LB-159 → LB-162
+---
+### (LB-85) =====> LB-159 → LB-162
 Register → hash password → save user
 Login → verify password → generate:
    - accessToken (15min)
@@ -58,38 +59,73 @@ Protected route:
 Refresh:
    send refreshToken → get new accessToken
 ---
+
+# Sprint 3
+### (LB-97) =====> LB-210 → LB-212
+✔ CRUD reviews
+✔ moderation pipeline
+✔ rating average
+✔ protected routes
+### Pipeline Moderation
+```
+    User submits review → status = pending
+            ↓
+    Admin review → approve / reject
+            ↓
+    Only approved reviews visible
+```
+
+### (LB-99) =====> LB-217 → LB-220
+## Email Notification
+
+Trigger:
+- When review status = approved
+
+Flow:
+Review approved → fetch business owner → send email
+
+Service:
+- Nodemailer (SMTP Gmail)
+
+Template:
+- HTML dynamic with variables:
+  - businessName
+  - rating
+  - content
 ---
-## 📋 Liste complète des routes API LocalBoost
+
+
+# 📋 Liste complète des routes API LocalBoost
 
 ### 🔐 **Authentication** (`/api/v1/auth`)
 ```
 | Méthode | Route | Description | Auth | Body |
 |---------|-------|-------------|------|------|
-| **POST** | `/register` | Créer un nouvel utilisateur | ❌ | `{ "email", "password", "role" }` |
-| **POST** | `/login`    | Connexion utilisateur       | ❌ | `{ "email", "password" }` |
-| **POST** | `/refresh`  | Rafraîchir le token         | ❌ | `{ "refreshToken" }` |
+| POST | `/register` | Créer un nouvel utilisateur | ❌ | `{ "email", "password", "role" }` |
+| POST | `/login`    | Connexion utilisateur       | ❌ | `{ "email", "password" }` |
+| POST | `/refresh`  | Rafraîchir le token         | ❌ | `{ "refreshToken" }` |
 ```
 ---
 
 ### 👥 **Users** (`/api/v1/users`)
 ```
-| Méthode | Route | Description | Auth | Restrictions |
-|---------|-------|-------------|------|-------------|
-| **GET** | `/`   | Récupérer tous les utilisateurs | ✅ | Admin only |
-| **GET** | `/:id`| Récupérer un utilisateur | ✅ | User sees own, Admin sees all |
-| **POST** | `/`  | Créer un utilisateur | ✅ | Admin only |
-| **PUT** | `/:id`| Modifier un utilisateur | ✅ | User modifies own, Admin modifies all |
-| **DELETE** | `/:id` | Supprimer un utilisateur | ✅ | Admin only |
+| Méthode | Route | Description                     | Auth| Restrictions |
+|---------|-------|---------------------------------|-----|-------------|
+| GET     | `/`   | Récupérer tous les utilisateurs | ✅ | Admin only |
+| GET     | `/:id`| Récupérer un utilisateur        | ✅ | User sees own, Admin sees all |
+| POST    | `/`   | Créer un utilisateur            | ✅ | Admin only |
+| PUT     | `/:id`| Modifier un utilisateur         | ✅ | User modifies own, Admin modifies all |
+| DELETE  | `/:id`| Supprimer un utilisateur        | ✅ | Admin only |
 ```
 ---
 
 ### 🏢 **Businesses** (`/api/v1/businesses`)
 ```
-| Méthode | Route | Description | Auth | Query Params |
-|---------|-------|-------------|------|------------|
-| **GET** | `/` | Récupérer toutes les entreprises | ❌ | - |
-| **GET** | `/search` | Recherche full-text | ❌ | `?q=searchterm` |
-| **GET** | `/near` | Filtrer par localisation (Haversine) | ❌ | `?lat=48.8&lng=2.3&distance=10` |
+| Méthode | Route    | Description                          | Auth | Query Params |
+|---------|----------|--------------------------------------|------|------------|
+| GET     | `/`      | Récupérer toutes les entreprises     | ❌  | - |
+| GET     | `/search`| Recherche full-text                  | ❌  | `?q=searchterm` |
+| GET     | `/near`  | Filtrer par localisation (Haversine) | ❌  | `?lat=48.8&lng=2.3&distance=10` |
 ```
 ---
 
@@ -97,7 +133,7 @@ Refresh:
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
-| **GET** | `/` | Récupérer toutes les catégories | ❌ |
+| GET     | `/`   | Récupérer toutes les catégories | ❌ |
 ```
 ---
 
@@ -105,13 +141,13 @@ Refresh:
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
-| **GET** | `/` | Récupérer tous les avis | ❌ |
+| GET     | `/`   | Récupérer tous les avis | ❌ |
 ```
 ---
 
 ## 🧪 **Exemples de test avec Postman**
 
-### 1️⃣ **Inscription**
+### 1️: **Inscription**
 ```
 POST http://localhost:5000/api/v1/auth/register
 Content-Type: application/json
@@ -126,7 +162,7 @@ Content-Type: application/json
 
 ---
 
-### 2️⃣ **Connexion**
+### 2️: **Connexion**
 ```
 POST http://localhost:5000/api/v1/auth/login
 Content-Type: application/json
@@ -140,7 +176,7 @@ Content-Type: application/json
 
 ---
 
-### 3️⃣ **Rafraîchir le Token**
+### 3️: **Rafraîchir le Token**
 ```
 POST http://localhost:5000/api/v1/auth/refresh
 Content-Type: application/json
@@ -153,7 +189,7 @@ Content-Type: application/json
 
 ---
 
-### 4️⃣ **Récupérer les Entreprises**
+### 4️: **Récupérer les Entreprises**
 ```
 GET http://localhost:5000/api/v1/businesses
 ```
@@ -161,7 +197,7 @@ GET http://localhost:5000/api/v1/businesses
 
 ---
 
-### 5️⃣ **Recherche Entreprises**
+### 5️: **Recherche Entreprises**
 ```
 GET http://localhost:5000/api/v1/businesses/search?q=restaurant
 ```
@@ -169,7 +205,7 @@ GET http://localhost:5000/api/v1/businesses/search?q=restaurant
 
 ---
 
-### 6️⃣ **Entreprises à proximité**
+### 6️: **Entreprises à proximité**
 ```
 GET http://localhost:5000/api/v1/businesses/near?lat=48.8566&lng=2.3522&distance=5
 ```
@@ -177,7 +213,7 @@ GET http://localhost:5000/api/v1/businesses/near?lat=48.8566&lng=2.3522&distance
 
 ---
 
-### 7️⃣ **Consulter le profil (Protégé)**
+### 7️: **Consulter le profil (Protégé)**
 ```
 GET http://localhost:5000/api/v1/users/3
 Authorization: Bearer eyJ...
@@ -187,7 +223,7 @@ Authorization: Bearer eyJ...
 
 ---
 
-### 8️⃣ **Tous les utilisateurs (Admin)**
+### 8️: **Tous les utilisateurs (Admin)**
 ```
 GET http://localhost:5000/api/v1/users
 Authorization: Bearer eyJ... (admin token)
@@ -196,7 +232,7 @@ Authorization: Bearer eyJ... (admin token)
 
 ---
 
-### 9️⃣ **Récupérer les Catégories**
+### 9️: **Récupérer les Catégories**
 ```
 GET http://localhost:5000/api/v1/categories
 ```
@@ -204,8 +240,22 @@ GET http://localhost:5000/api/v1/categories
 
 ---
 
-### 🔟 **Récupérer les Avis**
+### 10: **Récupérer les Avis**
 ```
 GET http://localhost:5000/api/v1/reviews
 ```
 **Response**: `{ message: "Get all reviews" }`
+
+---
+
+### 11: **Vérification du système d'envoi d'email**
+```
+POST /api/v1/test/test-email
+{
+  "to": "recipient@example.com",
+  "businessName": "Nom du commerce",
+  "rating": 5,
+  "content": "Contenu de l'avis"
+}
+```
+**Response**: `{ message Email }`

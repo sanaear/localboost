@@ -8,6 +8,7 @@ const userRoutes = require('./modules/users/users.routes.js');
 const businessRoutes = require('./modules/businesses/businesses.routes.js');
 const categoryRoutes = require('./modules/categories/categories.routes.js');
 const reviewRoutes = require('./modules/reviews/reviews.routes.js');
+const testEmailRoutes = require('./routes/testEmail.routes.js');
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/businesses", businessRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/test", testEmailRoutes);
 
 app.use(errorHandler);
 module.exports = app;
