@@ -19,7 +19,6 @@ describe("Reviews API", () => {
   it("should get reviews", async () => {
     const res = await request(app)
       .get("/api/v1/reviews/business/1");
-
     expect(res.statusCode).toBe(200);
   });
 
