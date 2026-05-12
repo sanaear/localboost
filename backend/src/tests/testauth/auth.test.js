@@ -50,9 +50,7 @@ describe("Auth Controller", () => {
       }
     };
 
-    const res = {
-      json: jest.fn()
-    };
+    const res = { json: jest.fn() };
 
     await register(req, res);
 
