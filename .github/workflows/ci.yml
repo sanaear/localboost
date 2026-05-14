@@ -12,6 +12,9 @@ on:
       - main
       - develop
 
+env:
+  DATABASE_URL: "postgresql://postgres:hamza@localhost:5432/localboost"      
+
 jobs:
   setup:
     runs-on: ubuntu-latest

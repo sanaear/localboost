@@ -1,10 +1,10 @@
-const { sendReviewEmail } = require("../services/email.service.js");
-
 jest.mock("nodemailer", () => ({
   createTransport: jest.fn(() => ({
     sendMail: jest.fn().mockResolvedValue({})
   }))
 }));
+
+const { sendReviewEmail } = require("../services/email.service.js");
 
 describe("Email Service", () => {
   it("should call sendMail without error", async () => {
