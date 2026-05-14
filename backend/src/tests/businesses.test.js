@@ -1,12 +1,12 @@
-const request = require("supertest");
-const app = require("../app");
-
 jest.mock("../config/db.js", () => ({
   business: { findMany: jest.fn() },
   $queryRaw: jest.fn()
 }));
 
 const prisma = require("../config/db.js");
+
+const request = require("supertest");
+const app = require("../app");
 
 describe("Businesses Routes", () => {
   it("GET /businesses should return list", async () => {
