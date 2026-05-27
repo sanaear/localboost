@@ -10,9 +10,14 @@
     "test": "echo 'No tests configured yet'"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.100.14",
+    "@tanstack/react-query-devtools": "^5.100.14",
+    "i18next": "^26.3.0",
     "next": "^16.2.3",
+    "next-intl": "^4.12.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-i18next": "^17.0.8"
   },
   "devDependencies": {
     "@types/node": "^20",
