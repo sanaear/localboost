@@ -7,6 +7,7 @@ import SearchFiltersComponent from "@/components/SearchFilters";
 import BusinessCard from "@/components/BusinessCard";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 
 // Dynamically import BusinessMap with no SSR
 const BusinessMap = dynamic(() => import("@/components/BusinessMap"), { ssr: false });
@@ -50,6 +51,13 @@ export default function BusinessesPage() {
           Discover Local Businesses
         </h1>
         <div className="flex items-center gap-4">
+          <Link
+            href={`/${params.locale}/favorites`}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-full border border-outline-variant/20 hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-primary">favorite</span>
+            <span className="text-sm font-medium text-on-surface">Favorites</span>
+          </Link>
           <div className="flex bg-surface-container-low rounded-full p-1 border border-outline-variant/20">
             <button
               onClick={() => setViewMode("both")}

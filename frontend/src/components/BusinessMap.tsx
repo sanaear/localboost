@@ -55,7 +55,7 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
             {
               id: b.category?.id!,
               name:
-                b.category?.[`name_${params.locale}`] ||
+                (b.category as any)?.[`name_${params.locale}`] ||
                 b.category?.name_en ||
                 "Unknown",
             },

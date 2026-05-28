@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Business } from "@/lib/api";
+import { useFavorites } from "@/hooks/useFavorites";
 
 interface BusinessCardProps {
   business: Business;
@@ -7,6 +8,8 @@ interface BusinessCardProps {
 }
 
 export default function BusinessCard({ business, locale }: BusinessCardProps) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+
   const getCategoryName = () => {
     if (!business.category) return "";
     switch (locale) {
@@ -21,9 +24,23 @@ export default function BusinessCard({ business, locale }: BusinessCardProps) {
     }
   };
 
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(business.id);
+  };
+
   return (
     <Link href={`/${locale}/businesses/${business.id}`}>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer relative">
+        <button
+          onClick={handleFavoriteClick}
+          className="absolute top-3 right-3 z-10 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
+        >
+          <span className={`material-symbols-outlined text-2xl ${isFavorite(business.id) ? "text-red-500 fill-red-500" : "text-gray-400"}`}>
+            {isFavorite(business.id) ? "favorite" : "favorite_border"}
+          </span>
+        </button>
         {business.images.length > 0 ? (
           <div className="h-48 bg-gray-200">
             <img

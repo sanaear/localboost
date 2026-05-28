@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const FAVORITES_STORAGE_KEY = "localboost_favorites";
 
 export interface Business {
   id: number;
@@ -29,7 +30,6 @@ export interface Category {
   name_en?: string;
   name_es?: string;
   icon?: string;
-  [key: `name_${Locale}`]: string | undefined;
 }
 
 export interface Region {
@@ -218,4 +218,98 @@ export const api = {
     if (!response.ok) throw new Error("Failed to fetch average rating");
     return response.json();
   },
+};
+
+// Favorites Service with localStorage + API sync
+export interface Favorite {
+  id?: number;
+  user_id?: number;
+  business_id: number;
+  created_at?: string;
+}
+
+export const favoritesService = {
+  // Get favorites from localStorage
+  getLocalFavorites(): number[] {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  // Save favorites to localStorage
+  saveLocalFavorites(favorites: number[]): void {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+  },
+
+  // Check if a business is favorited
+  isFavorite(businessId: number): boolean {
+    return this.getLocalFavorites().includes(businessId);
+  },
+
+  // Toggle favorite (add/remove)
+  async toggleFavorite(businessId: number): Promise<void> {
+    const current = this.getLocalFavorites();
+    let updated: number[];
+
+    if (current.includes(businessId)) {
+      updated = current.filter(id => id !== businessId);
+      // TODO: Call API to remove favorite
+      // await fetch(`${API_BASE_URL}/favorites/${businessId}`, { method: "DELETE" });
+    } else {
+      updated = [...current, businessId];
+      // TODO: Call API to add favorite
+      // await fetch(`${API_BASE_URL}/favorites`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ business_id: businessId })
+      // });
+    }
+
+    this.saveLocalFavorites(updated);
+  },
+
+  // Sync with API (TODO: implement when API is ready)
+  async syncWithAPI(): Promise<void> {
+    // Placeholder for API sync
+  }
+};
+
+// Sharing Service
+export const sharingService = {
+  // Copy to clipboard
+  async copyToClipboard(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback for older browsers
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  },
+
+  // Generate share URL
+  getShareURL(businessId: number, locale: Locale = "en"): string {
+    const baseURL = typeof window !== "undefined" ? window.location.origin : "http://localhost:3000";
+    return `${baseURL}/${locale}/businesses/${businessId}`;
+  },
+
+  // WhatsApp share URL
+  getWhatsAppURL(text: string, url: string): string {
+    return `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`;
+  }
 };
