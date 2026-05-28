@@ -10,6 +10,8 @@
     "test": "echo 'No tests configured yet'"
   },
   "dependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
     "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-query-devtools": "^5.100.14",
     "i18next": "^26.3.0",
