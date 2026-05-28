@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import L from "leaflet";
-import "leaflet.markercluster";
+import { useEffect, useRef, useState, useId } from "react";
 import { Business, Locale } from "@/lib/api";
 import { useParams } from "next/navigation";
 
@@ -29,10 +27,11 @@ interface BusinessMapProps {
 
 export default function BusinessMap({ businesses, selectedBusinessId, onBusinessSelect }: BusinessMapProps) {
   const params = useParams<{ locale: Locale }>();
+  const mapId = useId();
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
-  const userMarkerRef = useRef<L.Marker | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const userMarkerRef = useRef<any>(null);
+  const LRef = useRef<any>(null); // Leaflet instance
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -45,7 +44,7 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
   const MOROCCO_CENTER: [number, number] = [31.6295, -7.9811];
   const MOROCCO_ZOOM = 6;
 
-  // Get unique categories
+  // Get unique categories from businesses
   useEffect(() => {
     const uniqueCategories = Array.from(
       new Map(
@@ -66,33 +65,80 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
     setCategories(uniqueCategories as any);
   }, [businesses, params.locale]);
 
-  // Initialize map
+  // Initialize Leaflet on client only
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (typeof window === "undefined") return;
+    if (mapInstanceRef.current) return;
 
-    mapInstanceRef.current = L.map(mapRef.current).setView(MOROCCO_CENTER, MOROCCO_ZOOM);
+    let mounted = true;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "&copy; OpenStreetMap contributors",
-      maxZoom: 19,
-    }).addTo(mapInstanceRef.current);
+    const initMap = async () => {
+      try {
+        const L = (await import("leaflet")).default;
+        await import("leaflet.markercluster");
+        LRef.current = L;
 
-    markerClusterGroupRef.current = L.markerClusterGroup({
-      maxClusterRadius: 50,
-      animate: true,
-      zoomToBoundsOnClick: true,
-    });
-    mapInstanceRef.current.addLayer(markerClusterGroupRef.current);
+        if (!mapRef.current || !mounted) return;
+
+        // Clear container
+        mapRef.current.innerHTML = "";
+
+        const map = L.map(mapRef.current).setView(MOROCCO_CENTER, MOROCCO_ZOOM);
+        mapInstanceRef.current = map;
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors",
+          maxZoom: 19,
+        }).addTo(map);
+
+        // Now add marker cluster group with fallback
+        try {
+          const MarkerClusterGroup = (L as any).MarkerClusterGroup;
+          if (MarkerClusterGroup) {
+            const clusterGroup = MarkerClusterGroup({
+              maxClusterRadius: 50,
+              animate: true,
+              zoomToBoundsOnClick: true,
+            });
+            (mapInstanceRef.current as any)._businessMarkers = clusterGroup;
+            map.addLayer(clusterGroup);
+          } else {
+            (mapInstanceRef.current as any)._businessMarkers = L.layerGroup();
+            map.addLayer((mapInstanceRef.current as any)._businessMarkers);
+          }
+        } catch (e) {
+          console.warn("MarkerCluster not available, using normal layer group", e);
+          (mapInstanceRef.current as any)._businessMarkers = L.layerGroup();
+          map.addLayer((mapInstanceRef.current as any)._businessMarkers);
+        }
+      } catch (err) {
+        console.error("Failed to initialize map:", err);
+      }
+    };
+
+    initMap();
 
     return () => {
-      mapInstanceRef.current?.remove();
+      mounted = false;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
-  }, []);
+  }, [mapId]);
 
   // Update markers
   useEffect(() => {
-    if (!markerClusterGroupRef.current || !mapInstanceRef.current) return;
-    markerClusterGroupRef.current.clearLayers();
+    if (!mapInstanceRef.current || !LRef.current) return;
+
+    // Clear existing markers
+    if ((mapInstanceRef.current as any)._businessMarkers) {
+      (mapInstanceRef.current as any)._businessMarkers.clearLayers();
+    } else {
+      // Create a layer group if it doesn't exist
+      (mapInstanceRef.current as any)._businessMarkers = LRef.current.layerGroup();
+      (mapInstanceRef.current as any)._businessMarkers.addTo(mapInstanceRef.current);
+    }
 
     let filteredBusinesses = businesses.filter((b) => b.lat && b.lng);
 
@@ -121,7 +167,7 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
     }
 
     filteredBusinesses.forEach((business) => {
-      const marker = L.marker([business.lat!, business.lng!]);
+      const marker = LRef.current.marker([business.lat!, business.lng!]);
       const popupContent = `
         <div style="min-width:200px">
           <h3 style="font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;margin-bottom:8px">${business.name}</h3>
@@ -131,11 +177,11 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
       `;
       marker.bindPopup(popupContent);
       marker.on("click", () => onBusinessSelect?.(business));
-      markerClusterGroupRef.current?.addLayer(marker);
+      (mapInstanceRef.current as any)._businessMarkers.addLayer(marker);
     });
 
     if (filteredBusinesses.length > 0) {
-      const bounds = L.latLngBounds(
+      const bounds = LRef.current.latLngBounds(
         filteredBusinesses.map((b) => [b.lat!, b.lng!])
       );
       mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
@@ -165,12 +211,12 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
         setUserLocation({ lat: latitude, lng: longitude });
         setIsLocating(false);
 
-        if (mapInstanceRef.current) {
+        if (mapInstanceRef.current && LRef.current) {
           if (userMarkerRef.current) {
             mapInstanceRef.current.removeLayer(userMarkerRef.current);
           }
-          userMarkerRef.current = L.marker([latitude, longitude], {
-            icon: L.divIcon({
+          userMarkerRef.current = LRef.current.marker([latitude, longitude], {
+            icon: LRef.current.divIcon({
               className: "custom-user-marker",
               html: `<div style="background-color:#006c4c;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3)"></div>`,
               iconSize: [20, 20],
@@ -278,6 +324,7 @@ export default function BusinessMap({ businesses, selectedBusinessId, onBusiness
 
       <div
         ref={mapRef}
+        id={mapId}
         className="flex-1 min-h-[400px] rounded-xl border border-outline-variant/20 shadow-sm"
         style={{ minHeight: "500px" }}
       />
