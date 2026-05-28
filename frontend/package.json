@@ -15,6 +15,8 @@
     "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-query-devtools": "^5.100.14",
     "i18next": "^26.3.0",
+    "leaflet": "^1.9.4",
+    "leaflet.markercluster": "^1.5.3",
     "next": "^16.2.3",
     "next-intl": "^4.12.0",
     "react": "^18",
@@ -22,6 +24,9 @@
     "react-i18next": "^17.0.8"
   },
   "devDependencies": {
+    "@types/hoist-non-react-statics": "^3.3.7",
+    "@types/leaflet": "^1.9.21",
+    "@types/leaflet.markercluster": "^1.5.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

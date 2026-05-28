@@ -20,6 +20,8 @@ export interface Business {
   reviews?: Review[];
 }
 
+export type Locale = "en" | "fr" | "es" | "ar";
+
 export interface Category {
   id: number;
   name_ar?: string;
@@ -27,6 +29,7 @@ export interface Category {
   name_en?: string;
   name_es?: string;
   icon?: string;
+  [key: `name_${Locale}`]: string | undefined;
 }
 
 export interface Region {
@@ -69,9 +72,115 @@ export interface SearchFilters {
 
 export const api = {
   async getBusinesses(): Promise<Business[]> {
-    const response = await fetch(`${API_BASE_URL}/businesses`);
-    if (!response.ok) throw new Error("Failed to fetch businesses");
-    return response.json();
+    // Mock data for testing
+    const mockBusinesses: Business[] = [
+      {
+        id: 1,
+        user_id: 1,
+        name: "Café des Épices",
+        city: "Fès",
+        lat: 34.035,
+        lng: -5.004,
+        description: "A charming café in the heart of Fès",
+        images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDrlvOazFFrXLpGPOTtSQFdX0G4-KqytyTFtA0Rj8a2xQj-zN0L7pzA8eJLccN9DwNI3L3jsXZhv9IN8q8GRsD1-Vb0y6ytD45EDwrROmLcdYnEvWarS76vf_YAOypQ3MlnLbYm3sYX1up8xOZ5rAxvNxHBwhhZKbGhZQWnHFnhhjrrXitXI1fQCZIgg7qvAG3Z92IgrlY0cMHOXxQY1IIuHDVTKNa2CdQNOW0COwfDTqRKZiRwfnq6BLYe-fUsGOsOBaVfdQp6kn0"],
+        status: "approved",
+        created_at: "2024-01-01T00:00:00Z",
+        updated_at: "2024-01-01T00:00:00Z",
+        category: {
+          id: 1,
+          name_en: "Café & Restaurant",
+          name_fr: "Café & Restaurant",
+          name_ar: "مقهى ومطعم",
+          name_es: "Café y Restaurante",
+          icon: "local_cafe"
+        }
+      },
+      {
+        id: 2,
+        user_id: 2,
+        name: "Dar Hatim",
+        city: "Marrakech",
+        lat: 31.629,
+        lng: -7.981,
+        description: "A traditional Moroccan riad",
+        images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDrlvOazFFrXLpGPOTtSQFdX0G4-KqytyTFtA0Rj8a2xQj-zN0L7pzA8eJLccN9DwNI3L3jsXZhv9IN8q8GRsD1-Vb0y6ytD45EDwrROmLcdYnEvWarS76vf_YAOypQ3MlnLbYm3sYX1up8xOZ5rAxvNxHBwhhZKbGhZQWnHFnhhjrrXitXI1fQCZIgg7qvAG3Z92IgrlY0cMHOXxQY1IIuHDVTKNa2CdQNOW0COwfDTqRKZiRwfnq6BLYe-fUsGOsOBaVfdQp6kn0"],
+        status: "approved",
+        created_at: "2024-01-02T00:00:00Z",
+        updated_at: "2024-01-02T00:00:00Z",
+        category: {
+          id: 2,
+          name_en: "Hotel & Riad",
+          name_fr: "Hôtel & Riad",
+          name_ar: "فندق ورياض",
+          name_es: "Hotel y Riad",
+          icon: "local_hotel"
+        }
+      },
+      {
+        id: 3,
+        user_id: 3,
+        name: "Souk el Had",
+        city: "Agadir",
+        lat: 30.426,
+        lng: -9.593,
+        description: "Traditional market in Agadir",
+        images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDrlvOazFFrXLpGPOTtSQFdX0G4-KqytyTFtA0Rj8a2xQj-zN0L7pzA8eJLccN9DwNI3L3jsXZhv9IN8q8GRsD1-Vb0y6ytD45EDwrROmLcdYnEvWarS76vf_YAOypQ3MlnLbYm3sYX1up8xOZ5rAxvNxHBwhhZKbGhZQWnHFnhhjrrXitXI1fQCZIgg7qvAG3Z92IgrlY0cMHOXxQY1IIuHDVTKNa2CdQNOW0COwfDTqRKZiRwfnq6BLYe-fUsGOsOBaVfdQp6kn0"],
+        status: "approved",
+        created_at: "2024-01-03T00:00:00Z",
+        updated_at: "2024-01-03T00:00:00Z",
+        category: {
+          id: 3,
+          name_en: "Market & Shopping",
+          name_fr: "Marché et Shopping",
+          name_ar: "سوق وتسوق",
+          name_es: "Mercado y Compras",
+          icon: "shopping_cart"
+        }
+      },
+      {
+        id: 4,
+        user_id: 4,
+        name: "Rick's Café",
+        city: "Casablanca",
+        lat: 33.573,
+        lng: -7.589,
+        description: "Iconic café inspired by the film",
+        images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDrlvOazFFrXLpGPOTtSQFdX0G4-KqytyTFtA0Rj8a2xQj-zN0L7pzA8eJLccN9DwNI3L3jsXZhv9IN8q8GRsD1-Vb0y6ytD45EDwrROmLcdYnEvWarS76vf_YAOypQ3MlnLbYm3sYX1up8xOZ5rAxvNxHBwhhZKbGhZQWnHFnhhjrrXitXI1fQCZIgg7qvAG3Z92IgrlY0cMHOXxQY1IIuHDVTKNa2CdQNOW0COwfDTqRKZiRwfnq6BLYe-fUsGOsOBaVfdQp6kn0"],
+        status: "approved",
+        created_at: "2024-01-04T00:00:00Z",
+        updated_at: "2024-01-04T00:00:00Z",
+        category: {
+          id: 1,
+          name_en: "Café & Restaurant",
+          name_fr: "Café & Restaurant",
+          name_ar: "مقهى ومطعم",
+          name_es: "Café y Restaurante",
+          icon: "local_cafe"
+        }
+      },
+      {
+        id: 5,
+        user_id: 5,
+        name: "Jardin Majorelle",
+        city: "Marrakech",
+        lat: 31.632,
+        lng: -8.007,
+        description: "A beautiful garden in Marrakech",
+        images: ["https://lh3.googleusercontent.com/aida-public/AB6AXuDrlvOazFFrXLpGPOTtSQFdX0G4-KqytyTFtA0Rj8a2xQj-zN0L7pzA8eJLccN9DwNI3L3jsXZhv9IN8q8GRsD1-Vb0y6ytD45EDwrROmLcdYnEvWarS76vf_YAOypQ3MlnLbYm3sYX1up8xOZ5rAxvNxHBwhhZKbGhZQWnHFnhhjrrXitXI1fQCZIgg7qvAG3Z92IgrlY0cMHOXxQY1IIuHDVTKNa2CdQNOW0COwfDTqRKZiRwfnq6BLYe-fUsGOsOBaVfdQp6kn0"],
+        status: "approved",
+        created_at: "2024-01-05T00:00:00Z",
+        updated_at: "2024-01-05T00:00:00Z",
+        category: {
+          id: 4,
+          name_en: "Garden & Park",
+          name_fr: "Jardin et Parc",
+          name_ar: "حديقة",
+          name_es: "Jardín y Parque",
+          icon: "park"
+        }
+      }
+    ];
+    return mockBusinesses;
   },
 
   async searchBusinesses(query: string): Promise<Business[]> {
