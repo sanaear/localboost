@@ -37,7 +37,6 @@ router.get("/search", async (req, res) => {
   }
 });
 
-
 // 🌍 GEO FILTER (Haversine)
 router.get("/near", async (req, res) => {
   const { lat, lng, distance } = req.query;
@@ -79,6 +78,28 @@ router.get("/near", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+  const business = await prisma.business.findUnique({
+    where: { id: parseInt(id) },
+    include: {
+      category: true,
+      user: true,
+      reviews: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
+  
+  if (!business) {
+    return res.status(404).json({ error: "Business not found" });
+  }
+  
+  res.json(business);
 });
 
 module.exports = router;
