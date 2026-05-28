@@ -12,6 +12,16 @@ const request = require("supertest");
 const app = require("../app");
 
 describe("Businesses Routes", () => {
+  beforeEach(() => {
+    // Reset all mocks before each test
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Optional: Reset all mocks after each test as well
+    jest.clearAllMocks();
+  });
+
   it("GET /businesses should return list", async () => {
     prisma.business.findMany.mockResolvedValue([{ id: 1, name: "Test" }]);
     const res = await request(app).get("/api/v1/businesses");
