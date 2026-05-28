@@ -1,6 +1,6 @@
 "use client";
 
-export default function ReviewDetailsModal() {
+export default function ReviewDetailsModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1C1B]/60 backdrop-blur-sm">
       <div className="bg-surface rounded-lg shadow-2xl max-w-2xl w-full max-h-[921px] overflow-hidden flex flex-col border border-outline-variant/20">
@@ -21,7 +21,7 @@ export default function ReviewDetailsModal() {
               </p>
             </div>
           </div>
-          <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+          <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" onClick={onClose}>
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -33,9 +33,7 @@ export default function ReviewDetailsModal() {
                 <span className="material-symbols-outlined text-base">translate</span>
                 Original Review (French)
               </label>
-              <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">
-                VERIFIED
-              </span>
+              <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">VERIFIED</span>
             </div>
             <p className="text-lg italic font-body text-on-surface-variant leading-relaxed">
               "L'atmosphère était enchanteresse, comme un paradis caché dans un riad. Le tajine d'agneau aux pruneaux était exceptionnel. Le service est impeccable."
@@ -56,10 +54,7 @@ export default function ReviewDetailsModal() {
                 Sentiment Analysis
               </label>
               <div className="flex items-center gap-2">
-                <span
-                  className="material-symbols-outlined text-secondary"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
+                <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>
                   mood
                 </span>
                 <span className="text-lg font-bold text-secondary">Positive</span>

@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Sidebar from "@/components/admin/Sidebar";
 import ReviewsTable from "@/components/admin/reviews/ReviewsTable";
 import ReviewDetailsModal from "@/components/admin/reviews/ReviewDetailsModal";
 
 export default function ReviewsPage() {
+  const [isModalOpen, setIsModalOpen] = useState(true); // Start with it open for demo
+
   return (
     <div className="bg-surface text-on-surface min-h-screen flex">
       <Sidebar />
@@ -51,7 +54,9 @@ export default function ReviewsPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-4 py-2 rounded-full border border-outline-variant text-primary font-semibold hover:bg-surface-container-low transition-colors">
+              <button 
+                onClick={() => setIsModalOpen(true)} 
+                className="px-4 py-2 rounded-full border border-outline-variant text-primary font-semibold hover:bg-surface-container-low transition-colors">
                 Filter by Score
               </button>
               <button className="px-6 py-2 bg-primary text-on-primary font-bold rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all">
@@ -64,7 +69,7 @@ export default function ReviewsPage() {
         </div>
       </main>
 
-      <ReviewDetailsModal />
+      {isModalOpen && <ReviewDetailsModal onClose={() => setIsModalOpen(false)} />}
     </div>
   );
 }
