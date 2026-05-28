@@ -1,5 +1,8 @@
 jest.mock("../config/db.js", () => ({
-  business: { findMany: jest.fn() },
+  business: { 
+    findMany: jest.fn(),
+    findUnique: jest.fn() 
+  },
   $queryRaw: jest.fn()
 }));
 
@@ -31,6 +34,13 @@ describe("Businesses Routes", () => {
     prisma.$queryRaw.mockResolvedValue([{ id: 1 }]);
     const res = await request(app).get("/api/v1/businesses/near?lat=34&lng=-5&distance=10");
     expect(res.statusCode).toBe(200);
+  });
+
+  it("GET /businesses/:id should return single business", async () => {
+    prisma.business.findUnique.mockResolvedValue({ id: 1, name: "Test Business" });
+    const res = await request(app).get("/api/v1/businesses/1");
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ id: 1, name: "Test Business" });
   });
 
 });
