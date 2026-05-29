@@ -1,0 +1,386 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lb-gold: #b27a00;
+  --lb-gold-bright: #e2a11b;
+  --lb-ink: #22213a;
+  --lb-paper: #f8f5ef;
+  --lb-shadow: 0 20px 45px rgba(33, 24, 8, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Manrope", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(231, 168, 38, 0.16), transparent 30%),
+    linear-gradient(180deg, #f7f5ef 0%, #f2eee6 100%);
+  color: #252233;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+}
+
+.mobile-app-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.mobile-phone {
+  position: relative;
+  width: min(100%, 410px);
+  min-height: calc(100vh - 32px);
+  overflow: hidden;
+  border: 1px solid rgba(201, 183, 145, 0.35);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(24, 20, 42, 0.18);
+}
+
+.mobile-dark {
+  background:
+    radial-gradient(circle at top, rgba(196, 145, 22, 0.18), transparent 25%),
+    linear-gradient(180deg, #191932 0%, #201f3d 50%, #181730 100%);
+}
+
+.mobile-light {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 241, 235, 0.94)),
+    linear-gradient(180deg, #f7f5ef 0%, #efebe2 100%);
+}
+
+.mobile-pattern-dark::before,
+.mobile-pattern-light::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mobile-pattern-dark::before {
+  opacity: 0.36;
+  background-image:
+    radial-gradient(circle at 16px 16px, rgba(255, 255, 255, 0.03) 2px, transparent 2px),
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 64px 64px;
+}
+
+.mobile-pattern-light::before {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(120deg, rgba(178, 122, 0, 0.06) 25%, transparent 25%),
+    linear-gradient(240deg, rgba(178, 122, 0, 0.06) 25%, transparent 25%);
+  background-size: 36px 36px;
+}
+
+.mobile-content {
+  position: relative;
+  z-index: 1;
+  min-height: inherit;
+}
+
+.mobile-brand-orb {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #e2a11b, #a86d00 75%);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 14px 32px rgba(213, 153, 19, 0.3);
+}
+
+.mobile-brand-orb::before,
+.mobile-brand-orb::after {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 161, 27, 0.12);
+}
+
+.mobile-brand-orb::after {
+  inset: -36px;
+}
+
+.mobile-card {
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(233, 225, 210, 0.9);
+  box-shadow: 0 18px 42px rgba(31, 26, 10, 0.12);
+}
+
+.mobile-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.mobile-pill:active,
+.mobile-press:active {
+  transform: scale(0.97);
+}
+
+.mobile-button-gold {
+  background: linear-gradient(135deg, #a36e00 0%, #e2a11b 100%);
+  color: white;
+  box-shadow: 0 14px 28px rgba(188, 128, 0, 0.28);
+}
+
+.mobile-button-secondary {
+  background: rgba(255, 255, 255, 0.88);
+  color: #2d293d;
+  border: 1px solid rgba(220, 210, 190, 0.92);
+}
+
+.mobile-input {
+  width: 100%;
+  border: 1px solid rgba(222, 205, 180, 0.9);
+  background: rgba(255, 251, 245, 0.72);
+  border-radius: 16px;
+  padding: 15px 16px;
+  font-size: 15px;
+  color: #5e5342;
+  outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.mobile-input:focus {
+  border-color: rgba(178, 122, 0, 0.85);
+  box-shadow: 0 0 0 4px rgba(178, 122, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.mobile-label {
+  margin-bottom: 8px;
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8c7f6d;
+}
+
+.mobile-divider {
+  position: relative;
+  text-align: center;
+  color: #b9af9d;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.mobile-divider::before,
+.mobile-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 24px);
+  height: 1px;
+  background: rgba(221, 215, 202, 0.85);
+}
+
+.mobile-divider::before {
+  left: 0;
+}
+
+.mobile-divider::after {
+  right: 0;
+}
+
+.mobile-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(198, 191, 178, 0.7);
+  transition: width 180ms ease, background-color 180ms ease;
+}
+
+.mobile-dot.active {
+  width: 28px;
+  background: linear-gradient(135deg, #a36e00, #e2a11b);
+}
+
+.mobile-fade-up {
+  opacity: 0;
+  animation: fadeUp 700ms ease forwards;
+}
+
+.mobile-float {
+  animation: floatY 4.2s ease-in-out infinite;
+}
+
+.mobile-pulse {
+  animation: pulseGlow 2.8s ease-in-out infinite;
+}
+
+.mobile-hero-image {
+  background-image: url("https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=cinematic%20Moroccan%20medina%20street%20at%20golden%20hour%2C%20warm%20terracotta%20walls%2C%20turquoise%20sky%2C%20travel%20editorial%20style%2C%20clean%20mobile%20app%20illustration%2C%20soft%20shadows%2C%20high%20detail&image_size=portrait_16_9");
+  background-position: center;
+  background-size: cover;
+}
+
+.mobile-map-surface {
+  background-image:
+    linear-gradient(rgba(238, 209, 159, 0.42), rgba(238, 209, 159, 0.42)),
+    url("https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=vintage%20city%20map%20texture%2C%20Morocco%20travel%20cartography%2C%20blue%20ocean%20and%20sand%20land%2C%20mobile%20app%20background%2C%20high%20detail&image_size=portrait_16_9");
+  background-position: center;
+  background-size: cover;
+}
+
+.mobile-onboarding-hero {
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.04)),
+    url("https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=minimal%20clean%20travel%20app%20card%20illustration%2C%20golden%20location%20pin%2C%20soft%20cream%20background%2C%20premium%20mobile%20interface%20visual&image_size=portrait_16_9");
+  background-position: center;
+  background-size: cover;
+}
+
+.mobile-scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.mobile-scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+}
+
+.mobile-card-hover {
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.mobile-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 42px rgba(31, 26, 10, 0.14);
+}
+
+.mobile-badge-green {
+  background: rgba(102, 208, 141, 0.16);
+  color: #0a9157;
+}
+
+.mobile-badge-gold {
+  background: rgba(226, 161, 27, 0.16);
+  color: #a36e00;
+}
+
+.mobile-badge-amber {
+  background: rgba(243, 182, 82, 0.18);
+  color: #a36e00;
+}
+
+.mobile-badge-gray {
+  background: rgba(196, 191, 180, 0.2);
+  color: #766f65;
+}
+
+.mobile-scale-in {
+  animation: scaleIn 360ms ease forwards;
+}
+
+.mobile-slide-up {
+  animation: slideUp 500ms ease forwards;
+}
+
+.mobile-search-shadow {
+  box-shadow: 0 12px 30px rgba(59, 50, 22, 0.08);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatY {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 14px 32px rgba(213, 153, 19, 0.26);
+  }
+  50% {
+    box-shadow: 0 20px 42px rgba(213, 153, 19, 0.42);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

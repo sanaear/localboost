@@ -6,7 +6,8 @@
   "description": "Monorepo pour LocalBoost",
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "frontend-mobile"
   ],
   "scripts": {
     "install:all": "npm install",
@@ -16,6 +17,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js",
     "format": "prettier --write .",
     "dev:frontend": "npm run dev -w frontend",
+    "dev:frontend:mobile": "npm run dev -w frontend-mobile",
     "dev:backend": "npm run dev -w backend",
     "build:all": "npm run build --workspaces"
   },
