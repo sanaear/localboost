@@ -32,6 +32,102 @@ body {
   color: #252233;
 }
 
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top, rgba(196, 145, 22, 0.14), transparent 28%),
+    linear-gradient(180deg, #101021 0%, #15152b 55%, #0f0f1f 100%);
+  color: rgba(245, 244, 255, 0.92);
+}
+
+html[data-theme="dark"] .mobile-light {
+  background:
+    radial-gradient(circle at top, rgba(196, 145, 22, 0.18), transparent 25%),
+    linear-gradient(180deg, #191932 0%, #201f3d 50%, #181730 100%) !important;
+}
+
+html[data-theme="dark"] .mobile-pattern-light::before {
+  opacity: 0.36 !important;
+  background-image:
+    radial-gradient(circle at 16px 16px, rgba(255, 255, 255, 0.03) 2px, transparent 2px),
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px) !important;
+  background-size: 32px 32px, 64px 64px !important;
+}
+
+html[data-theme="dark"] .mobile-card {
+  background: rgba(20, 20, 36, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.35) !important;
+}
+
+html[data-theme="dark"] .mobile-input {
+  background: rgba(18, 18, 32, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(245, 244, 255, 0.88) !important;
+}
+
+html[data-theme="dark"] .mobile-label {
+  color: rgba(214, 208, 196, 0.8) !important;
+}
+
+html[data-theme="dark"] .mobile-divider {
+  color: rgba(220, 214, 204, 0.65) !important;
+}
+
+html[data-theme="dark"] .mobile-divider::before,
+html[data-theme="dark"] .mobile-divider::after {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+html[data-theme="dark"] .lb-skeleton {
+  background: linear-gradient(90deg, rgba(33, 33, 56, 0.95), rgba(44, 44, 72, 0.95), rgba(33, 33, 56, 0.95)) !important;
+}
+
+html[data-theme="dark"] .lb-spinner {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  border-top-color: rgba(226, 161, 27, 0.95) !important;
+}
+
+html[data-theme="dark"] .mobile-search-shadow {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-theme="dark"] .bg-\[\#fbfaf6\],
+html[data-theme="dark"] .bg-\[\#faf8f2\],
+html[data-theme="dark"] .bg-\[\#faf7f2\],
+html[data-theme="dark"] .bg-\[\#f3f1ec\],
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] .bg-white\/88,
+html[data-theme="dark"] .bg-white\/95,
+html[data-theme="dark"] .bg-white\/96,
+html[data-theme="dark"] .bg-white\/86,
+html[data-theme="dark"] .bg-white\/80 {
+  background-color: rgba(20, 20, 36, 0.92) !important;
+}
+
+html[data-theme="dark"] .text-\[\#23212c\],
+html[data-theme="dark"] .text-\[\#23212d\],
+html[data-theme="dark"] .text-\[\#25222d\],
+html[data-theme="dark"] .text-\[\#2a2730\],
+html[data-theme="dark"] .text-\[\#2c2934\],
+html[data-theme="dark"] .text-\[\#2d293d\] {
+  color: rgba(245, 244, 255, 0.92) !important;
+}
+
+html[data-theme="dark"] .text-\[\#60584d\],
+html[data-theme="dark"] .text-\[\#6f675b\],
+html[data-theme="dark"] .text-\[\#70685d\],
+html[data-theme="dark"] .text-\[\#7b7266\],
+html[data-theme="dark"] .text-\[\#7c7367\],
+html[data-theme="dark"] .text-\[\#7d7468\],
+html[data-theme="dark"] .text-\[\#7f7669\],
+html[data-theme="dark"] .text-\[\#837966\],
+html[data-theme="dark"] .text-\[\#877c6a\],
+html[data-theme="dark"] .text-\[\#8a8173\],
+html[data-theme="dark"] .text-\[\#8b816f\],
+html[data-theme="dark"] .text-\[\#8d8476\] {
+  color: rgba(224, 220, 212, 0.82) !important;
+}
+
 html[dir="rtl"] body {
   font-family: "Noto Sans Arabic", "Manrope", sans-serif;
 }

@@ -24,10 +24,21 @@ export default async function RootLayout({
 }) {
   const locale = (await headers()).get("x-next-intl-locale") ?? "en";
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+  const themeScript = `(() => {
+  try {
+    const value = localStorage.getItem("lb:theme");
+    const theme = value === "dark" || value === "light" ? value : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch {}
+})();`;
 
   return (
     <html lang={locale} dir={dir}>
-      <body>{children}</body>
+      <body suppressHydrationWarning>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {children}
+      </body>
     </html>
   );
 }

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { applyTheme, readStoredTheme, setTheme, type Theme } from "@/lib/theme";
 
 const languages = [
   { country: "MA", code: "AR", locale: "ar" },
@@ -22,10 +23,18 @@ export default function ProfilePage({
   const tCommon = useTranslations("common");
   const pathname = usePathname();
   const [pushEnabled, setPushEnabled] = useState(true);
-  const [lightMode, setLightMode] = useState(false);
+  const [theme, setThemeState] = useState<Theme>("light");
   const [avatarUpdated, setAvatarUpdated] = useState(false);
 
   const activeLanguage = languages.find((item) => item.locale === params.locale);
+  const isDarkMode = theme === "dark";
+
+  useEffect(() => {
+    const stored = readStoredTheme();
+    const current = stored ?? (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+    setThemeState(current);
+    applyTheme(current);
+  }, []);
 
   return (
     <main className="mobile-app-shell">
@@ -149,14 +158,18 @@ export default function ProfilePage({
                     </span>
                     <div className="flex-1">
                       <h3 className="text-[1.4rem] font-extrabold leading-tight tracking-[-0.05em] text-[#23212c]">{t("appearance")}</h3>
-                      <p className="text-[13px] text-[#8d8476]">{t("appearanceLight")}</p>
+                      <p className="text-[13px] text-[#8d8476]">{isDarkMode ? t("appearanceDark") : t("appearanceLight")}</p>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setLightMode((current) => !current)}
-                      className={`relative h-8 w-14 rounded-full transition ${lightMode ? "bg-[#a36e00]" : "bg-[#d8d1c5]"}`}
+                      onClick={() => {
+                        const next = isDarkMode ? "light" : "dark";
+                        setThemeState(next);
+                        setTheme(next);
+                      }}
+                      className={`relative h-8 w-14 rounded-full transition ${isDarkMode ? "bg-[#a36e00]" : "bg-[#d8d1c5]"}`}
                     >
-                      <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition ${lightMode ? "left-7" : "left-1"}`} />
+                      <span className={`absolute top-1 h-6 w-6 rounded-full bg-white transition ${isDarkMode ? "left-7" : "left-1"}`} />
                     </button>
                   </div>
                 </div>

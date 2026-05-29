@@ -166,6 +166,7 @@
     "pushDescription": "Match alerts & local offers",
     "appearance": "Appearance",
     "appearanceLight": "Currently in Light Mode",
+    "appearanceDark": "Currently in Dark Mode",
     "about": "About LocalBoost",
     "rate": "Rate the app",
     "profileAlt": "Profile",

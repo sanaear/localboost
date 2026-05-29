@@ -166,6 +166,7 @@
     "pushDescription": "Alertas de partidos y ofertas locales",
     "appearance": "Apariencia",
     "appearanceLight": "Actualmente en modo claro",
+    "appearanceDark": "Actualmente en modo oscuro",
     "about": "Acerca de LocalBoost",
     "rate": "Valorar la app",
     "profileAlt": "Perfil",
