@@ -1,17 +1,25 @@
 /* eslint-disable no-console */
+require("dotenv").config();
 const app = require("./app.js");
 
 const PORT = process.env.PORT || 5000;
 
+const { initDB } = require("./database/sqlite.js");
+
 let server;
-try {
-  server = app.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-  });
-} catch (err) {
-  console.error('❌ Failed to start server:', err.message);
-  process.exit(1);
-}
+(async () => {
+  try {
+    // Initialize SQLite DB
+    await initDB();
+    
+    server = app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to initialize database or start server:', err.message);
+    process.exit(1);
+  }
+})();
 
 // Handle uncaught errors
 process.on('unhandledRejection', (reason, promise) => {
