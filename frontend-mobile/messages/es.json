@@ -1,4 +1,30 @@
 {
   "welcome": "Bienvenido a LocalBoost",
-  "description": "Tu directorio de negocios locales"
+  "description": "Tu directorio de negocios locales",
+  "common": {
+    "brand": "LocalBoost"
+  },
+  "nav": {
+    "explore": "Explorar",
+    "map": "Mapa",
+    "chat": "Chat IA",
+    "saved": "Guardados",
+    "profile": "Perfil"
+  },
+  "discover": {
+    "searchPlaceholder": "Buscar comercios…",
+    "results": "{count} resultados",
+    "sortedBy": "Ordenado por",
+    "loadMore": "Cargar más",
+    "noResults": "Sin resultados",
+    "error": "Ocurrió un error",
+    "filters": {
+      "category": "Categoría",
+      "city": "Ciudad",
+      "region": "Región",
+      "rating": "Valoración",
+      "availability": "Disponibilidad",
+      "all": "Todo"
+    }
+  }
 }

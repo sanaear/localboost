@@ -1,4 +1,30 @@
 {
   "welcome": "Welcome to LocalBoost",
-  "description": "Your local business directory"
+  "description": "Your local business directory",
+  "common": {
+    "brand": "LocalBoost"
+  },
+  "nav": {
+    "explore": "Explore",
+    "map": "Map",
+    "chat": "AI Chat",
+    "saved": "Saved",
+    "profile": "Profile"
+  },
+  "discover": {
+    "searchPlaceholder": "Search businesses…",
+    "results": "{count} results",
+    "sortedBy": "Sorted by",
+    "loadMore": "Load more",
+    "noResults": "No results found",
+    "error": "Something went wrong",
+    "filters": {
+      "category": "Category",
+      "city": "City",
+      "region": "Region",
+      "rating": "Rating",
+      "availability": "Availability",
+      "all": "All"
+    }
+  }
 }

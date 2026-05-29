@@ -1,4 +1,30 @@
 {
   "welcome": "مرحبا بك في LocalBoost",
-  "description": "دليل الأعمال المحلي الخاص بك"
+  "description": "دليل الأعمال المحلي الخاص بك",
+  "common": {
+    "brand": "LocalBoost"
+  },
+  "nav": {
+    "explore": "استكشاف",
+    "map": "الخريطة",
+    "chat": "محادثة الذكاء",
+    "saved": "المحفوظات",
+    "profile": "الملف الشخصي"
+  },
+  "discover": {
+    "searchPlaceholder": "ابحث عن المتاجر…",
+    "results": "{count} نتيجة",
+    "sortedBy": "مرتب حسب",
+    "loadMore": "تحميل المزيد",
+    "noResults": "لا توجد نتائج",
+    "error": "حدث خطأ",
+    "filters": {
+      "category": "الفئة",
+      "city": "المدينة",
+      "region": "الجهة",
+      "rating": "التقييم",
+      "availability": "التوفر",
+      "all": "الكل"
+    }
+  }
 }

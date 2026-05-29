@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const items = [
-  { key: "explore", label: "Explore", icon: "explore", href: "/home" },
-  { key: "map", label: "Map", icon: "map", href: "/map" },
-  { key: "chat", label: "AI Chat", icon: "auto_awesome", href: "/ai-chat", highlight: true },
-  { key: "saved", label: "Saved", icon: "bookmark", href: "/saved" },
-  { key: "profile", label: "Profile", icon: "person", href: "/profile" },
-];
+import { useTranslations } from "next-intl";
 
 export default function MobileBottomNav({
   locale,
@@ -17,6 +10,15 @@ export default function MobileBottomNav({
   locale: string;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  const items = [
+    { key: "explore", label: t("explore"), icon: "explore", href: "/home" },
+    { key: "map", label: t("map"), icon: "map", href: "/map" },
+    { key: "chat", label: t("chat"), icon: "auto_awesome", href: "/ai-chat", highlight: true },
+    { key: "saved", label: t("saved"), icon: "bookmark", href: "/saved" },
+    { key: "profile", label: t("profile"), icon: "person", href: "/profile" },
+  ];
 
   return (
     <nav className="rounded-[28px] border border-[#ece4d6] bg-white/96 px-3 py-2 shadow-[0_-8px_25px_rgba(38,28,10,0.08)]">
