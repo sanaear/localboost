@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
+import { ErrorState, Spinner } from "@/components/UiState";
 import type { Category, SearchFilters } from "@/lib/api";
 import { haversineKm } from "@/lib/geo";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
@@ -222,14 +223,17 @@ export default function MapPage({
             {businessesQuery.isLoading ? (
               <div className="absolute inset-0 grid place-items-center bg-white/60 backdrop-blur-sm">
                 <div className="rounded-full bg-white px-4 py-2 text-[13px] font-extrabold text-[#7f7669] shadow-[0_10px_28px_rgba(31,26,10,0.16)]">
-                  {t("loading")}
+                  <span className="flex items-center gap-2">
+                    <Spinner />
+                    {t("loading")}
+                  </span>
                 </div>
               </div>
             ) : null}
 
             {businessesQuery.isError ? (
-              <div className="absolute left-4 right-4 top-4 rounded-[22px] border border-[#f1d0d0] bg-white px-4 py-3 text-[13px] font-bold text-[#9b3e3e] shadow-[0_10px_28px_rgba(31,26,10,0.16)]">
-                {t("error")}
+              <div className="absolute left-4 right-4 top-4">
+                <ErrorState title={t("error")} onRetry={() => businessesQuery.refetch()} retryLabel="Réessayer" />
               </div>
             ) : null}
 

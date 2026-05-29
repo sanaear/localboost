@@ -127,6 +127,39 @@ a {
   font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
 }
 
+.lb-spinner {
+  display: inline-block;
+  border-radius: 999px;
+  border: 2px solid rgba(127, 118, 105, 0.25);
+  border-top-color: rgba(163, 110, 0, 0.9);
+  animation: lb-spin 700ms linear infinite;
+}
+
+.lb-skeleton {
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(239, 236, 230, 0.9), rgba(224, 218, 206, 0.9), rgba(239, 236, 230, 0.9));
+  background-size: 200% 100%;
+  animation: lb-shimmer 1100ms ease-in-out infinite;
+}
+
+@keyframes lb-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lb-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .mobile-app-shell {
   min-height: 100vh;
   display: flex;

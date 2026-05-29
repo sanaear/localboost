@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessAverageRating, useBusinessDetail, useBusinessReviews } from "@/lib/queries";
 import OptimizedImage from "@/components/OptimizedImage";
@@ -210,13 +211,19 @@ export default function BusinessDetailPage({
               </div>
             ) : null}
             {businessQuery.isLoading ? (
-              <div className="rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                Loading…
+              <div className="rounded-[26px] border border-[#ece2d3] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                <div className="space-y-3">
+                  <SkeletonLine className="h-7 w-[75%]" />
+                  <SkeletonLine className="h-4 w-[55%]" />
+                  <div className="mt-5 space-y-2">
+                    <SkeletonLine className="h-4 w-[90%]" />
+                    <SkeletonLine className="h-4 w-[92%]" />
+                    <SkeletonLine className="h-4 w-[70%]" />
+                  </div>
+                </div>
               </div>
             ) : businessQuery.isError || !businessQuery.data ? (
-              <div className="rounded-[26px] border border-[#f1d0d0] bg-white px-4 py-4 text-[14px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                Unable to load business
-              </div>
+              <ErrorState title="Impossible de charger la fiche commerce" onRetry={() => businessQuery.refetch()} />
             ) : (
               <>
                 <h1 className="text-[2.15rem] font-extrabold leading-[0.95] tracking-[-0.07em] text-[#23212c]">
@@ -253,12 +260,24 @@ export default function BusinessDetailPage({
                   </h2>
 
                   {reviewsQuery.isLoading ? (
-                    <div className="mt-3 rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 text-[13px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
-                      Loading reviews…
+                    <div className="mt-3 space-y-3">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
+                          <SkeletonLine className="h-4 w-[45%]" />
+                          <div className="mt-3 space-y-2">
+                            <SkeletonLine className="h-4 w-[90%]" />
+                            <SkeletonLine className="h-4 w-[80%]" />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ) : reviewsQuery.isError ? (
-                    <div className="mt-3 rounded-[20px] border border-[#f1d0d0] bg-white px-4 py-4 text-[13px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
-                      Unable to load reviews
+                    <div className="mt-3">
+                      <ErrorState
+                        title="Impossible de charger les avis"
+                        description="Réessayez dans un instant."
+                        onRetry={() => reviewsQuery.refetch()}
+                      />
                     </div>
                   ) : (reviewsQuery.data ?? []).length === 0 ? (
                     <div className="mt-3 rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 text-[13px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.04)]">

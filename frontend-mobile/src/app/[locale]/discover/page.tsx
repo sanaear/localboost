@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
+import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
 import type { Category, SearchFilters } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
@@ -187,16 +188,44 @@ export default function DiscoverPage({
             ) : null}
 
             {businessesQuery.isLoading ? (
-              <div className="mt-6 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                Loading…
+              <div className="mt-6 space-y-4">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="flex items-start gap-4 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                    <div className="h-[82px] w-[82px] rounded-full bg-[#efece6]" />
+                    <div className="flex-1 space-y-3">
+                      <SkeletonLine className="h-5 w-[70%]" />
+                      <SkeletonLine className="h-4 w-[45%]" />
+                      <SkeletonLine className="h-4 w-[85%]" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : businessesQuery.isError ? (
-              <div className="mt-6 rounded-[26px] border border-[#f1d0d0] bg-white px-4 py-4 text-[14px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                {t("error")}
+              <div className="mt-6">
+                <ErrorState title={t("error")} onRetry={() => businessesQuery.refetch()} />
               </div>
             ) : businesses.length === 0 ? (
-              <div className="mt-6 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                {t("noResults")}
+              <div className="mt-6">
+                <EmptyState
+                  title={t("noResults")}
+                  description="Essayez d’élargir vos filtres ou de modifier votre recherche."
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQ("");
+                        setCategoryId(undefined);
+                        setCity("");
+                        setRegionId(undefined);
+                        setRating(undefined);
+                        setAvailable(false);
+                      }}
+                      className="mobile-pill h-11 w-full bg-[#efede8] text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#6f675b]"
+                    >
+                      Réinitialiser les filtres
+                    </button>
+                  }
+                />
               </div>
             ) : (
               <div className="mt-4 space-y-5">

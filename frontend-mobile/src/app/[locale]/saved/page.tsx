@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
+import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
 import type { SearchFilters } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessesSearch } from "@/lib/queries";
@@ -66,16 +67,35 @@ export default function SavedPage({
             ) : null}
 
             {businessesQuery.isLoading ? (
-              <div className="mt-3 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                Loading…
+              <div className="mt-3 space-y-4">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="overflow-hidden rounded-[26px] border border-[#ece2d3] bg-white shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                    <div className="h-[170px] bg-[#efece6]" />
+                    <div className="space-y-3 px-4 py-4">
+                      <SkeletonLine className="h-5 w-[70%]" />
+                      <SkeletonLine className="h-4 w-[40%]" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : businessesQuery.isError ? (
-              <div className="mt-3 rounded-[26px] border border-[#f1d0d0] bg-white px-4 py-4 text-[14px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                Unable to load saved places
+              <div className="mt-3">
+                <ErrorState title="Impossible de charger vos favoris" onRetry={() => businessesQuery.refetch()} />
               </div>
             ) : favoriteBusinesses.length === 0 ? (
-              <div className="mt-3 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-                No saved places yet
+              <div className="mt-3">
+                <EmptyState
+                  title="Aucun favori pour le moment"
+                  description="Enregistrez un commerce depuis Discover ou la fiche commerce."
+                  action={
+                    <Link
+                      href={`/${params.locale}/discover`}
+                      className="mobile-pill mobile-button-gold h-11 w-full text-[12px] font-extrabold uppercase tracking-[0.14em]"
+                    >
+                      Explorer
+                    </Link>
+                  }
+                />
               </div>
             ) : (
               <div className="space-y-4">
