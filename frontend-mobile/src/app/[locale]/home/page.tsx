@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import OptimizedImage from "@/components/OptimizedImage";
 import { feedCards } from "@/lib/mobileData";
 
 export default function HomePage({
@@ -117,7 +118,15 @@ export default function HomePage({
                   style={{ animationDelay: `${260 + index * 80}ms` }}
                 >
                   <div className="relative h-[190px] overflow-hidden">
-                    <img src={card.image} alt={card.name} className="h-full w-full object-cover" />
+                    <OptimizedImage
+                      src={card.image}
+                      alt={card.name}
+                      width={900}
+                      height={675}
+                      sizes="100vw"
+                      widths={[480, 640, 828, 900]}
+                      className="h-full w-full object-cover"
+                    />
                     <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] ${
                       card.badgeTone === "green" ? "mobile-badge-green" : "mobile-badge-gold"
                     }`}>

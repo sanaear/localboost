@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import OptimizedImage from "@/components/OptimizedImage";
 import type { SearchFilters } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessesSearch } from "@/lib/queries";
@@ -87,7 +88,15 @@ export default function SavedPage({
                   >
                     <div className="relative h-[170px] overflow-hidden">
                       {business.images?.[0] ? (
-                        <img src={business.images[0]} alt={business.name} className="h-full w-full object-cover" />
+                        <OptimizedImage
+                          src={business.images[0]}
+                          alt={business.name}
+                          width={900}
+                          height={675}
+                          sizes="100vw"
+                          widths={[480, 640, 828, 900]}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         <div className="h-full w-full bg-[#efece6]" />
                       )}

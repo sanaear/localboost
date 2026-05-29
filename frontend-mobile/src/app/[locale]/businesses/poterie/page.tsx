@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import OptimizedImage from "@/components/OptimizedImage";
 import { detailGallery } from "@/lib/mobileData";
 
 const languageChips = ["EN", "FR", "AR", "ES"];
@@ -27,7 +28,16 @@ export default function PoteriePage({
       <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col">
           <div className="relative h-[310px]">
-            <img src={primaryImage} alt="L'Art de la Poterie" className="h-full w-full object-cover" />
+            <OptimizedImage
+              src={primaryImage}
+              alt="L'Art de la Poterie"
+              width={1200}
+              height={900}
+              sizes="100vw"
+              widths={[640, 828, 1080, 1200]}
+              priority
+              className="h-full w-full object-cover"
+            />
             <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
               <Link href={`/${params.locale}/map`} className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm">
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -163,7 +173,15 @@ export default function PoteriePage({
               <div className="mobile-scrollbar-hidden mt-4 grid grid-cols-2 gap-3 overflow-x-auto">
                 {detailGallery.slice(0, 4).map((image, index) => (
                   <div key={image} className="relative overflow-hidden rounded-[22px]">
-                    <img src={image} alt={`Gallery ${index + 1}`} className="h-[92px] w-full object-cover" />
+                    <OptimizedImage
+                      src={image}
+                      alt={`Gallery ${index + 1}`}
+                      width={360}
+                      height={276}
+                      sizes="50vw"
+                      widths={[180, 360, 540]}
+                      className="h-[92px] w-full object-cover"
+                    />
                     {index === 3 && (
                       <div className="absolute inset-0 grid place-items-center bg-black/45 text-xl font-extrabold text-white">
                         +12

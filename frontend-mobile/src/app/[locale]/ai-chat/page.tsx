@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import OptimizedImage from "@/components/OptimizedImage";
 import { aiRecommendations } from "@/lib/mobileData";
 
 export default function AiChatPage({
@@ -60,7 +61,15 @@ export default function AiChatPage({
                   className="mobile-card mobile-card-hover w-[175px] shrink-0 overflow-hidden"
                 >
                   <div className="relative h-[140px]">
-                    <img src={place.image} alt={place.name} className="h-full w-full object-cover" />
+                    <OptimizedImage
+                      src={place.image}
+                      alt={place.name}
+                      width={700}
+                      height={525}
+                      sizes="175px"
+                      widths={[350, 525, 700]}
+                      className="h-full w-full object-cover"
+                    />
                     <span className="absolute left-3 top-3 rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] mobile-badge-green">
                       {place.badge}
                     </span>

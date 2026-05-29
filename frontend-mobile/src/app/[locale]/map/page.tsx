@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import LeafletBusinessesMap from "@/components/map/LeafletBusinessesMap";
+import OptimizedImage from "@/components/OptimizedImage";
 import type { Category, SearchFilters } from "@/lib/api";
 import { haversineKm } from "@/lib/geo";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
+
+const LeafletBusinessesMap = dynamic(() => import("@/components/map/LeafletBusinessesMap"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-[#efece6]" />,
+});
 
 function getCategoryLabel(category: Category | undefined, locale: string) {
   if (!category) return "";
@@ -259,9 +265,13 @@ export default function MapPage({
                       className="flex items-center gap-3 rounded-[22px] border border-[#ece2d3] bg-white px-4 py-3 shadow-[0_8px_24px_rgba(31,26,10,0.05)]"
                     >
                       {business.images?.[0] ? (
-                        <img
+                        <OptimizedImage
                           src={business.images[0]}
                           alt={business.name}
+                          width={48}
+                          height={48}
+                          sizes="48px"
+                          widths={[48, 96]}
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (

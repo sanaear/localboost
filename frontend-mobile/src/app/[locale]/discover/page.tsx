@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import OptimizedImage from "@/components/OptimizedImage";
 import type { Category, SearchFilters } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
@@ -210,9 +211,13 @@ export default function DiscoverPage({
                       className="flex items-start gap-4"
                     >
                       {business.images?.[0] ? (
-                        <img
+                        <OptimizedImage
                           src={business.images[0]}
                           alt={business.name}
+                          width={82}
+                          height={82}
+                          sizes="82px"
+                          widths={[82, 164]}
                           className="h-[82px] w-[82px] rounded-full object-cover shadow-md"
                         />
                       ) : (

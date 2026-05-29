@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessAverageRating, useBusinessDetail, useBusinessReviews } from "@/lib/queries";
+import OptimizedImage from "@/components/OptimizedImage";
 
 export default function BusinessDetailPage({
   params,
@@ -114,7 +115,16 @@ export default function BusinessDetailPage({
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col">
           <div className="relative h-[310px]">
             {primaryImage ? (
-              <img src={primaryImage} alt={businessQuery.data?.name ?? "Business"} className="h-full w-full object-cover" />
+              <OptimizedImage
+                src={primaryImage}
+                alt={businessQuery.data?.name ?? "Business"}
+                width={1200}
+                height={900}
+                sizes="100vw"
+                widths={[640, 828, 1080, 1200]}
+                priority
+                className="h-full w-full object-cover"
+              />
             ) : (
               <div className="h-full w-full bg-[#efece6]" />
             )}
