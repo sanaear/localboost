@@ -26,5 +26,29 @@
       "availability": "Availability",
       "all": "All"
     }
+  },
+  "map": {
+    "searchPlaceholder": "Search places…",
+    "results": "{count} places",
+    "subtitle": "Tap a marker to open a place",
+    "viewAll": "View all",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "noResults": "No places found",
+    "filters": {
+      "category": "Category",
+      "region": "Region",
+      "all": "All"
+    },
+    "geo": {
+      "locateMe": "Near me",
+      "locating": "Locating…",
+      "notSupported": "Geolocation is not supported on this device",
+      "failed": "Could not get your location"
+    },
+    "radius": {
+      "label": "Radius",
+      "clear": "Clear"
+    }
   }
 }

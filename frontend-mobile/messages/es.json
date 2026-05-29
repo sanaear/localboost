@@ -26,5 +26,29 @@
       "availability": "Disponibilidad",
       "all": "Todo"
     }
+  },
+  "map": {
+    "searchPlaceholder": "Buscar cerca de mí…",
+    "results": "{count} lugares",
+    "subtitle": "Toca un marcador para abrir un lugar",
+    "viewAll": "Ver todo",
+    "loading": "Cargando…",
+    "error": "Ocurrió un error",
+    "noResults": "No se encontraron lugares",
+    "filters": {
+      "category": "Categoría",
+      "region": "Región",
+      "all": "Todo"
+    },
+    "geo": {
+      "locateMe": "Cerca de mí",
+      "locating": "Localizando…",
+      "notSupported": "La geolocalización no es compatible en este dispositivo",
+      "failed": "No se pudo obtener tu ubicación"
+    },
+    "radius": {
+      "label": "Radio",
+      "clear": "Limpiar"
+    }
   }
 }

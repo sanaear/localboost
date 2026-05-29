@@ -55,6 +55,8 @@ const mockBusinesses: Business[] = [
     region_id: 1,
     name: "L'Art de la Poterie",
     city: "Fès",
+    lat: 34.0331,
+    lng: -5.0003,
     description: "Atelier traditionnel de poterie au cœur de la médina, démonstrations et pièces uniques.",
     images: [
       "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Moroccan%20artisan%20pottery%20workshop%20interior%2C%20warm%20sunlight%2C%20handcrafted%20ceramics%2C%20premium%20travel%20editorial%20photography%2C%20high%20detail&image_size=portrait_16_9",
@@ -73,6 +75,8 @@ const mockBusinesses: Business[] = [
     region_id: 2,
     name: "Café des Épices",
     city: "Marrakech",
+    lat: 31.6295,
+    lng: -7.9811,
     description: "Café chaleureux avec une vue sur les ruelles, pâtisseries maison et thé à la menthe.",
     images: [
       "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Moroccan%20cafe%20terrace%2C%20mint%20tea%2C%20warm%20golden%20hour%20light%2C%20travel%20editorial%20photography%2C%20high%20detail&image_size=portrait_16_9",
@@ -91,6 +95,8 @@ const mockBusinesses: Business[] = [
     region_id: 1,
     name: "Musée Zellij",
     city: "Fès",
+    lat: 34.0348,
+    lng: -5.0014,
     description: "Collection immersive sur l'art du zellij, visites guidées et boutique artisanale.",
     images: [
       "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Moroccan%20museum%20interior%20zellij%20tiles%2C%20soft%20museum%20lighting%2C%20premium%20travel%20editorial%20photography%2C%20high%20detail&image_size=portrait_16_9",
@@ -109,6 +115,8 @@ const mockBusinesses: Business[] = [
     region_id: 2,
     name: "Dar Hatim Riad",
     city: "Marrakech",
+    lat: 31.6333,
+    lng: -7.9896,
     description: "Riad traditionnel avec patio, petit-déjeuner marocain et accueil personnalisé.",
     images: [
       "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Moroccan%20riad%20courtyard%2C%20fountain%2C%20plants%2C%20warm%20light%2C%20premium%20travel%20editorial%20photography%2C%20high%20detail&image_size=portrait_16_9",

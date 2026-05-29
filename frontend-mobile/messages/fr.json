@@ -26,5 +26,29 @@
       "availability": "Disponibilité",
       "all": "Tout"
     }
+  },
+  "map": {
+    "searchPlaceholder": "Rechercher autour de moi…",
+    "results": "{count} lieux",
+    "subtitle": "Touchez un marqueur pour ouvrir un commerce",
+    "viewAll": "Voir tout",
+    "loading": "Chargement…",
+    "error": "Une erreur est survenue",
+    "noResults": "Aucun commerce trouvé",
+    "filters": {
+      "category": "Catégorie",
+      "region": "Région",
+      "all": "Tout"
+    },
+    "geo": {
+      "locateMe": "Autour de moi",
+      "locating": "Localisation…",
+      "notSupported": "La géolocalisation n'est pas supportée sur cet appareil",
+      "failed": "Impossible d'obtenir votre position"
+    },
+    "radius": {
+      "label": "Rayon",
+      "clear": "Effacer"
+    }
   }
 }

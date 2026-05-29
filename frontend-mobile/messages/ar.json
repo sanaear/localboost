@@ -26,5 +26,29 @@
       "availability": "التوفر",
       "all": "الكل"
     }
+  },
+  "map": {
+    "searchPlaceholder": "ابحث بالقرب مني…",
+    "results": "{count} أماكن",
+    "subtitle": "اضغط على العلامة لفتح المكان",
+    "viewAll": "عرض الكل",
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ",
+    "noResults": "لا توجد أماكن",
+    "filters": {
+      "category": "الفئة",
+      "region": "الجهة",
+      "all": "الكل"
+    },
+    "geo": {
+      "locateMe": "بالقرب مني",
+      "locating": "جارٍ تحديد الموقع…",
+      "notSupported": "تحديد الموقع غير مدعوم على هذا الجهاز",
+      "failed": "تعذر الحصول على موقعك"
+    },
+    "radius": {
+      "label": "المسافة",
+      "clear": "مسح"
+    }
   }
 }
