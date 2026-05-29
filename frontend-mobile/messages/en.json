@@ -2,7 +2,15 @@
   "welcome": "Welcome to LocalBoost",
   "description": "Your local business directory",
   "common": {
-    "brand": "LocalBoost"
+    "brand": "LocalBoost",
+    "loading": "Loading",
+    "errorTitle": "Something went wrong",
+    "retry": "Retry",
+    "resetFilters": "Reset filters",
+    "errorDescription": "Check your connection and try again.",
+    "openNow": "Open now",
+    "closesAt": "Closes {time}",
+    "explore": "Explore"
   },
   "nav": {
     "explore": "Explore",
@@ -11,6 +19,50 @@
     "saved": "Saved",
     "profile": "Profile"
   },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "selectPerspective": "Select your perspective",
+    "perspectives": {
+      "tourist": "Tourist",
+      "shopOwner": "Shop Owner",
+      "admin": "Admin"
+    },
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "resetSent": "Reset instructions sent to your email.",
+    "signIn": "Sign in",
+    "or": "OR",
+    "continueWithGoogle": "Continue with Google",
+    "newTo": "New to LocalBoost?",
+    "createAccount": "Create account",
+    "createYourAccount": "Create your account",
+    "selectRole": "Select your role",
+    "fullName": "Full name",
+    "agreePrefix": "I agree to the",
+    "terms": "Terms & Conditions",
+    "and": "and",
+    "privacy": "Privacy Policy",
+    "of": "of LocalBoost.",
+    "createAccountCta": "Create account",
+    "acceptTermsWarning": "Accept the terms to continue.",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInLink": "Sign in"
+  },
+  "home": {
+    "searchCta": "Find a hidden gem",
+    "filters": {
+      "all": "All",
+      "restaurants": "Restaurants",
+      "cafes": "Cafes"
+    },
+    "feed": {
+      "darHatimMeta": "5 min walk from Grand Stade de Casablanca"
+    },
+    "nearYou": "Near you",
+    "nearYouSubtitle": "Authentic finds within walking distance",
+    "viewAll": "View all"
+  },
   "discover": {
     "searchPlaceholder": "Search businesses…",
     "results": "{count} results",
@@ -18,6 +70,7 @@
     "loadMore": "Load more",
     "noResults": "No results found",
     "error": "Something went wrong",
+    "noResultsDescription": "Try broadening your filters or changing your search.",
     "filters": {
       "category": "Category",
       "city": "City",
@@ -50,5 +103,223 @@
       "label": "Radius",
       "clear": "Clear"
     }
+  },
+  "saved": {
+    "title": "Your collection",
+    "subtitle": "Saved places",
+    "countLabel": "items",
+    "viewDetails": "View details",
+    "emptyTitle": "No favorites yet",
+    "emptyDescription": "Save a place from Explore or from a business page.",
+    "errorTitle": "Unable to load your favorites"
+  },
+  "businessDetail": {
+    "reviews": "Reviews",
+    "reviewsCount": "{count} reviews",
+    "noReviews": "No reviews yet",
+    "anonymous": "Anonymous",
+    "invalidId": "Invalid business id",
+    "imageAltFallback": "Business",
+    "errorBusiness": "Unable to load this business",
+    "errorReviews": "Unable to load reviews",
+    "errorReviewsDescription": "Please try again in a moment.",
+    "shareCopy": "Copy link",
+    "shareWhatsapp": "WhatsApp",
+    "shareOpenUrl": "Open URL",
+    "shareCopied": "Link copied",
+    "shareCopyFailed": "Unable to copy link",
+    "shareOpened": "Opened link",
+    "shareOpenFailed": "Unable to open link",
+    "shareWhatsappOpened": "WhatsApp opened",
+    "shareWhatsappFailed": "Unable to share to WhatsApp"
+  },
+  "aiChat": {
+    "title": "LocalBoost AI",
+    "modeTourist": "Tourist mode",
+    "askPlaceholder": "Ask about Fès, World Cup, or food…",
+    "yesBuildItinerary": "Yes, build itinerary",
+    "showOnMap": "Show on map",
+    "quickExplore": "Quick explore",
+    "sampleUserMessage": "I'm looking for a traditional restaurant in Fès with good vegetarian options, budget under 150 MAD",
+    "guideTitle": "LocalBoost Guide",
+    "sampleAssistantMessage": "Fès is a haven for plant-based Moroccan cuisine. I selected three highly-rated spots near the souks with veggie spreads.",
+    "questionItinerary": "Would you like me to build a full evening itinerary?",
+    "itineraryReady": "Your itinerary is ready: sunset mint tea, dinner near the souk, then a short walk to rooftop desserts before 9 PM.",
+    "messageSent": "Message sent. LocalBoost AI is preparing more ideas.",
+    "recommendations": {
+      "cafe-clock": {
+        "badge": "Veggie friendly",
+        "walk": "450m away"
+      },
+      "the-ruined": {
+        "badge": "Rooftop view",
+        "walk": "1.2 km"
+      }
+    }
+  },
+  "profile": {
+    "fanPassportStatus": "Fan passport status",
+    "verifiedFanId": "Verified Fan ID",
+    "languageSelection": "Language selection",
+    "preferences": "Preferences",
+    "pushNotifications": "Push notifications",
+    "pushDescription": "Match alerts & local offers",
+    "appearance": "Appearance",
+    "appearanceLight": "Currently in Light Mode",
+    "about": "About LocalBoost",
+    "rate": "Rate the app",
+    "profileAlt": "Profile",
+    "profilePhotoUpdated": "Profile photo updated."
+  },
+  "about": {
+    "title": "About",
+    "body1": "LocalBoost helps visitors discover authentic places, local shops, and experiences in Moroccan host cities.",
+    "body2": "Built for tourists, merchants, and World Cup 2030 city discovery flows."
+  },
+  "rate": {
+    "title": "Rate app",
+    "question": "How is LocalBoost?",
+    "submit": "Submit rating",
+    "thanks": "Thanks for the feedback."
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "topRated": "Top rated",
+    "headlineLine1": "Find",
+    "headlineHighlight1": "Hidden",
+    "headlineHighlight2": "Gems",
+    "description": "Avoid tourist traps and uncover handpicked experiences loved by locals.",
+    "next": "Next",
+    "guideHeadlineLine1": "Your AI",
+    "guideHeadlineHighlight": "Travel Guide",
+    "guideDescription": "Ask anything in your language. From hidden souks to local secrets, your guide is always awake.",
+    "navigateLine1": "Navigate",
+    "navigateLine2": "Morocco Like a",
+    "navigateLine3": "Local",
+    "navigateDescription": "Find authentic spots with ease and confidence.",
+    "getStarted": "Get started"
+  },
+  "merchantNav": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "aiTools": "AI tools",
+    "reviews": "Reviews",
+    "stats": "Stats",
+    "progress": "Progress",
+    "identity": "Identity",
+    "atmosphere": "Atmosphere",
+    "submit": "Submit"
+  },
+  "merchantDashboard": {
+    "goodMorning": "Good morning,",
+    "attentionToday": "Your shop is getting a lot of attention today.",
+    "approvedLive": "Approved and live",
+    "quickActions": "Quick actions",
+    "photoManager": "Photo manager",
+    "generateAiDescription": "Generate AI description",
+    "viewReviews": "View reviews",
+    "recentReviews": "Recent reviews",
+    "viewAll": "View all",
+    "reply": "Reply",
+    "stats": {
+      "viewsThisWeek": "Views this week",
+      "profileClicks": "Profile clicks",
+      "totalSaves": "Total saves",
+      "savedByTourists": "Saved by tourists"
+    }
+  },
+  "merchantSetup": {
+    "step": "Step {current} of {total}",
+    "progress": "{percent}% complete",
+    "headerLine1": "Digital Riad",
+    "headerLine2": "Merchant",
+    "titleLine1": "Tell us about",
+    "titleLine2": "your business",
+    "description": "Help us create a profile that captures the essence of your shop for the 2030 World Cup visitors.",
+    "businessNameLabel": "Business name",
+    "businessNamePlaceholder": "e.g. Cafe de la Poste",
+    "categoryLabel": "Category",
+    "categories": {
+      "traditionalPottery": "Traditional pottery studio",
+      "luxuryAccommodation": "Luxury accommodation",
+      "restaurant": "Restaurant",
+      "handmadeSoukShop": "Handmade souk shop"
+    },
+    "next": "Next",
+    "saveForLater": "Save for later",
+    "photosTitleLine1": "Add your best",
+    "photosTitleLine2": "photos",
+    "photosDescription": "Upload up to 10 high-quality photos of your shop and products.",
+    "photosUploadCta": "Click or drag photos to upload",
+    "photosSupport": "Supports JPG, PNG (Max 10MB per file)",
+    "uploadAlt": "Upload {index}",
+    "addMore": "Add more",
+    "back": "Back",
+    "continue": "Continue",
+    "finalStep": "Final step",
+    "ready": "100% ready",
+    "contactTitleLine1": "Opening hours",
+    "contactTitleLine2": "& contact",
+    "contactDescription": "Let tourists know when to visit and how to reach you. Clear contact details build trust with international travelers.",
+    "weeklySchedule": "Weekly schedule",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "to": "to",
+    "contactChannels": "Contact channels",
+    "previousStep": "Previous step",
+    "finish": "Finish"
+  },
+  "merchantAi": {
+    "title": "Generate with AI",
+    "subtitle": "Craft the perfect story for your shop in seconds with local flair.",
+    "businessTypeLabel": "Business type",
+    "defaultBusinessType": "Traditional pottery studio",
+    "highlightsLabel": "Highlights",
+    "addTag": "+ Add tag",
+    "highlightN": "Highlight {n}",
+    "uniqueSellingPointsLabel": "Unique selling points",
+    "uniqueSellingPointsPlaceholder": "What makes your shop special? e.g. Family-owned since 1950, located in the heart of the Medina",
+    "promptSuffix": "Our atelier brings travelers closer to Moroccan craftsmanship with intimate demonstrations, curated storytelling, and signature cobalt pieces made for meaningful souvenirs.",
+    "generateDescription": "Generate description",
+    "aiSuggestions": "AI suggestions",
+    "charactersCount": "{count} characters",
+    "copy": "Copy",
+    "copied": "Copied",
+    "regenerate": "Regenerate",
+    "saveToProfile": "Save to profile",
+    "savedConfirmation": "AI description saved to your profile."
+  },
+  "poterie": {
+    "heroAlt": "L'Art de la Poterie",
+    "badges": {
+      "artisanWorkshop": "Artisan workshop",
+      "localFavorite": "Local favorite"
+    },
+    "reviewsCount": "{count} reviews",
+    "distanceAway": "{distance} away",
+    "actions": {
+      "call": "Call",
+      "directions": "Directions"
+    },
+    "generatedLine1": "Generated",
+    "generatedLine2": "by AI",
+    "openingHours": "Opening hours",
+    "hours": {
+      "mondaySaturday": "Monday - Saturday",
+      "sunday": "Sunday",
+      "closed": "Closed"
+    },
+    "experienceTitle": "Experience the craft",
+    "galleryAlt": "Gallery {index}",
+    "storiesTitle": "Tourist stories",
+    "seeAll": "See all",
+    "getDirections": "Get directions"
   }
 }

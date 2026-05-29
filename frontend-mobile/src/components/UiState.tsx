@@ -1,6 +1,10 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 export function Spinner({ size = 18 }: { size?: number }) {
+  const t = useTranslations("common");
   return (
     <span
       className="lb-spinner"
@@ -8,7 +12,7 @@ export function Spinner({ size = 18 }: { size?: number }) {
         width: size,
         height: size,
       }}
-      aria-label="loading"
+      aria-label={t("loading")}
     />
   );
 }
@@ -24,27 +28,31 @@ export function SkeletonLine({
 }
 
 export function ErrorState({
-  title = "Une erreur est survenue",
-  description = "Vérifiez votre connexion puis réessayez.",
+  title,
+  description,
   onRetry,
-  retryLabel = "Réessayer",
+  retryLabel,
 }: {
   title?: string;
   description?: string;
   onRetry?: (() => void) | (() => Promise<void>);
   retryLabel?: string;
 }) {
+  const t = useTranslations("common");
+  const resolvedTitle = title ?? t("errorTitle");
+  const resolvedDescription = description ?? t("errorDescription");
+  const resolvedRetryLabel = retryLabel ?? t("retry");
   return (
     <div className="rounded-[26px] border border-[#f1d0d0] bg-white px-4 py-4 text-[#2a2730] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
-      <div className="text-[14px] font-extrabold text-[#9b3e3e]">{title}</div>
-      <div className="mt-2 text-[12px] font-semibold text-[#7f7669]">{description}</div>
+      <div className="text-[14px] font-extrabold text-[#9b3e3e]">{resolvedTitle}</div>
+      <div className="mt-2 text-[12px] font-semibold text-[#7f7669]">{resolvedDescription}</div>
       {onRetry ? (
         <button
           type="button"
           onClick={() => void onRetry()}
           className="mobile-pill mt-4 h-11 w-full bg-[#9b3e3e] text-[12px] font-extrabold uppercase tracking-[0.14em] text-white"
         >
-          {retryLabel}
+          {resolvedRetryLabel}
         </button>
       ) : null}
     </div>
@@ -68,4 +76,3 @@ export function EmptyState({
     </div>
   );
 }
-

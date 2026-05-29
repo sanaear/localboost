@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const roles = ["Tourist", "Shop Owner", "Admin"] as const;
+const roles = ["tourist", "shopOwner", "admin"] as const;
 
 function getSignupDestination(locale: string, role: (typeof roles)[number]) {
-  if (role === "Shop Owner") {
+  if (role === "shopOwner") {
     return `/${locale}/merchant/setup/business`;
   }
 
@@ -18,7 +19,9 @@ export default function SignupPage({
 }: {
   params: { locale: string };
 }) {
-  const [selectedRole, setSelectedRole] = useState<(typeof roles)[number]>("Tourist");
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const [selectedRole, setSelectedRole] = useState<(typeof roles)[number]>("tourist");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsWarning, setTermsWarning] = useState(false);
@@ -37,15 +40,15 @@ export default function SignupPage({
             </div>
 
             <div className="mt-5 text-center mobile-fade-up" style={{ animationDelay: "80ms" }}>
-              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">LocalBoost</h1>
+              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">{tCommon("brand")}</h1>
               <p className="mt-2 text-[1.65rem] font-semibold tracking-[-0.05em] text-[#5f554a]">
-                Create Your Account
+                {t("createYourAccount")}
               </p>
             </div>
 
             <div className="mt-7 w-full rounded-[30px] bg-[#fbfaf7] px-5 py-6 shadow-[inset_0_0_0_1px_rgba(235,228,216,0.9)] mobile-fade-up" style={{ animationDelay: "140ms" }}>
               <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a907d]">
-                Select your role
+                {t("selectRole")}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {roles.slice(0, 2).map((role) => (
@@ -59,25 +62,25 @@ export default function SignupPage({
                         : "bg-[#e3e2e1] text-[#69625d]"
                     }`}
                   >
-                    {role}
+                    {t(`perspectives.${role}`)}
                   </button>
                 ))}
                 <button
                   type="button"
-                  onClick={() => setSelectedRole("Admin")}
+                  onClick={() => setSelectedRole("admin")}
                   className={`mobile-pill col-span-2 h-11 text-[15px] font-extrabold ${
-                    selectedRole === "Admin"
+                    selectedRole === "admin"
                       ? "mobile-button-gold"
                       : "bg-[#e3e2e1] text-[#69625d]"
                   }`}
                 >
-                  Admin
+                  {t("perspectives.admin")}
                 </button>
               </div>
 
               <div className="mt-6 space-y-5">
                 <div>
-                  <label className="mobile-label">Full Name</label>
+                  <label className="mobile-label">{t("fullName")}</label>
                   <div className="relative">
                     <input className="mobile-input pl-12" defaultValue="Anouar El Ghazi" />
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#c1ad8c]">
@@ -86,7 +89,7 @@ export default function SignupPage({
                   </div>
                 </div>
                 <div>
-                  <label className="mobile-label">Email Address</label>
+                  <label className="mobile-label">{t("email")}</label>
                   <div className="relative">
                     <input className="mobile-input pl-12" defaultValue="anouar@localboost.ma" />
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#c1ad8c]">
@@ -95,7 +98,7 @@ export default function SignupPage({
                   </div>
                 </div>
                 <div>
-                  <label className="mobile-label">Password</label>
+                  <label className="mobile-label">{t("password")}</label>
                   <div className="relative">
                     <input
                       className="mobile-input pl-12 pr-12"
@@ -129,8 +132,9 @@ export default function SignupPage({
                   }`}
                 />
                 <span>
-                  I agree to the <span className="font-extrabold text-[#b27a00]">Terms &amp; Conditions</span> and
-                  <span className="font-extrabold text-[#b27a00]"> Privacy Policy</span> of LocalBoost.
+                  {t("agreePrefix")}{" "}
+                  <span className="font-extrabold text-[#b27a00]">{t("terms")}</span> {t("and")}{" "}
+                  <span className="font-extrabold text-[#b27a00]">{t("privacy")}</span> {t("of")}
                 </span>
               </label>
 
@@ -139,28 +143,28 @@ export default function SignupPage({
                 onClick={() => setTermsWarning(!acceptedTerms)}
                 className="mobile-pill mobile-button-gold mt-7 flex h-14 w-full items-center justify-center gap-2 text-base font-extrabold"
               >
-                Create Account
+                {t("createAccountCta")}
                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
               </Link>
               {termsWarning && !acceptedTerms ? (
                 <p className="mt-3 text-center text-[12px] font-semibold text-[#b15f36]">
-                  Accept the terms to continue.
+                  {t("acceptTermsWarning")}
                 </p>
               ) : null}
 
-              <div className="mobile-divider mt-7">OR</div>
+              <div className="mobile-divider mt-7">{t("or")}</div>
 
               <Link
                 href={googleSignupHref}
                 className="mobile-pill mobile-button-secondary mt-6 flex h-14 w-full items-center justify-center gap-3 text-[15px] font-bold"
               >
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
-                Continue with Google
+                {t("continueWithGoogle")}
               </Link>
             </div>
 
             <Link href={`/${params.locale}`} className="mt-6 text-sm font-bold text-[#8b816f]">
-              Already have an account? <span className="text-[#b27a00]">Sign in</span>
+              {t("alreadyHaveAccount")} <span className="text-[#b27a00]">{t("signInLink")}</span>
             </Link>
           </div>
         </div>

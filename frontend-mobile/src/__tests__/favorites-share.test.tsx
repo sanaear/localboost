@@ -1,6 +1,8 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import enMessages from "../../messages/en.json";
 import BusinessDetailPage from "@/app/[locale]/businesses/[id]/page";
 import SavedPage from "@/app/[locale]/saved/page";
 import { useFavorites } from "@/lib/favorites";
@@ -12,6 +14,14 @@ vi.mock("@/lib/queries", () => ({
   useBusinessReviews: vi.fn(),
   useBusinessesSearch: vi.fn(),
 }));
+
+function renderWithIntl(ui: React.ReactElement, locale = "en") {
+  return render(
+    <NextIntlClientProvider locale={locale} messages={enMessages as any}>
+      {ui}
+    </NextIntlClientProvider>,
+  );
+}
 
 function mockBusinessQueries() {
   (queries as any).useBusinessDetail.mockReturnValue({
@@ -57,7 +67,7 @@ describe("LB-73 favorites + share", () => {
     localStorage.clear();
     mockBusinessQueries();
 
-    render(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
+    renderWithIntl(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
 
     const outlineIcon = await screen.findByText("favorite_border");
     const favoriteButton = outlineIcon.closest("button");
@@ -87,7 +97,7 @@ describe("LB-73 favorites + share", () => {
     const writeText = setClipboardMock();
     const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
 
-    render(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
+    renderWithIntl(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
 
     fireEvent.click(screen.getByText("share").closest("button") as HTMLButtonElement);
     fireEvent.click(screen.getByText("Copy link").closest("button") as HTMLButtonElement);
@@ -123,15 +133,15 @@ describe("LB-73 favorites + share", () => {
       isError: false,
     });
 
-    render(<SavedPage params={{ locale: "en" }} />);
+    renderWithIntl(<SavedPage params={{ locale: "en" }} />);
 
-    expect(screen.getAllByText("View Details")).toHaveLength(2);
+    expect(screen.getAllByText("View details")).toHaveLength(2);
 
     const removeButtons = screen.getAllByText("favorite").map((node) => node.closest("button")).filter(Boolean);
     fireEvent.click(removeButtons[0] as HTMLButtonElement);
 
     await waitFor(() => {
-      expect(screen.getAllByText("View Details")).toHaveLength(1);
+      expect(screen.getAllByText("View details")).toHaveLength(1);
     });
 
     const stored = JSON.parse(localStorage.getItem("lb:favorites:v1") ?? "[]") as number[];

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import MerchantBottomNav from "@/components/MerchantBottomNav";
 
 const days = [
@@ -19,6 +20,7 @@ export default function MerchantContactSetupPage({
 }: {
   params: { locale: string };
 }) {
+  const t = useTranslations("merchantSetup");
   const [enabledDays, setEnabledDays] = useState<Record<string, boolean>>(
     Object.fromEntries(days.map((day) => [day.name, day.enabled])),
   );
@@ -35,9 +37,9 @@ export default function MerchantContactSetupPage({
                 </Link>
                 <div>
                   <p className="text-[1rem] font-extrabold leading-tight tracking-[-0.04em] text-[#9c6a00]">
-                    Digital Riad
+                    {t("headerLine1")}
                     <br />
-                    Merchant
+                    {t("headerLine2")}
                   </p>
                 </div>
               </div>
@@ -47,8 +49,8 @@ export default function MerchantContactSetupPage({
             </div>
 
             <div className="mt-5 flex items-center justify-between">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#9e9281]">Final step</p>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#c08a12]">100% Ready</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#9e9281]">{t("finalStep")}</p>
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#c08a12]">{t("ready")}</p>
             </div>
             <div className="mt-3 h-1.5 rounded-full bg-[#ebe5da]">
               <div className="h-full w-full rounded-full bg-[#eba521]" />
@@ -58,19 +60,19 @@ export default function MerchantContactSetupPage({
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
             <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
               <h1 className="text-[2.5rem] font-extrabold leading-[0.93] tracking-[-0.07em] text-[#23212c]">
-                Opening hours
+                {t("contactTitleLine1")}
                 <br />
-                &amp; contact
+                {t("contactTitleLine2")}
               </h1>
               <p className="mt-4 max-w-[315px] text-[15px] leading-7 text-[#7d7468]">
-                Let tourists know when to visit and how to reach you. Providing clear contact info builds trust with international travelers.
+                {t("contactDescription")}
               </p>
             </div>
 
             <div className="mobile-fade-up mt-7" style={{ animationDelay: "120ms" }}>
               <div className="flex items-center gap-2 text-[1rem] font-extrabold text-[#4f6f5e]">
                 <span className="material-symbols-outlined text-[18px]">schedule</span>
-                Weekly Schedule
+                {t("weeklySchedule")}
               </div>
 
               <div className="mt-4 rounded-[30px] bg-[#f4f1eb] px-4 py-3">
@@ -102,10 +104,10 @@ export default function MerchantContactSetupPage({
                           />
                         </button>
                         <div className="min-w-0 flex-1">
-                          <div className="text-[14px] font-bold text-[#38332d]">{day.name}</div>
+                          <div className="text-[14px] font-bold text-[#38332d]">{t(`days.${day.name.toLowerCase()}`)}</div>
                           <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-[#9a9082]">
                             <span className="rounded-full bg-white px-2 py-1">{day.start}</span>
-                            <span>TO</span>
+                            <span>{t("to")}</span>
                             <span className="rounded-full bg-white px-2 py-1">{day.end}</span>
                           </div>
                         </div>
@@ -119,7 +121,7 @@ export default function MerchantContactSetupPage({
             <div className="mobile-fade-up mt-7" style={{ animationDelay: "180ms" }}>
               <div className="flex items-center gap-2 text-[1rem] font-extrabold text-[#4f6f5e]">
                 <span className="material-symbols-outlined text-[18px]">contact_phone</span>
-                Contact Channels
+                {t("contactChannels")}
               </div>
               <div className="mt-4 space-y-3">
                 <input className="mobile-input" defaultValue="WhatsApp Business" />
@@ -133,7 +135,7 @@ export default function MerchantContactSetupPage({
                 className="mobile-pill h-12 flex-1 border border-[#e4d9ca] bg-white text-[13px] font-bold text-[#6f675b]"
               >
                 <span className="material-symbols-outlined mr-2 text-[18px]">arrow_back</span>
-                Previous Step
+                {t("previousStep")}
               </Link>
             </div>
 
@@ -142,7 +144,7 @@ export default function MerchantContactSetupPage({
               className="mobile-pill mobile-button-gold mobile-fade-up mt-4 h-14 w-full text-[1.1rem] font-extrabold"
               style={{ animationDelay: "300ms" }}
             >
-              Finish
+            {t("finish")}
             </Link>
           </div>
 

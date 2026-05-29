@@ -53,8 +53,8 @@ export default function MapPage({
   params: { locale: string };
 }) {
   const router = useRouter();
-  const tCommon = useTranslations("common");
   const t = useTranslations("map");
+  const tCommon = useTranslations("common");
   const categoriesQuery = useCategories();
   const regionsQuery = useRegions();
 
@@ -233,7 +233,12 @@ export default function MapPage({
 
             {businessesQuery.isError ? (
               <div className="absolute left-4 right-4 top-4">
-                <ErrorState title={t("error")} onRetry={() => businessesQuery.refetch()} retryLabel="Réessayer" />
+                <ErrorState
+                  title={t("error")}
+                  description={tCommon("errorDescription")}
+                  onRetry={() => businessesQuery.refetch()}
+                  retryLabel={tCommon("retry")}
+                />
               </div>
             ) : null}
 

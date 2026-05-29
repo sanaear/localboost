@@ -2,7 +2,15 @@
   "welcome": "مرحبا بك في LocalBoost",
   "description": "دليل الأعمال المحلي الخاص بك",
   "common": {
-    "brand": "LocalBoost"
+    "brand": "LocalBoost",
+    "loading": "جارٍ التحميل",
+    "errorTitle": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "resetFilters": "إعادة ضبط الفلاتر",
+    "errorDescription": "تحقق من الاتصال ثم أعد المحاولة.",
+    "openNow": "مفتوح الآن",
+    "closesAt": "يغلق عند {time}",
+    "explore": "استكشاف"
   },
   "nav": {
     "explore": "استكشاف",
@@ -18,6 +26,7 @@
     "loadMore": "تحميل المزيد",
     "noResults": "لا توجد نتائج",
     "error": "حدث خطأ",
+    "noResultsDescription": "جرّب توسيع الفلاتر أو تغيير البحث.",
     "filters": {
       "category": "الفئة",
       "city": "المدينة",
@@ -50,5 +59,267 @@
       "label": "المسافة",
       "clear": "مسح"
     }
+  },
+  "auth": {
+    "welcomeBack": "مرحباً بعودتك",
+    "selectPerspective": "اختر منظورك",
+    "perspectives": {
+      "tourist": "سائح",
+      "shopOwner": "تاجر",
+      "admin": "مسؤول"
+    },
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "resetSent": "تم إرسال تعليمات إعادة التعيين إلى بريدك الإلكتروني.",
+    "signIn": "تسجيل الدخول",
+    "or": "أو",
+    "continueWithGoogle": "المتابعة عبر Google",
+    "newTo": "جديد على LocalBoost؟",
+    "createAccount": "إنشاء حساب",
+    "createYourAccount": "أنشئ حسابك",
+    "selectRole": "اختر دورك",
+    "fullName": "الاسم الكامل",
+    "agreePrefix": "أوافق على",
+    "terms": "الشروط والأحكام",
+    "and": "و",
+    "privacy": "سياسة الخصوصية",
+    "of": "الخاصة بـ LocalBoost.",
+    "createAccountCta": "إنشاء حساب",
+    "acceptTermsWarning": "وافق على الشروط للمتابعة.",
+    "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+    "signInLink": "تسجيل الدخول"
+  },
+  "home": {
+    "searchCta": "اعثر على جوهرة مخفية",
+    "filters": {
+      "all": "الكل",
+      "restaurants": "مطاعم",
+      "cafes": "مقاهٍ"
+    },
+    "feed": {
+      "darHatimMeta": "على بعد 5 دقائق مشياً من ملعب الدار البيضاء الكبير"
+    },
+    "nearYou": "بالقرب منك",
+    "nearYouSubtitle": "اكتشافات أصيلة على مسافة مشي",
+    "viewAll": "عرض الكل"
+  },
+  "saved": {
+    "title": "مجموعتك",
+    "subtitle": "الأماكن المحفوظة",
+    "countLabel": "عنصر",
+    "viewDetails": "عرض التفاصيل",
+    "emptyTitle": "لا توجد مفضلات بعد",
+    "emptyDescription": "احفظ مكاناً من الاستكشاف أو من صفحة المكان.",
+    "errorTitle": "تعذر تحميل المفضلات"
+  },
+  "businessDetail": {
+    "reviews": "المراجعات",
+    "reviewsCount": "{count} مراجعة",
+    "noReviews": "لا توجد مراجعات بعد",
+    "anonymous": "مجهول",
+    "invalidId": "معرّف المكان غير صالح",
+    "imageAltFallback": "مكان",
+    "errorBusiness": "تعذر تحميل هذا المكان",
+    "errorReviews": "تعذر تحميل المراجعات",
+    "errorReviewsDescription": "أعد المحاولة بعد قليل.",
+    "shareCopy": "نسخ الرابط",
+    "shareWhatsapp": "واتساب",
+    "shareOpenUrl": "فتح الرابط",
+    "shareCopied": "تم نسخ الرابط",
+    "shareCopyFailed": "تعذر نسخ الرابط",
+    "shareOpened": "تم فتح الرابط",
+    "shareOpenFailed": "تعذر فتح الرابط",
+    "shareWhatsappOpened": "تم فتح واتساب",
+    "shareWhatsappFailed": "تعذر المشاركة عبر واتساب"
+  },
+  "aiChat": {
+    "title": "LocalBoost AI",
+    "modeTourist": "وضع السائح",
+    "askPlaceholder": "اسأل عن فاس أو كأس العالم أو الطعام…",
+    "yesBuildItinerary": "نعم، أنشئ برنامجاً",
+    "showOnMap": "عرض على الخريطة",
+    "quickExplore": "استكشاف سريع",
+    "sampleUserMessage": "أبحث عن مطعم تقليدي في فاس مع خيارات نباتية جيدة، بميزانية أقل من 150 درهم",
+    "guideTitle": "دليل LocalBoost",
+    "sampleAssistantMessage": "فاس مدينة رائعة للمطبخ المغربي النباتي. اخترت ثلاثة أماكن عالية التقييم قرب الأسواق مع خيارات نباتية.",
+    "questionItinerary": "هل تريد أن أعدّ برنامجاً كاملاً للمساء؟",
+    "itineraryReady": "برنامجك جاهز: شاي بالنعناع عند الغروب، عشاء قرب السوق، ثم مشي قصير إلى حلويات على السطح قبل التاسعة مساءً.",
+    "messageSent": "تم إرسال الرسالة. يقوم LocalBoost AI بتحضير المزيد من الأفكار.",
+    "recommendations": {
+      "cafe-clock": {
+        "badge": "مناسب للنباتيين",
+        "walk": "يبعد 450م"
+      },
+      "the-ruined": {
+        "badge": "إطلالة سطح",
+        "walk": "1.2 كم"
+      }
+    }
+  },
+  "profile": {
+    "fanPassportStatus": "حالة جواز المشجع",
+    "verifiedFanId": "معرّف مشجع موثّق",
+    "languageSelection": "اختيار اللغة",
+    "preferences": "التفضيلات",
+    "pushNotifications": "الإشعارات",
+    "pushDescription": "تنبيهات المباريات وعروض محلية",
+    "appearance": "المظهر",
+    "appearanceLight": "الوضع الفاتح حالياً",
+    "about": "حول LocalBoost",
+    "rate": "قيّم التطبيق",
+    "profileAlt": "الملف الشخصي",
+    "profilePhotoUpdated": "تم تحديث صورة الملف الشخصي."
+  },
+  "about": {
+    "title": "حول",
+    "body1": "يساعد LocalBoost الزوار على اكتشاف أماكن أصيلة ومتاجر محلية وتجارب في المدن المغربية المستضيفة.",
+    "body2": "مصمم للسياح والتجار ومسارات اكتشاف مدن كأس العالم 2030."
+  },
+  "rate": {
+    "title": "قيّم التطبيق",
+    "question": "كيف ترى LocalBoost؟",
+    "submit": "إرسال التقييم",
+    "thanks": "شكراً لملاحظاتك."
+  },
+  "onboarding": {
+    "skip": "تخطي",
+    "topRated": "الأعلى تقييماً",
+    "headlineLine1": "اعثر على",
+    "headlineHighlight1": "جواهر",
+    "headlineHighlight2": "مخفية",
+    "description": "تجنب فخاخ السياح واكتشف تجارب مختارة يحبها السكان المحليون.",
+    "next": "التالي",
+    "guideHeadlineLine1": "دليلك",
+    "guideHeadlineHighlight": "للسفر بالذكاء",
+    "guideDescription": "اسأل بلغتك. من أسواق مخفية إلى أسرار محلية، دليلك متاح دائماً.",
+    "navigateLine1": "تنقّل",
+    "navigateLine2": "في المغرب مثل",
+    "navigateLine3": "أحد السكان",
+    "navigateDescription": "اعثر على أماكن أصيلة بسهولة وثقة.",
+    "getStarted": "ابدأ الآن"
+  },
+  "merchantNav": {
+    "dashboard": "لوحة التحكم",
+    "profile": "الملف",
+    "aiTools": "أدوات الذكاء",
+    "reviews": "المراجعات",
+    "stats": "الإحصاءات",
+    "progress": "التقدم",
+    "identity": "الهوية",
+    "atmosphere": "الصور",
+    "submit": "إرسال"
+  },
+  "merchantDashboard": {
+    "goodMorning": "صباح الخير،",
+    "attentionToday": "متجرك يحظى باهتمام كبير اليوم.",
+    "approvedLive": "مُعتمد ومتاح",
+    "quickActions": "إجراءات سريعة",
+    "photoManager": "إدارة الصور",
+    "generateAiDescription": "إنشاء وصف بالذكاء",
+    "viewReviews": "عرض المراجعات",
+    "recentReviews": "أحدث المراجعات",
+    "viewAll": "عرض الكل",
+    "reply": "رد",
+    "stats": {
+      "viewsThisWeek": "مشاهدات هذا الأسبوع",
+      "profileClicks": "نقرات الملف",
+      "totalSaves": "إجمالي الحفظ",
+      "savedByTourists": "محفوظ من السياح"
+    }
+  },
+  "merchantSetup": {
+    "step": "الخطوة {current} من {total}",
+    "progress": "{percent}% مكتمل",
+    "headerLine1": "الرياض الرقمي",
+    "headerLine2": "تاجر",
+    "titleLine1": "أخبرنا عن",
+    "titleLine2": "نشاطك",
+    "description": "ساعدنا على إنشاء ملف يعكس جوهر متجرك لزوار كأس العالم 2030.",
+    "businessNameLabel": "اسم النشاط",
+    "businessNamePlaceholder": "مثال: Cafe de la Poste",
+    "categoryLabel": "الفئة",
+    "categories": {
+      "traditionalPottery": "ورشة فخار تقليدي",
+      "luxuryAccommodation": "إقامة فاخرة",
+      "restaurant": "مطعم",
+      "handmadeSoukShop": "متجر حرفي في السوق"
+    },
+    "next": "التالي",
+    "saveForLater": "حفظ لوقت لاحق",
+    "photosTitleLine1": "أضف أفضل",
+    "photosTitleLine2": "صورك",
+    "photosDescription": "ارفع حتى 10 صور عالية الجودة لمتجرك ومنتجاتك.",
+    "photosUploadCta": "انقر أو اسحب الصور للرفع",
+    "photosSupport": "يدعم JPG وPNG (بحد أقصى 10MB لكل ملف)",
+    "uploadAlt": "صورة {index}",
+    "addMore": "إضافة المزيد",
+    "back": "رجوع",
+    "continue": "متابعة",
+    "finalStep": "الخطوة الأخيرة",
+    "ready": "جاهز 100%",
+    "contactTitleLine1": "ساعات العمل",
+    "contactTitleLine2": "والتواصل",
+    "contactDescription": "أخبر السياح بموعد الزيارة وكيف يمكنهم التواصل معك. معلومات تواصل واضحة تبني الثقة لدى المسافرين الدوليين.",
+    "weeklySchedule": "الجدول الأسبوعي",
+    "days": {
+      "monday": "الاثنين",
+      "tuesday": "الثلاثاء",
+      "wednesday": "الأربعاء",
+      "thursday": "الخميس",
+      "friday": "الجمعة",
+      "saturday": "السبت",
+      "sunday": "الأحد"
+    },
+    "to": "إلى",
+    "contactChannels": "قنوات التواصل",
+    "previousStep": "الخطوة السابقة",
+    "finish": "إنهاء"
+  },
+  "merchantAi": {
+    "title": "إنشاء بواسطة الذكاء",
+    "subtitle": "اصنع القصة المثالية لمتجرك خلال ثوانٍ بلمسة محلية.",
+    "businessTypeLabel": "نوع النشاط",
+    "defaultBusinessType": "ورشة فخار تقليدي",
+    "highlightsLabel": "أبرز المزايا",
+    "addTag": "+ إضافة وسم",
+    "highlightN": "ميزة {n}",
+    "uniqueSellingPointsLabel": "نقاط التميز",
+    "uniqueSellingPointsPlaceholder": "ما الذي يجعل متجرك مميزاً؟ مثال: مشروع عائلي منذ 1950، في قلب المدينة العتيقة",
+    "promptSuffix": "ورشتنا تقرّب المسافرين من الحرف المغربية عبر عروض حية خاصة، وسرد قصصي أنيق، وقطع كوبالت مميزة لذكريات لا تُنسى.",
+    "generateDescription": "إنشاء وصف",
+    "aiSuggestions": "اقتراحات الذكاء",
+    "charactersCount": "{count} حرف",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "regenerate": "إعادة توليد",
+    "saveToProfile": "حفظ في الملف",
+    "savedConfirmation": "تم حفظ وصف الذكاء الاصطناعي في ملفك."
+  },
+  "poterie": {
+    "heroAlt": "فن الفخار",
+    "badges": {
+      "artisanWorkshop": "ورشة حرفية",
+      "localFavorite": "مفضل محلي"
+    },
+    "reviewsCount": "{count} مراجعة",
+    "distanceAway": "يبعد {distance}",
+    "actions": {
+      "call": "اتصال",
+      "directions": "الاتجاهات"
+    },
+    "generatedLine1": "مولّد",
+    "generatedLine2": "بالذكاء",
+    "openingHours": "ساعات العمل",
+    "hours": {
+      "mondaySaturday": "الاثنين - السبت",
+      "sunday": "الأحد",
+      "closed": "مغلق"
+    },
+    "experienceTitle": "تجربة الحرفة",
+    "galleryAlt": "معرض {index}",
+    "storiesTitle": "قصص السياح",
+    "seeAll": "عرض الكل",
+    "getDirections": "احصل على الاتجاهات"
   }
 }

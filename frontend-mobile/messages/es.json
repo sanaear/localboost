@@ -2,7 +2,15 @@
   "welcome": "Bienvenido a LocalBoost",
   "description": "Tu directorio de negocios locales",
   "common": {
-    "brand": "LocalBoost"
+    "brand": "LocalBoost",
+    "loading": "Cargando",
+    "errorTitle": "Ocurrió un error",
+    "retry": "Reintentar",
+    "resetFilters": "Restablecer filtros",
+    "errorDescription": "Comprueba tu conexión e inténtalo de nuevo.",
+    "openNow": "Abierto",
+    "closesAt": "Cierra a las {time}",
+    "explore": "Explorar"
   },
   "nav": {
     "explore": "Explorar",
@@ -18,6 +26,7 @@
     "loadMore": "Cargar más",
     "noResults": "Sin resultados",
     "error": "Ocurrió un error",
+    "noResultsDescription": "Prueba a ampliar los filtros o cambiar la búsqueda.",
     "filters": {
       "category": "Categoría",
       "city": "Ciudad",
@@ -50,5 +59,267 @@
       "label": "Radio",
       "clear": "Limpiar"
     }
+  },
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "selectPerspective": "Selecciona tu perspectiva",
+    "perspectives": {
+      "tourist": "Turista",
+      "shopOwner": "Comerciante",
+      "admin": "Admin"
+    },
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste la contraseña?",
+    "resetSent": "Se enviaron las instrucciones de restablecimiento a tu correo.",
+    "signIn": "Iniciar sesión",
+    "or": "O",
+    "continueWithGoogle": "Continuar con Google",
+    "newTo": "¿Nuevo en LocalBoost?",
+    "createAccount": "Crear cuenta",
+    "createYourAccount": "Crea tu cuenta",
+    "selectRole": "Selecciona tu rol",
+    "fullName": "Nombre completo",
+    "agreePrefix": "Acepto los",
+    "terms": "Términos y condiciones",
+    "and": "y la",
+    "privacy": "Política de privacidad",
+    "of": "de LocalBoost.",
+    "createAccountCta": "Crear cuenta",
+    "acceptTermsWarning": "Acepta los términos para continuar.",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "signInLink": "Iniciar sesión"
+  },
+  "home": {
+    "searchCta": "Encuentra una joya oculta",
+    "filters": {
+      "all": "Todo",
+      "restaurants": "Restaurantes",
+      "cafes": "Cafés"
+    },
+    "feed": {
+      "darHatimMeta": "A 5 min a pie del Grand Stade de Casablanca"
+    },
+    "nearYou": "Cerca de ti",
+    "nearYouSubtitle": "Hallazgos auténticos a poca distancia",
+    "viewAll": "Ver todo"
+  },
+  "saved": {
+    "title": "Tu colección",
+    "subtitle": "Lugares guardados",
+    "countLabel": "elementos",
+    "viewDetails": "Ver detalles",
+    "emptyTitle": "Aún no tienes favoritos",
+    "emptyDescription": "Guarda un lugar desde Explorar o desde la ficha del comercio.",
+    "errorTitle": "No se pudieron cargar tus favoritos"
+  },
+  "businessDetail": {
+    "reviews": "Reseñas",
+    "reviewsCount": "{count} reseñas",
+    "noReviews": "Aún no hay reseñas",
+    "anonymous": "Anónimo",
+    "invalidId": "ID de comercio no válido",
+    "imageAltFallback": "Comercio",
+    "errorBusiness": "No se pudo cargar este comercio",
+    "errorReviews": "No se pudieron cargar las reseñas",
+    "errorReviewsDescription": "Inténtalo de nuevo en un momento.",
+    "shareCopy": "Copiar enlace",
+    "shareWhatsapp": "WhatsApp",
+    "shareOpenUrl": "Abrir URL",
+    "shareCopied": "Enlace copiado",
+    "shareCopyFailed": "No se pudo copiar el enlace",
+    "shareOpened": "Enlace abierto",
+    "shareOpenFailed": "No se pudo abrir el enlace",
+    "shareWhatsappOpened": "WhatsApp abierto",
+    "shareWhatsappFailed": "No se pudo compartir en WhatsApp"
+  },
+  "aiChat": {
+    "title": "LocalBoost IA",
+    "modeTourist": "Modo turista",
+    "askPlaceholder": "Pregunta sobre Fez, el Mundial o comida…",
+    "yesBuildItinerary": "Sí, crear itinerario",
+    "showOnMap": "Ver en el mapa",
+    "quickExplore": "Explorar rápido",
+    "sampleUserMessage": "Busco un restaurante tradicional en Fez con buenas opciones vegetarianas, presupuesto menor de 150 MAD",
+    "guideTitle": "Guía LocalBoost",
+    "sampleAssistantMessage": "Fez es un paraíso para la cocina marroquí vegetal. Seleccioné tres lugares muy bien valorados cerca de los zocos con opciones vegetarianas.",
+    "questionItinerary": "¿Quieres que prepare un itinerario completo para la noche?",
+    "itineraryReady": "Tu itinerario está listo: té de menta al atardecer, cena cerca del zoco y luego un paseo corto hasta postres en la azotea antes de las 21:00.",
+    "messageSent": "Mensaje enviado. LocalBoost IA está preparando más ideas.",
+    "recommendations": {
+      "cafe-clock": {
+        "badge": "Vegetariano",
+        "walk": "a 450 m"
+      },
+      "the-ruined": {
+        "badge": "Vista rooftop",
+        "walk": "1,2 km"
+      }
+    }
+  },
+  "profile": {
+    "fanPassportStatus": "Estado del pasaporte fan",
+    "verifiedFanId": "Fan ID verificado",
+    "languageSelection": "Selección de idioma",
+    "preferences": "Preferencias",
+    "pushNotifications": "Notificaciones",
+    "pushDescription": "Alertas de partidos y ofertas locales",
+    "appearance": "Apariencia",
+    "appearanceLight": "Actualmente en modo claro",
+    "about": "Acerca de LocalBoost",
+    "rate": "Valorar la app",
+    "profileAlt": "Perfil",
+    "profilePhotoUpdated": "Foto de perfil actualizada."
+  },
+  "about": {
+    "title": "Acerca de",
+    "body1": "LocalBoost ayuda a los visitantes a descubrir lugares auténticos, tiendas locales y experiencias en las ciudades anfitrionas de Marruecos.",
+    "body2": "Creado para turistas, comerciantes y recorridos de descubrimiento del Mundial 2030."
+  },
+  "rate": {
+    "title": "Valorar la app",
+    "question": "¿Qué te parece LocalBoost?",
+    "submit": "Enviar valoración",
+    "thanks": "Gracias por tu opinión."
+  },
+  "onboarding": {
+    "skip": "Saltar",
+    "topRated": "Mejor valorado",
+    "headlineLine1": "Encuentra",
+    "headlineHighlight1": "joyas",
+    "headlineHighlight2": "ocultas",
+    "description": "Evita las trampas turísticas y descubre experiencias seleccionadas y queridas por los locales.",
+    "next": "Siguiente",
+    "guideHeadlineLine1": "Tu IA",
+    "guideHeadlineHighlight": "Guía de viaje",
+    "guideDescription": "Pregunta en tu idioma. Desde zocos escondidos hasta secretos locales, tu guía siempre está despierta.",
+    "navigateLine1": "Navega",
+    "navigateLine2": "Marruecos como",
+    "navigateLine3": "un local",
+    "navigateDescription": "Encuentra lugares auténticos con facilidad y confianza.",
+    "getStarted": "Empezar"
+  },
+  "merchantNav": {
+    "dashboard": "Panel",
+    "profile": "Perfil",
+    "aiTools": "Herramientas IA",
+    "reviews": "Reseñas",
+    "stats": "Estadísticas",
+    "progress": "Progreso",
+    "identity": "Identidad",
+    "atmosphere": "Ambiente",
+    "submit": "Enviar"
+  },
+  "merchantDashboard": {
+    "goodMorning": "Buenos días,",
+    "attentionToday": "Tu tienda está recibiendo mucha atención hoy.",
+    "approvedLive": "Aprobado y activo",
+    "quickActions": "Acciones rápidas",
+    "photoManager": "Gestor de fotos",
+    "generateAiDescription": "Generar descripción con IA",
+    "viewReviews": "Ver reseñas",
+    "recentReviews": "Reseñas recientes",
+    "viewAll": "Ver todo",
+    "reply": "Responder",
+    "stats": {
+      "viewsThisWeek": "Vistas esta semana",
+      "profileClicks": "Clics en el perfil",
+      "totalSaves": "Guardados totales",
+      "savedByTourists": "Guardado por turistas"
+    }
+  },
+  "merchantSetup": {
+    "step": "Paso {current} de {total}",
+    "progress": "{percent}% completado",
+    "headerLine1": "Riad digital",
+    "headerLine2": "Comerciante",
+    "titleLine1": "Cuéntanos",
+    "titleLine2": "sobre tu negocio",
+    "description": "Ayúdanos a crear un perfil que capture la esencia de tu tienda para los visitantes del Mundial 2030.",
+    "businessNameLabel": "Nombre del negocio",
+    "businessNamePlaceholder": "p. ej. Café de la Poste",
+    "categoryLabel": "Categoría",
+    "categories": {
+      "traditionalPottery": "Taller de cerámica tradicional",
+      "luxuryAccommodation": "Alojamiento de lujo",
+      "restaurant": "Restaurante",
+      "handmadeSoukShop": "Tienda artesanal del zoco"
+    },
+    "next": "Siguiente",
+    "saveForLater": "Guardar para después",
+    "photosTitleLine1": "Añade tus mejores",
+    "photosTitleLine2": "fotos",
+    "photosDescription": "Sube hasta 10 fotos de alta calidad de tu tienda y productos.",
+    "photosUploadCta": "Haz clic o arrastra fotos para subirlas",
+    "photosSupport": "JPG, PNG (máx. 10 MB por archivo)",
+    "uploadAlt": "Foto {index}",
+    "addMore": "Añadir",
+    "back": "Atrás",
+    "continue": "Continuar",
+    "finalStep": "Paso final",
+    "ready": "100% listo",
+    "contactTitleLine1": "Horario",
+    "contactTitleLine2": "y contacto",
+    "contactDescription": "Informa a los turistas cuándo visitarte y cómo contactarte. Un contacto claro genera confianza en viajeros internacionales.",
+    "weeklySchedule": "Horario semanal",
+    "days": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    },
+    "to": "a",
+    "contactChannels": "Canales de contacto",
+    "previousStep": "Paso anterior",
+    "finish": "Finalizar"
+  },
+  "merchantAi": {
+    "title": "Generar con IA",
+    "subtitle": "Crea la historia perfecta para tu tienda en segundos con un toque local.",
+    "businessTypeLabel": "Tipo de negocio",
+    "defaultBusinessType": "Taller de cerámica tradicional",
+    "highlightsLabel": "Destacados",
+    "addTag": "+ Añadir etiqueta",
+    "highlightN": "Destacado {n}",
+    "uniqueSellingPointsLabel": "Puntos diferenciales",
+    "uniqueSellingPointsPlaceholder": "¿Qué hace especial tu tienda? p. ej. Familiar desde 1950, en el corazón de la medina",
+    "promptSuffix": "Nuestro taller acerca a los viajeros a la artesanía marroquí con demostraciones íntimas, relatos cuidados y piezas de cobalto emblemáticas ideales para recuerdos con significado.",
+    "generateDescription": "Generar descripción",
+    "aiSuggestions": "Sugerencias IA",
+    "charactersCount": "{count} caracteres",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "regenerate": "Regenerar",
+    "saveToProfile": "Guardar en el perfil",
+    "savedConfirmation": "Descripción IA guardada en tu perfil."
+  },
+  "poterie": {
+    "heroAlt": "L'Art de la Poterie",
+    "badges": {
+      "artisanWorkshop": "Taller artesanal",
+      "localFavorite": "Favorito local"
+    },
+    "reviewsCount": "{count} reseñas",
+    "distanceAway": "a {distance}",
+    "actions": {
+      "call": "Llamar",
+      "directions": "Indicaciones"
+    },
+    "generatedLine1": "Generado",
+    "generatedLine2": "por IA",
+    "openingHours": "Horario",
+    "hours": {
+      "mondaySaturday": "Lunes - Sábado",
+      "sunday": "Domingo",
+      "closed": "Cerrado"
+    },
+    "experienceTitle": "Vive el oficio",
+    "galleryAlt": "Galería {index}",
+    "storiesTitle": "Historias de turistas",
+    "seeAll": "Ver todo",
+    "getDirections": "Obtener indicaciones"
   }
 }

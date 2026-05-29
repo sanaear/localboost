@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessAverageRating, useBusinessDetail, useBusinessReviews } from "@/lib/queries";
@@ -12,6 +13,8 @@ export default function BusinessDetailPage({
 }: {
   params: { locale: string; id: string };
 }) {
+  const t = useTranslations("businessDetail");
+  const tCommon = useTranslations("common");
   const businessId = Number(params.id);
   const favorites = useFavorites();
   const [shareOpen, setShareOpen] = useState(false);
@@ -66,10 +69,10 @@ export default function BusinessDetailPage({
     setShareBusy(true);
     try {
       await copyText(getShareUrl());
-      showShareMessage("Link copied");
+      showShareMessage(t("shareCopied"));
       setShareOpen(false);
     } catch {
-      showShareMessage("Unable to copy link");
+      showShareMessage(t("shareCopyFailed"));
     } finally {
       setShareBusy(false);
     }
@@ -78,10 +81,10 @@ export default function BusinessDetailPage({
   function handleOpenLink() {
     try {
       window.open(getShareUrl(), "_blank", "noopener,noreferrer");
-      showShareMessage("Opened link");
+      showShareMessage(t("shareOpened"));
       setShareOpen(false);
     } catch {
-      showShareMessage("Unable to open link");
+      showShareMessage(t("shareOpenFailed"));
     }
   }
 
@@ -91,10 +94,10 @@ export default function BusinessDetailPage({
       const title = businessQuery.data?.name ? `${businessQuery.data.name} - ` : "";
       const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${title}${url}`)}`;
       window.open(whatsapp, "_blank", "noopener,noreferrer");
-      showShareMessage("WhatsApp opened");
+      showShareMessage(t("shareWhatsappOpened"));
       setShareOpen(false);
     } catch {
-      showShareMessage("Unable to share to WhatsApp");
+      showShareMessage(t("shareWhatsappFailed"));
     }
   }
 
@@ -103,7 +106,7 @@ export default function BusinessDetailPage({
       <main className="mobile-app-shell">
         <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
           <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col p-6 text-[14px] font-bold text-[#7f7669]">
-            Invalid business id
+            {t("invalidId")}
           </div>
         </section>
       </main>
@@ -118,7 +121,7 @@ export default function BusinessDetailPage({
             {primaryImage ? (
               <OptimizedImage
                 src={primaryImage}
-                alt={businessQuery.data?.name ?? "Business"}
+                alt={businessQuery.data?.name ?? t("imageAltFallback")}
                 width={1200}
                 height={900}
                 sizes="100vw"
@@ -167,7 +170,7 @@ export default function BusinessDetailPage({
                   className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[18px]">content_copy</span>
-                  Copy link
+                  {t("shareCopy")}
                 </button>
                 <div className="h-px bg-[#ece2d3]" />
                 <button
@@ -177,7 +180,7 @@ export default function BusinessDetailPage({
                   className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[18px]">chat</span>
-                  WhatsApp
+                  {t("shareWhatsapp")}
                 </button>
                 <div className="h-px bg-[#ece2d3]" />
                 <button
@@ -187,7 +190,7 @@ export default function BusinessDetailPage({
                   className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
                 >
                   <span className="material-symbols-outlined text-[18px]">link</span>
-                  Open URL
+                  {t("shareOpenUrl")}
                 </button>
               </div>
             ) : null}
@@ -223,7 +226,11 @@ export default function BusinessDetailPage({
                 </div>
               </div>
             ) : businessQuery.isError || !businessQuery.data ? (
-              <ErrorState title="Impossible de charger la fiche commerce" onRetry={() => businessQuery.refetch()} />
+              <ErrorState
+                title={t("errorBusiness")}
+                description={tCommon("errorDescription")}
+                onRetry={() => businessQuery.refetch()}
+              />
             ) : (
               <>
                 <h1 className="text-[2.15rem] font-extrabold leading-[0.95] tracking-[-0.07em] text-[#23212c]">
@@ -238,7 +245,7 @@ export default function BusinessDetailPage({
                     <span className="flex items-center gap-1 font-extrabold text-[#a36e00]">
                       <span className="material-symbols-outlined text-[16px]">star</span>
                       {ratingQuery.data.average.toFixed(1)}{" "}
-                      <span className="font-semibold text-[#8d8476]">({ratingQuery.data.count} reviews)</span>
+                      <span className="font-semibold text-[#8d8476]">({t("reviewsCount", { count: ratingQuery.data.count })})</span>
                     </span>
                   ) : null}
                   {businessQuery.data.category?.name_en ? (
@@ -256,7 +263,7 @@ export default function BusinessDetailPage({
 
                 <div className="mt-7">
                   <h2 className="text-[1.45rem] font-extrabold tracking-[-0.05em] text-[#23212c]">
-                    Reviews
+                    {t("reviews")}
                   </h2>
 
                   {reviewsQuery.isLoading ? (
@@ -274,14 +281,15 @@ export default function BusinessDetailPage({
                   ) : reviewsQuery.isError ? (
                     <div className="mt-3">
                       <ErrorState
-                        title="Impossible de charger les avis"
-                        description="Réessayez dans un instant."
+                        title={t("errorReviews")}
+                        description={t("errorReviewsDescription")}
                         onRetry={() => reviewsQuery.refetch()}
+                        retryLabel={tCommon("retry")}
                       />
                     </div>
                   ) : (reviewsQuery.data ?? []).length === 0 ? (
                     <div className="mt-3 rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 text-[13px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
-                      No reviews yet
+                      {t("noReviews")}
                     </div>
                   ) : (
                     <div className="mt-3 space-y-3">
@@ -289,7 +297,7 @@ export default function BusinessDetailPage({
                         <div key={review.id} className="rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="text-[13px] font-extrabold text-[#2a2730]">
-                              {[review.user?.first_name, review.user?.last_name].filter(Boolean).join(" ") || "Anonymous"}
+                              {[review.user?.first_name, review.user?.last_name].filter(Boolean).join(" ") || t("anonymous")}
                             </span>
                             <span className="flex items-center gap-1 text-[12px] font-extrabold text-[#a36e00]">
                               <span className="material-symbols-outlined text-[14px]">star</span>

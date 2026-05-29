@@ -2,34 +2,35 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const items = [
   {
-    label: "Dashboard",
+    labelKey: "dashboard",
     icon: "dashboard",
     href: "/merchant/dashboard",
     matchPrefixes: ["/merchant/dashboard"],
   },
   {
-    label: "Profile",
+    labelKey: "profile",
     icon: "person",
     href: "/merchant/photo-manager",
     matchPrefixes: ["/merchant/photo-manager", "/merchant/edit-profile"],
   },
   {
-    label: "AI Tools",
+    labelKey: "aiTools",
     icon: "auto_awesome",
     href: "/merchant/generate-ai",
     matchPrefixes: ["/merchant/generate-ai"],
   },
   {
-    label: "Reviews",
+    labelKey: "reviews",
     icon: "rate_review",
     href: "/merchant/reviews",
     matchPrefixes: ["/merchant/reviews", "/merchant/updates"],
   },
   {
-    label: "Stats",
+    labelKey: "stats",
     icon: "bar_chart",
     href: "/merchant/stats",
     matchPrefixes: ["/merchant/stats"],
@@ -41,6 +42,7 @@ export default function MerchantAppBottomNav({
 }: {
   locale: string;
 }) {
+  const t = useTranslations("merchantNav");
   const pathname = usePathname();
 
   return (
@@ -53,7 +55,7 @@ export default function MerchantAppBottomNav({
 
           return (
             <Link
-              key={item.label}
+              key={item.labelKey}
               href={`/${locale}${item.href}`}
               className={`flex flex-col items-center gap-1 rounded-[18px] px-1 py-2 text-center transition ${
                 active ? "bg-[#f5efe3]" : "hover:bg-[#faf7f1]"
@@ -71,7 +73,7 @@ export default function MerchantAppBottomNav({
                   active ? "text-[#b27a00]" : "text-[#c8b28c]"
                 }`}
               >
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </Link>
           );

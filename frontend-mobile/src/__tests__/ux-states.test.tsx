@@ -1,6 +1,8 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
+import enMessages from "../../messages/en.json";
 import DiscoverPage from "@/app/[locale]/discover/page";
 import SavedPage from "@/app/[locale]/saved/page";
 import BusinessDetailPage from "@/app/[locale]/businesses/[id]/page";
@@ -15,6 +17,14 @@ vi.mock("@/lib/queries", () => ({
   useBusinessReviews: vi.fn(),
 }));
 
+function renderWithIntl(ui: React.ReactElement, locale = "en") {
+  return render(
+    <NextIntlClientProvider locale={locale} messages={enMessages as any}>
+      {ui}
+    </NextIntlClientProvider>,
+  );
+}
+
 describe("LB-73 UX states", () => {
   it("shows skeletons on Discover when loading", () => {
     (queries as any).useCategories.mockReturnValue({ data: [], isLoading: false, isError: false });
@@ -26,7 +36,7 @@ describe("LB-73 UX states", () => {
       refetch: vi.fn(),
     });
 
-    render(<DiscoverPage params={{ locale: "en" }} />);
+    renderWithIntl(<DiscoverPage params={{ locale: "en" }} />);
     expect(screen.getAllByTestId("skeleton").length).toBeGreaterThan(0);
   });
 
@@ -41,8 +51,8 @@ describe("LB-73 UX states", () => {
       refetch,
     });
 
-    render(<DiscoverPage params={{ locale: "en" }} />);
-    fireEvent.click(screen.getByRole("button", { name: "Réessayer" }));
+    renderWithIntl(<DiscoverPage params={{ locale: "en" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(refetch).toHaveBeenCalled();
   });
 
@@ -57,9 +67,10 @@ describe("LB-73 UX states", () => {
       refetch: vi.fn(),
     });
 
-    render(<SavedPage params={{ locale: "en" }} />);
-    expect(screen.getByText("Aucun favori pour le moment")).toBeInTheDocument();
-    expect(screen.getByText("Explorer")).toBeInTheDocument();
+    renderWithIntl(<SavedPage params={{ locale: "en" }} />);
+    expect(screen.getByText("No favorites yet")).toBeInTheDocument();
+    const exploreLinks = screen.getAllByRole("link", { name: "Explore" });
+    expect(exploreLinks.some((link) => link.getAttribute("href") === "/en/discover")).toBe(true);
   });
 
   it("offers retry on Business detail error and calls refetch", () => {
@@ -73,9 +84,8 @@ describe("LB-73 UX states", () => {
     (queries as any).useBusinessAverageRating.mockReturnValue({ data: null, isLoading: false, isError: false, refetch: vi.fn() });
     (queries as any).useBusinessReviews.mockReturnValue({ data: [], isLoading: false, isError: false, refetch: vi.fn() });
 
-    render(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
-    fireEvent.click(screen.getByRole("button", { name: "Réessayer" }));
+    renderWithIntl(<BusinessDetailPage params={{ locale: "en", id: "1" }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(refetch).toHaveBeenCalled();
   });
 });
-

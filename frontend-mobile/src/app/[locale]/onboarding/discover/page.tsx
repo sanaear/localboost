@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function DiscoverPage({
   params,
 }: {
   params: { locale: string };
 }) {
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
@@ -14,10 +17,10 @@ export default function DiscoverPage({
           <div className="flex items-center justify-between text-sm font-extrabold uppercase tracking-[0.12em] text-[#b27a00] mobile-fade-up">
             <div className="flex items-center gap-2">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#e8a823] text-white">+</span>
-              <span className="text-base normal-case tracking-normal">LocalBoost</span>
+              <span className="text-base normal-case tracking-normal">{tCommon("brand")}</span>
             </div>
             <Link href={`/${params.locale}/home`} className="text-[#9b9488]">
-              Skip
+              {t("skip")}
             </Link>
           </div>
 
@@ -30,7 +33,7 @@ export default function DiscoverPage({
                   </span>
                   <div>
                     <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#ccad76]">
-                      Top Rated
+                      {t("topRated")}
                     </p>
                     <p className="text-xl font-extrabold leading-tight text-[#4b4238]">Le Jardin Secret</p>
                   </div>
@@ -41,12 +44,12 @@ export default function DiscoverPage({
 
           <div className="mt-9 text-center mobile-fade-up" style={{ animationDelay: "220ms" }}>
             <h1 className="text-[2.6rem] font-extrabold leading-[0.92] tracking-[-0.07em] text-[#2e2a33]">
-              Find <span className="text-[#e2a11b]">Hidden</span>
+              {t("headlineLine1")} <span className="text-[#e2a11b]">{t("headlineHighlight1")}</span>
               <br />
-              <span className="text-[#e2a11b]">Gems</span>
+              <span className="text-[#e2a11b]">{t("headlineHighlight2")}</span>
             </h1>
             <p className="mx-auto mt-5 max-w-[290px] text-[17px] leading-7 text-[#8c836f]">
-              Avoid tourist traps and uncover handpicked experiences loved by locals.
+              {t("description")}
             </p>
           </div>
 
@@ -55,7 +58,7 @@ export default function DiscoverPage({
             className="mobile-pill mobile-button-gold mobile-fade-up mt-auto h-14 w-full text-base font-extrabold"
             style={{ animationDelay: "320ms" }}
           >
-            Next
+            {t("next")}
             <span className="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
           </Link>
 

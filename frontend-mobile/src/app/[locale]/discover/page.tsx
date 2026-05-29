@@ -23,8 +23,8 @@ export default function DiscoverPage({
 }: {
   params: { locale: string };
 }) {
-  const tCommon = useTranslations("common");
   const t = useTranslations("discover");
+  const tCommon = useTranslations("common");
   const [q, setQ] = useState("");
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [city, setCity] = useState("");
@@ -208,7 +208,7 @@ export default function DiscoverPage({
               <div className="mt-6">
                 <EmptyState
                   title={t("noResults")}
-                  description="Essayez d’élargir vos filtres ou de modifier votre recherche."
+                  description={t("noResultsDescription")}
                   action={
                     <button
                       type="button"
@@ -222,7 +222,7 @@ export default function DiscoverPage({
                       }}
                       className="mobile-pill h-11 w-full bg-[#efede8] text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#6f675b]"
                     >
-                      Réinitialiser les filtres
+                      {tCommon("resetFilters")}
                     </button>
                   }
                 />

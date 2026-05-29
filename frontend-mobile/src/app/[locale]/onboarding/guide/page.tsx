@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 export default function GuidePage({
   params,
 }: {
   params: { locale: string };
 }) {
+  const t = useTranslations("onboarding");
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col px-4 py-5">
           <div className="flex items-center justify-end text-sm font-extrabold uppercase tracking-[0.12em] text-[#9b9488] mobile-fade-up">
-            <Link href={`/${params.locale}/home`}>Skip</Link>
+            <Link href={`/${params.locale}/home`}>{t("skip")}</Link>
           </div>
 
           <div
@@ -42,14 +44,14 @@ export default function GuidePage({
 
           <div className="mt-16 text-center mobile-fade-up" style={{ animationDelay: "200ms" }}>
             <h1 className="text-[2.8rem] font-extrabold leading-[0.96] tracking-[-0.07em] text-[#2e2a33]">
-              Your AI
+              {t("guideHeadlineLine1")}
               <br />
               <span className="text-[#a36e00] underline decoration-[#e2a11b] decoration-[5px] underline-offset-[9px]">
-                Travel Guide
+                {t("guideHeadlineHighlight")}
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-[300px] text-[17px] leading-8 text-[#7f7668]">
-              Ask anything in your language. From hidden souks to local secrets, your guide is always awake.
+              {t("guideDescription")}
             </p>
           </div>
 
@@ -64,7 +66,7 @@ export default function GuidePage({
               href={`/${params.locale}/onboarding/navigate`}
               className="mobile-pill mobile-button-gold h-14 flex-1 text-base font-extrabold"
             >
-              Next
+              {t("next")}
               <span className="material-symbols-outlined ml-2 text-[20px]">arrow_forward</span>
             </Link>
           </div>

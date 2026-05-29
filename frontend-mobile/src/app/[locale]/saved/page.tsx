@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
 import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
@@ -14,6 +15,8 @@ export default function SavedPage({
 }: {
   params: { locale: string };
 }) {
+  const t = useTranslations("saved");
+  const tCommon = useTranslations("common");
   const favorites = useFavorites();
   const filters: SearchFilters = useMemo(() => ({}), []);
   const businessesQuery = useBusinessesSearch(filters);
@@ -42,16 +45,14 @@ export default function SavedPage({
 
             <div className="mobile-fade-up mt-6 flex items-start justify-between" style={{ animationDelay: "90ms" }}>
               <div>
-                <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#c4b8a3]">Your collection</p>
+                <p className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#c4b8a3]">{t("title")}</p>
                 <h2 className="mt-1 text-[2.8rem] font-extrabold leading-[0.92] tracking-[-0.08em] text-[#23212d]">
-                  Saved
-                  <br />
-                  Places
+                  {t("subtitle")}
                 </h2>
               </div>
               <div className="rounded-[22px] bg-[#f4efe5] px-4 py-3 text-center">
                 <div className="text-[1.5rem] font-extrabold text-[#8d6513]">{favoriteBusinesses.length}</div>
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#9a8f7f]">items</div>
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#9a8f7f]">{t("countLabel")}</div>
               </div>
             </div>
           </div>
@@ -80,19 +81,23 @@ export default function SavedPage({
               </div>
             ) : businessesQuery.isError ? (
               <div className="mt-3">
-                <ErrorState title="Impossible de charger vos favoris" onRetry={() => businessesQuery.refetch()} />
+                <ErrorState
+                  title={t("errorTitle")}
+                  description={tCommon("errorDescription")}
+                  onRetry={() => businessesQuery.refetch()}
+                />
               </div>
             ) : favoriteBusinesses.length === 0 ? (
               <div className="mt-3">
                 <EmptyState
-                  title="Aucun favori pour le moment"
-                  description="Enregistrez un commerce depuis Discover ou la fiche commerce."
+                  title={t("emptyTitle")}
+                  description={t("emptyDescription")}
                   action={
                     <Link
                       href={`/${params.locale}/discover`}
                       className="mobile-pill mobile-button-gold h-11 w-full text-[12px] font-extrabold uppercase tracking-[0.14em]"
                     >
-                      Explorer
+                      {tCommon("explore")}
                     </Link>
                   }
                 />
@@ -144,7 +149,7 @@ export default function SavedPage({
                       </div>
                       <div className="mt-4">
                         <span className="mobile-pill h-11 w-full bg-[#f2f0eb] text-[13px] font-bold text-[#6f675b]">
-                          View Details
+                          {t("viewDetails")}
                         </span>
                       </div>
                     </div>

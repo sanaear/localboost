@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-const perspectives = ["Tourist", "Shop Owner", "Admin"] as const;
+const perspectives = ["tourist", "shopOwner", "admin"] as const;
 
 function getDestination(locale: string, perspective: (typeof perspectives)[number]) {
-  if (perspective === "Shop Owner") {
+  if (perspective === "shopOwner") {
     return `/${locale}/merchant/dashboard`;
   }
 
@@ -18,7 +19,9 @@ export default function SignInPage({
 }: {
   params: { locale: string };
 }) {
-  const [selectedPerspective, setSelectedPerspective] = useState<(typeof perspectives)[number]>("Tourist");
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const [selectedPerspective, setSelectedPerspective] = useState<(typeof perspectives)[number]>("tourist");
   const [email, setEmail] = useState("jamal@maghrib.com");
   const [password, setPassword] = useState("••••••••");
   const [resetSent, setResetSent] = useState(false);
@@ -34,13 +37,13 @@ export default function SignInPage({
             </div>
 
             <div className="mt-5 text-center mobile-fade-up" style={{ animationDelay: "80ms" }}>
-              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">LocalBoost</h1>
-              <p className="mt-2 text-sm font-medium text-[#8f8577]">Welcome Back</p>
+              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">{tCommon("brand")}</h1>
+              <p className="mt-2 text-sm font-medium text-[#8f8577]">{t("welcomeBack")}</p>
             </div>
 
             <div className="mt-8 w-full mobile-fade-up" style={{ animationDelay: "140ms" }}>
               <p className="text-center text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a907d]">
-                Select your perspective
+                {t("selectPerspective")}
               </p>
               <div className="mt-4 flex rounded-full bg-[#f0ede6] p-1.5">
                 {perspectives.map((perspective) => (
@@ -54,7 +57,7 @@ export default function SignInPage({
                         : "text-[#66605a]"
                     }`}
                   >
-                    {perspective}
+                    {t(`perspectives.${perspective}`)}
                   </button>
                 ))}
               </div>
@@ -62,7 +65,7 @@ export default function SignInPage({
 
             <form className="mt-8 w-full space-y-5 mobile-fade-up" style={{ animationDelay: "220ms" }}>
               <div>
-                <label className="mobile-label">Email Address</label>
+                <label className="mobile-label">{t("email")}</label>
                 <input
                   className="mobile-input"
                   value={email}
@@ -70,7 +73,7 @@ export default function SignInPage({
                 />
               </div>
               <div>
-                <label className="mobile-label">Password</label>
+                <label className="mobile-label">{t("password")}</label>
                 <input
                   className="mobile-input"
                   type="password"
@@ -86,11 +89,11 @@ export default function SignInPage({
               className="mt-5 text-sm font-extrabold text-[#b27a00] transition hover:text-[#8d6300] mobile-fade-up"
               style={{ animationDelay: "280ms" }}
             >
-              Forgot Password?
+              {t("forgotPassword")}
             </button>
             {resetSent ? (
               <p className="mt-2 text-center text-[12px] font-semibold text-[#5f8e70] mobile-fade-up">
-                Reset instructions sent to your email.
+                {t("resetSent")}
               </p>
             ) : null}
 
@@ -99,11 +102,11 @@ export default function SignInPage({
               className="mobile-pill mobile-button-gold mobile-fade-up mt-7 h-14 w-full text-base font-extrabold"
               style={{ animationDelay: "340ms" }}
             >
-              Sign In
+              {t("signIn")}
             </Link>
 
             <div className="mobile-divider mt-8 w-full mobile-fade-up" style={{ animationDelay: "400ms" }}>
-              OR
+              {t("or")}
             </div>
 
             <Link
@@ -112,13 +115,13 @@ export default function SignInPage({
               style={{ animationDelay: "460ms" }}
             >
               <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
-              Continue with Google
+              {t("continueWithGoogle")}
             </Link>
 
             <p className="mt-8 text-center text-sm text-[#837966] mobile-fade-up" style={{ animationDelay: "520ms" }}>
-              New to LocalBoost?{" "}
+              {t("newTo")}{" "}
               <Link href={`/${params.locale}/signup`} className="font-extrabold text-[#b27a00]">
-                Create account
+                {t("createAccount")}
               </Link>
             </p>
           </div>
