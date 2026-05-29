@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useFavorites } from "@/lib/favorites";
 import { useBusinessAverageRating, useBusinessDetail, useBusinessReviews } from "@/lib/queries";
 
 export default function BusinessDetailPage({
@@ -10,13 +11,90 @@ export default function BusinessDetailPage({
   params: { locale: string; id: string };
 }) {
   const businessId = Number(params.id);
-  const [saved, setSaved] = useState(false);
+  const favorites = useFavorites();
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const shareMessageTimerRef = useRef<number | null>(null);
 
   const businessQuery = useBusinessDetail(businessId);
   const ratingQuery = useBusinessAverageRating(businessId);
   const reviewsQuery = useBusinessReviews(businessId);
 
   const primaryImage = useMemo(() => businessQuery.data?.images?.[0], [businessQuery.data?.images]);
+
+  useEffect(() => {
+    return () => {
+      if (shareMessageTimerRef.current) {
+        window.clearTimeout(shareMessageTimerRef.current);
+      }
+    };
+  }, []);
+
+  async function copyText(text: string) {
+    if (typeof navigator === "undefined") throw new Error("Clipboard not available");
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "absolute";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  }
+
+  function showShareMessage(message: string) {
+    setShareMessage(message);
+    if (shareMessageTimerRef.current) window.clearTimeout(shareMessageTimerRef.current);
+    shareMessageTimerRef.current = window.setTimeout(() => setShareMessage(null), 2200);
+  }
+
+  function getShareUrl() {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `${origin}/${params.locale}/businesses/${businessId}`;
+  }
+
+  async function handleCopyLink() {
+    setShareBusy(true);
+    try {
+      await copyText(getShareUrl());
+      showShareMessage("Link copied");
+      setShareOpen(false);
+    } catch {
+      showShareMessage("Unable to copy link");
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  function handleOpenLink() {
+    try {
+      window.open(getShareUrl(), "_blank", "noopener,noreferrer");
+      showShareMessage("Opened link");
+      setShareOpen(false);
+    } catch {
+      showShareMessage("Unable to open link");
+    }
+  }
+
+  function handleShareWhatsApp() {
+    try {
+      const url = getShareUrl();
+      const title = businessQuery.data?.name ? `${businessQuery.data.name} - ` : "";
+      const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${title}${url}`)}`;
+      window.open(whatsapp, "_blank", "noopener,noreferrer");
+      showShareMessage("WhatsApp opened");
+      setShareOpen(false);
+    } catch {
+      showShareMessage("Unable to share to WhatsApp");
+    }
+  }
 
   if (!Number.isFinite(businessId)) {
     return (
@@ -44,19 +122,83 @@ export default function BusinessDetailPage({
               <Link href={`/${params.locale}/discover`} className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm">
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               </Link>
-              <button
-                type="button"
-                onClick={() => setSaved((current) => !current)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {saved ? "favorite" : "favorite_border"}
-                </span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void favorites.toggleFavorite(businessId)}
+                  disabled={favorites.isPending(businessId)}
+                  className={`grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm ${favorites.isPending(businessId) ? "opacity-60" : ""}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {favorites.isPending(businessId)
+                      ? "progress_activity"
+                      : favorites.isFavorite(businessId)
+                        ? "favorite"
+                        : "favorite_border"}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen((current) => !current)}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">share</span>
+                </button>
+              </div>
             </div>
+
+            {shareOpen ? (
+              <div className="absolute right-3 top-[58px] z-10 w-[210px] overflow-hidden rounded-[18px] border border-white/60 bg-white/95 shadow-[0_14px_40px_rgba(31,26,10,0.18)] backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => void handleCopyLink()}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                  Copy link
+                </button>
+                <div className="h-px bg-[#ece2d3]" />
+                <button
+                  type="button"
+                  onClick={handleShareWhatsApp}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">chat</span>
+                  WhatsApp
+                </button>
+                <div className="h-px bg-[#ece2d3]" />
+                <button
+                  type="button"
+                  onClick={handleOpenLink}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? "opacity-60" : ""}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">link</span>
+                  Open URL
+                </button>
+              </div>
+            ) : null}
+
+            {shareMessage ? (
+              <div className="absolute inset-x-0 bottom-3 flex justify-center px-3">
+                <div className="rounded-full bg-[#1f1a0a]/75 px-4 py-2 text-[12px] font-extrabold text-white shadow-[0_10px_25px_rgba(0,0,0,0.25)]">
+                  {shareMessage}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="-mt-8 flex-1 rounded-t-[34px] bg-[#faf8f2] px-5 pb-6 pt-6">
+            {favorites.error ? (
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-[22px] border border-[#f1d0d0] bg-white px-4 py-3 text-[12px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                <span className="min-w-0 flex-1 truncate">{favorites.error}</span>
+                <button type="button" onClick={favorites.clearError} className="shrink-0 text-[#9b3e3e]">
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            ) : null}
             {businessQuery.isLoading ? (
               <div className="rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
                 Loading…
@@ -143,4 +285,3 @@ export default function BusinessDetailPage({
     </main>
   );
 }
-

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import type { Category, SearchFilters } from "@/lib/api";
+import { useFavorites } from "@/lib/favorites";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
 
 function getCategoryLabel(category: Category | undefined, locale: string) {
@@ -28,9 +29,9 @@ export default function DiscoverPage({
   const [regionId, setRegionId] = useState<number | undefined>(undefined);
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [available, setAvailable] = useState(false);
-  const [savedCards, setSavedCards] = useState<Record<string, boolean>>({});
   const [sortLabel, setSortLabel] = useState("Popularity");
   const [visibleCount, setVisibleCount] = useState(10);
+  const favorites = useFavorites();
 
   const categoriesQuery = useCategories();
   const regionsQuery = useRegions();
@@ -175,6 +176,15 @@ export default function DiscoverPage({
               </div>
             </div>
 
+            {favorites.error ? (
+              <div className="mt-4 flex items-center justify-between gap-3 rounded-[18px] border border-[#f1d0d0] bg-white px-4 py-3 text-[12px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                <span className="min-w-0 flex-1 truncate">{favorites.error}</span>
+                <button type="button" onClick={favorites.clearError} className="shrink-0 text-[#9b3e3e]">
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            ) : null}
+
             {businessesQuery.isLoading ? (
               <div className="mt-6 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 text-[14px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
                 Loading…
@@ -232,16 +242,17 @@ export default function DiscoverPage({
                             onClick={(event) => {
                               event.preventDefault();
                               event.stopPropagation();
-                              const key = business.id.toString();
-                              setSavedCards((current) => ({
-                                ...current,
-                                [key]: !current[key],
-                              }));
+                              void favorites.toggleFavorite(business.id);
                             }}
-                            className="text-[#c7b9a1]"
+                            disabled={favorites.isPending(business.id)}
+                            className={`text-[#c7b9a1] ${favorites.isPending(business.id) ? "opacity-60" : ""}`}
                           >
                             <span className="material-symbols-outlined text-[18px]">
-                              {savedCards[business.id.toString()] ? "bookmark" : "bookmark_add"}
+                              {favorites.isPending(business.id)
+                                ? "progress_activity"
+                                : favorites.isFavorite(business.id)
+                                  ? "bookmark"
+                                  : "bookmark_add"}
                             </span>
                           </button>
                         </div>
