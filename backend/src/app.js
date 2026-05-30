@@ -14,6 +14,9 @@ const testEmailRoutes = require('./routes/testEmail.routes.js');
 const aiRoutes = require('./modules/ai/ai.routes.js');
 const ai1Routes = require('./modules/ai1/ai1.routes.js');
 const ai2Routes = require('./modules/ai2/ai2.routes.js');
+const favoritesRoutes = require("./modules/favorites/favorites.routes.js");
+const analyticsRoutes = require("./modules/analytics/analytics.routes.js");
+const merchantRoutes = require("./modules/merchant/merchant.routes.js");
 
 const app = express();
 
@@ -38,6 +41,9 @@ app.use("/api/v1/test", testEmailRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/ai1", ai1Routes);
 app.use("/api/v1/ai2", ai2Routes);
+app.use("/api/v1/favorites", favoritesRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/merchant", merchantRoutes);
 
 app.use(errorHandler);
 module.exports = app;

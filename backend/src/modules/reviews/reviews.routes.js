@@ -21,6 +21,9 @@ router.post("/", protect, controller.create);
 // get approved reviews
 router.get("/business/:business_id", controller.getByBusiness);
 
+// reply to review (merchant)
+router.post("/:id/reply", protect, authorize("merchant"), controller.reply);
+
 // average rating
 router.get("/average/:business_id", controller.average);
 

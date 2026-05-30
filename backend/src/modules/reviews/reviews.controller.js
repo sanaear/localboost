@@ -29,7 +29,20 @@ const average = async (req, res) => {
   const avg = await reviewService.getAverageRating(
     Number(req.params.business_id)
   );
-  res.json({ average: avg });
+  res.json(avg);
 };
 
-module.exports = { create, getByBusiness, moderate, average };
+const reply = async (req, res) => {
+  const reviewId = Number(req.params.id);
+  const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
+  if (!Number.isFinite(reviewId) || reviewId <= 0) {
+    return res.status(400).json({ message: "Invalid review id" });
+  }
+  if (!message) {
+    return res.status(400).json({ message: "Reply message is required" });
+  }
+  const result = await reviewService.upsertReply({ reviewId, userId: req.user.id, message });
+  res.json(result);
+};
+
+module.exports = { create, getByBusiness, moderate, average, reply };

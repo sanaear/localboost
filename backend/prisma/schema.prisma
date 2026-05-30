@@ -25,6 +25,8 @@ model User {
 
   businesses     Business[]
   reviews        Review[]
+  favorites      Favorite[]
+  reviewReplies  ReviewReply[]
 }
 
 model Category {
@@ -43,10 +45,16 @@ model Business {
   category_id      Int?
   name             String
   city             String?
+  address          String?
+  postal_code      String?
+  phone            String?
+  whatsapp         String?
+  website          String?
   lat              Float?
   lng              Float?
   description      String?
   images           String[]
+  opening_hours    Json?
   status           String?
   created_at       DateTime            @default(now())
   updated_at       DateTime            @updatedAt
@@ -57,6 +65,7 @@ model Business {
   user             User                @relation(fields: [user_id], references: [id])
   inactivity       InactivityTracking?
   reviews          Review[]
+  favorites        Favorite[]
 }
 
 model Review {
@@ -70,6 +79,18 @@ model Review {
   updated_at        DateTime @updatedAt
   business          Business @relation(fields: [business_id], references: [id])
   user              User     @relation(fields: [user_id], references: [id])
+  reply             ReviewReply?
+}
+
+model ReviewReply {
+  id         Int      @id @default(autoincrement())
+  review_id  Int      @unique
+  user_id    Int
+  message    String
+  created_at DateTime @default(now())
+
+  review Review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [user_id], references: [id])
 }
 
 model AnalyticsEvent {
@@ -96,6 +117,17 @@ model InactivityTracking {
   last_updated_at  DateTime?
   last_notified_at DateTime?
   business         Business  @relation(fields: [business_id], references: [id])
+}
+
+model Favorite {
+  user_id     Int
+  business_id Int
+  created_at  DateTime @default(now())
+
+  user     User     @relation(fields: [user_id], references: [id])
+  business Business @relation(fields: [business_id], references: [id])
+
+  @@id([user_id, business_id])
 }
 
 model Region {
