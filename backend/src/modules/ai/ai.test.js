@@ -1,13 +1,11 @@
-const request = require("supertest");
-const app = require("../../app.js");
-
-// Mock Prisma pour les tests
 jest.mock("../../config/db.js", () => ({
   business: {
     findMany: jest.fn()
   }
 }));
 
+const request = require("supertest");
+const app = require("../../app.js");
 const prisma = require("../../config/db.js");
 
 // Data de test
