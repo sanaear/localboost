@@ -1,23 +1,108 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
-import {
-  merchantClicksByDay,
-  merchantDiscoveryKeywords,
-  merchantVisibilityRanges,
-  merchantViewsActivity,
-} from "@/lib/mobileData";
+import { ErrorState } from "@/components/UiState";
+import { API_BASE_URL } from "@/lib/api";
+import { getMerchantIdentity } from "@/lib/merchant";
 
 export default function MerchantStatsPage({
   params,
 }: {
   params: { locale: string };
 }) {
+  const identity = useMemo(() => getMerchantIdentity(), []);
   const [selectedRange, setSelectedRange] = useState("30d");
   const [reportExpanded, setReportExpanded] = useState(false);
-  const highestBar = Math.max(...merchantClicksByDay);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [summary, setSummary] = useState<{
+    totalViews: number;
+    totalClicks: number;
+    viewsActivity: number[];
+    clicksByDay: number[];
+    viewsByBusiness: Array<{ business_id: number; name: string; count: number }>;
+  } | null>(null);
+
+  const ranges = useMemo(() => ["7d", "30d", "90d", "Custom"], []);
+  const days = useMemo(() => {
+    if (selectedRange === "7d") return 7;
+    if (selectedRange === "90d") return 90;
+    if (selectedRange === "Custom") return 30;
+    return 30;
+  }, [selectedRange]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+    setSummary(null);
+
+    void (async () => {
+      if (!identity?.token) {
+        setHasError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/analytics/merchant/summary?days=${days}`, {
+          headers: { Authorization: `Bearer ${identity.token}` },
+        });
+        if (!response.ok) throw new Error("Request failed");
+        const payload = (await response.json()) as {
+          data?: {
+            totalViews?: number;
+            totalClicks?: number;
+            viewsByDay?: Array<{ day: string; count: number }>;
+            clicksByDay?: Array<{ day: string; count: number }>;
+            viewsByBusiness?: Array<{ business_id: number; name: string; count: number }>;
+          };
+        };
+        const viewsByDay = Array.isArray(payload.data?.viewsByDay) ? payload.data!.viewsByDay! : [];
+        const clicksByDay = Array.isArray(payload.data?.clicksByDay) ? payload.data!.clicksByDay! : [];
+
+        const today = new Date();
+        const last7 = Array.from({ length: 7 }).map((_, index) => {
+          const d = new Date(today);
+          d.setDate(today.getDate() - (6 - index));
+          return d.toISOString().slice(0, 10);
+        });
+        const viewsMap = new Map<string, number>(
+          viewsByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0]),
+        );
+        const clicksMap = new Map<string, number>(
+          clicksByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0]),
+        );
+
+        const viewsActivity = last7.map((key) => viewsMap.get(key) ?? 0);
+        const clicksBars = last7.map((key) => clicksMap.get(key) ?? 0);
+
+        const viewsByBusiness = Array.isArray(payload.data?.viewsByBusiness) ? payload.data!.viewsByBusiness! : [];
+
+        if (cancelled) return;
+        setSummary({
+          totalViews: Number(payload.data?.totalViews) || 0,
+          totalClicks: Number(payload.data?.totalClicks) || 0,
+          viewsActivity,
+          clicksByDay: clicksBars,
+          viewsByBusiness,
+        });
+        setIsLoading(false);
+      } catch {
+        if (cancelled) return;
+        setHasError(true);
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [days, identity]);
+
+  const highestBar = Math.max(...(summary?.clicksByDay ?? [0]));
 
   return (
     <main className="mobile-app-shell">
@@ -40,6 +125,16 @@ export default function MerchantStatsPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
+            {hasError ? (
+              <div className="mt-6">
+                <ErrorState
+                  title="Something went wrong"
+                  description="Check your connection and try again."
+                  onRetry={() => window.location.reload()}
+                  retryLabel="Retry"
+                />
+              </div>
+            ) : null}
             <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
               <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
                 Visibility Stats
@@ -50,7 +145,7 @@ export default function MerchantStatsPage({
             </div>
 
             <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {merchantVisibilityRanges.map((range, index) => {
+              {ranges.map((range, index) => {
                 const active = selectedRange === range;
 
                 return (
@@ -80,10 +175,10 @@ export default function MerchantStatsPage({
               </div>
               <div className="mt-2 flex items-end gap-2">
                 <span className="text-[2.2rem] font-extrabold tracking-[-0.06em] text-[#b27a00]">
-                  12,482
+                  {isLoading ? "—" : (summary?.totalViews ?? 0).toLocaleString()}
                 </span>
                 <span className="pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#2caa72]">
-                  +143%
+                  {isLoading ? "" : ""}
                 </span>
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
@@ -92,7 +187,9 @@ export default function MerchantStatsPage({
                     CTR (%)
                   </div>
                   <div className="mt-1 text-[1.7rem] font-extrabold tracking-[-0.05em] text-[#2a2826]">
-                    4.2%
+                    {isLoading || !summary?.totalViews
+                      ? "—"
+                      : `${Math.round(((summary.totalClicks ?? 0) / summary.totalViews) * 1000) / 10}%`}
                   </div>
                   <div className="text-[10px] text-[#a49a8d]">Avg. interaction</div>
                 </div>
@@ -101,7 +198,12 @@ export default function MerchantStatsPage({
                     Peak Day
                   </div>
                   <div className="mt-1 text-[1.5rem] font-extrabold tracking-[-0.05em] text-[#2a2826]">
-                    Saturday
+                    {isLoading || !summary ? "—" : (() => {
+                      const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                      const max = Math.max(...summary.viewsActivity, 0);
+                      const idx = summary.viewsActivity.findIndex((v) => v === max);
+                      return idx >= 0 ? labels[idx] : "—";
+                    })()}
                   </div>
                   <div className="text-[10px] text-[#a49a8d]">2.3x views</div>
                 </div>
@@ -135,8 +237,12 @@ export default function MerchantStatsPage({
                       strokeWidth="2.5"
                       strokeLinejoin="round"
                       strokeLinecap="round"
-                      points={merchantViewsActivity
-                        .map((value, index) => `${index * 30},${115 - value}`)
+                      points={(summary?.viewsActivity ?? Array.from({ length: 7 }).map(() => 0))
+                        .map((value, index, array) => {
+                          const max = Math.max(...array, 1);
+                          const y = 115 - (value / max) * 90;
+                          return `${index * 30},${y}`;
+                        })
                         .join(" ")}
                     />
                   </svg>
@@ -155,7 +261,7 @@ export default function MerchantStatsPage({
               </h3>
               <div className="mt-4 rounded-[28px] bg-[#f7f4ee] px-4 py-4">
                 <div className="flex h-[120px] items-end gap-3 rounded-[24px] bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(243,239,232,0.95))] px-4 py-4">
-                  {merchantClicksByDay.map((value, index) => {
+                  {(summary?.clicksByDay ?? Array.from({ length: 7 }).map(() => 0)).map((value, index) => {
                     const active = value === highestBar;
 
                     return (
@@ -164,7 +270,7 @@ export default function MerchantStatsPage({
                           className={`w-full rounded-t-[8px] ${
                             active ? "bg-[#bd5300]" : "bg-[#dfdad1]"
                           }`}
-                          style={{ height: `${(value / highestBar) * 84}px` }}
+                          style={{ height: `${highestBar > 0 ? (value / highestBar) * 84 : 0}px` }}
                         />
                       </div>
                     );
@@ -179,8 +285,8 @@ export default function MerchantStatsPage({
               </h3>
               <div className="mt-4 rounded-[28px] bg-white px-4 py-4 shadow-[0_10px_22px_rgba(31,26,10,0.04)]">
                 <div className="space-y-4">
-                  {merchantDiscoveryKeywords.map((item, index) => (
-                    <div key={item.label} className="flex items-center justify-between gap-3">
+                  {(summary?.viewsByBusiness ?? []).map((item, index) => (
+                    <div key={item.business_id} className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <span className="material-symbols-outlined text-[16px] text-[#b27a00]">
                           {index === 0
@@ -191,10 +297,10 @@ export default function MerchantStatsPage({
                                 ? "location_on"
                                 : "hotel_class"}
                         </span>
-                        <span className="text-[13px] leading-5 text-[#5f564b]">{item.label}</span>
+                        <span className="text-[13px] leading-5 text-[#5f564b]">{item.name}</span>
                       </div>
                       <span className="rounded-full bg-[#f4efe5] px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#b27a00]">
-                        {item.value}
+                        {String(item.count)}
                       </span>
                     </div>
                   ))}

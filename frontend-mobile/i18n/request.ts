@@ -3,7 +3,7 @@ import { getRequestConfig } from "next-intl/server";
 import { isLocale } from "../src/lib/locales";
 
 export default getRequestConfig(async ({ requestLocale }) => {
-  const resolvedLocale = await requestLocale;
+  const resolvedLocale = (await requestLocale) ?? "en";
   if (!isLocale(resolvedLocale)) notFound();
 
   return {

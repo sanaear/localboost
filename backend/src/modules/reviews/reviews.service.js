@@ -16,7 +16,8 @@ const getApprovedReviews = async (business_id) => {
     where: {
       business_id,
       moderation_status: "approved"
-    }
+    },
+    include: { user: true, reply: true }
   });
 };
 
@@ -37,10 +38,21 @@ const getAverageRating = async (business_id) => {
     },
     _avg: {
       rating: true
+    },
+    _count: {
+      rating: true
     }
   });
 
-  return result._avg.rating || 0;
+  return { average: result._avg.rating || 0, count: result._count.rating || 0 };
 };
 
-module.exports = { createReview, getApprovedReviews, updateReviewStatus, getAverageRating };
+const upsertReply = async ({ reviewId, userId, message }) => {
+  return prisma.reviewReply.upsert({
+    where: { review_id: reviewId },
+    create: { review_id: reviewId, user_id: userId, message },
+    update: { message }
+  });
+};
+
+module.exports = { createReview, getApprovedReviews, updateReviewStatus, getAverageRating, upsertReply };

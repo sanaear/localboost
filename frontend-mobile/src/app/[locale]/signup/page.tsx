@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { decodeJwtPayload, loginWithBackend, registerWithBackend, setStoredTokens, updateUserProfile } from "@/lib/auth";
 
 const roles = ["tourist", "shopOwner", "admin"] as const;
 
@@ -21,14 +23,68 @@ export default function SignupPage({
 }) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<(typeof roles)[number]>("tourist");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsWarning, setTermsWarning] = useState(false);
-  const createAccountHref = acceptedTerms
-    ? getSignupDestination(params.locale, selectedRole)
-    : `/${params.locale}/signup`;
   const googleSignupHref = getSignupDestination(params.locale, selectedRole);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  function splitName(value: string) {
+    const parts = value
+      .trim()
+      .split(/\s+/g)
+      .filter(Boolean);
+    if (parts.length === 0) return { firstName: undefined, lastName: undefined };
+    if (parts.length === 1) return { firstName: parts[0], lastName: undefined };
+    return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitError(null);
+
+    if (!acceptedTerms) {
+      setTermsWarning(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const backendRole = selectedRole === "shopOwner" ? "merchant" : selectedRole;
+      await registerWithBackend({ email, password, role: backendRole });
+      const { accessToken, refreshToken } = await loginWithBackend({ email, password });
+      setStoredTokens(accessToken, refreshToken);
+
+      const payload = decodeJwtPayload(accessToken);
+      const userId = payload?.id;
+      if (userId && fullName.trim()) {
+        const { firstName, lastName } = splitName(fullName);
+        await updateUserProfile({
+          accessToken,
+          userId,
+          firstName,
+          lastName,
+          preferredLang: params.locale,
+        });
+      }
+
+      const role = payload?.role ?? backendRole;
+      const target =
+        role === "merchant"
+          ? `/${params.locale}/merchant/setup/business`
+          : `/${params.locale}/onboarding/discover`;
+      router.replace(target);
+    } catch {
+      setSubmitError(tCommon("errorDescription"));
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -47,10 +103,11 @@ export default function SignupPage({
             </div>
 
             <div className="mt-7 w-full rounded-[30px] bg-[#fbfaf7] px-5 py-6 shadow-[inset_0_0_0_1px_rgba(235,228,216,0.9)] mobile-fade-up" style={{ animationDelay: "140ms" }}>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a907d]">
-                {t("selectRole")}
-              </p>
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <form onSubmit={handleSubmit}>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a907d]">
+                  {t("selectRole")}
+                </p>
+                <div className="mt-4 grid grid-cols-2 gap-3">
                 {roles.slice(0, 2).map((role) => (
                   <button
                     key={role}
@@ -76,13 +133,18 @@ export default function SignupPage({
                 >
                   {t("perspectives.admin")}
                 </button>
-              </div>
+                </div>
 
               <div className="mt-6 space-y-5">
                 <div>
                   <label className="mobile-label">{t("fullName")}</label>
                   <div className="relative">
-                    <input className="mobile-input pl-12" defaultValue="Anouar El Ghazi" />
+                    <input
+                      className="mobile-input pl-12"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      autoComplete="name"
+                    />
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#c1ad8c]">
                       person
                     </span>
@@ -91,7 +153,12 @@ export default function SignupPage({
                 <div>
                   <label className="mobile-label">{t("email")}</label>
                   <div className="relative">
-                    <input className="mobile-input pl-12" defaultValue="anouar@localboost.ma" />
+                    <input
+                      className="mobile-input pl-12"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      autoComplete="email"
+                    />
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#c1ad8c]">
                       mail
                     </span>
@@ -103,7 +170,9 @@ export default function SignupPage({
                     <input
                       className="mobile-input pl-12 pr-12"
                       type={showPassword ? "text" : "password"}
-                      defaultValue="password123"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      autoComplete="new-password"
                     />
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#c1ad8c]">
                       lock
@@ -138,14 +207,19 @@ export default function SignupPage({
                 </span>
               </label>
 
-              <Link
-                href={createAccountHref}
+              {submitError ? (
+                <p className="mt-4 text-center text-[12px] font-semibold text-[#b15f36]">{submitError}</p>
+              ) : null}
+
+              <button
+                type="submit"
                 onClick={() => setTermsWarning(!acceptedTerms)}
-                className="mobile-pill mobile-button-gold mt-7 flex h-14 w-full items-center justify-center gap-2 text-base font-extrabold"
+                disabled={isSubmitting}
+                className="mobile-pill mobile-button-gold mt-7 flex h-14 w-full items-center justify-center gap-2 text-base font-extrabold disabled:opacity-60"
               >
                 {t("createAccountCta")}
                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-              </Link>
+              </button>
               {termsWarning && !acceptedTerms ? (
                 <p className="mt-3 text-center text-[12px] font-semibold text-[#b15f36]">
                   {t("acceptTermsWarning")}
@@ -161,6 +235,7 @@ export default function SignupPage({
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
                 {t("continueWithGoogle")}
               </Link>
+              </form>
             </div>
 
             <Link href={`/${params.locale}`} className="mt-6 text-sm font-bold text-[#8b816f]">

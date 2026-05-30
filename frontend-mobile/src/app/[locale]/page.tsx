@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
+import { decodeJwtPayload, loginWithBackend, setStoredTokens } from "@/lib/auth";
 
 const perspectives = ["tourist", "shopOwner", "admin"] as const;
 
@@ -21,11 +23,34 @@ export default function SignInPage({
 }) {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
+  const router = useRouter();
   const [selectedPerspective, setSelectedPerspective] = useState<(typeof perspectives)[number]>("tourist");
-  const [email, setEmail] = useState("jamal@maghrib.com");
-  const [password, setPassword] = useState("••••••••");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [resetSent, setResetSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const destination = getDestination(params.locale, selectedPerspective);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      const { accessToken, refreshToken } = await loginWithBackend({ email, password });
+      setStoredTokens(accessToken, refreshToken);
+      const payload = decodeJwtPayload(accessToken);
+
+      const role = payload?.role ?? (selectedPerspective === "shopOwner" ? "merchant" : selectedPerspective);
+      const target =
+        role === "merchant" ? `/${params.locale}/merchant/dashboard` : `/${params.locale}/home`;
+      router.replace(target);
+    } catch {
+      setSubmitError(tCommon("errorDescription"));
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -63,13 +88,18 @@ export default function SignInPage({
               </div>
             </div>
 
-            <form className="mt-8 w-full space-y-5 mobile-fade-up" style={{ animationDelay: "220ms" }}>
+            <form
+              onSubmit={handleSubmit}
+              className="mt-8 w-full space-y-5 mobile-fade-up"
+              style={{ animationDelay: "220ms" }}
+            >
               <div>
                 <label className="mobile-label">{t("email")}</label>
                 <input
                   className="mobile-input"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
                 />
               </div>
               <div>
@@ -79,8 +109,21 @@ export default function SignInPage({
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
                 />
               </div>
+              {submitError ? (
+                <p className="text-center text-[12px] font-semibold text-[#b15f36]">{submitError}</p>
+              ) : null}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mobile-pill mobile-button-gold mobile-fade-up mt-2 h-14 w-full text-base font-extrabold disabled:opacity-60"
+                style={{ animationDelay: "340ms" }}
+              >
+                {t("signIn")}
+              </button>
             </form>
 
             <button
@@ -96,14 +139,6 @@ export default function SignInPage({
                 {t("resetSent")}
               </p>
             ) : null}
-
-            <Link
-              href={destination}
-              className="mobile-pill mobile-button-gold mobile-fade-up mt-7 h-14 w-full text-base font-extrabold"
-              style={{ animationDelay: "340ms" }}
-            >
-              {t("signIn")}
-            </Link>
 
             <div className="mobile-divider mt-8 w-full mobile-fade-up" style={{ animationDelay: "400ms" }}>
               {t("or")}

@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
-import { feedCards } from "@/lib/mobileData";
+import { ErrorState, SkeletonLine } from "@/components/UiState";
+import { api, type Category } from "@/lib/api";
+import { useFavorites } from "@/lib/favorites";
+import { useBusinessesSearch } from "@/lib/queries";
 
 const filters = ["all", "restaurants", "cafes"] as const;
 
@@ -18,40 +21,60 @@ export default function HomePage({
   const t = useTranslations("home");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const favorites = useFavorites();
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>("all");
-  const [savedCards, setSavedCards] = useState<Record<string, boolean>>({});
+  const businessesQuery = useBusinessesSearch({});
+  const [averageById, setAverageById] = useState<Record<number, number>>({});
 
-  const subtitleLabelByCard = useMemo(() => {
-    return {
-      Restaurants: t("filters.restaurants"),
-      Cafes: t("filters.cafes"),
-      All: t("filters.all"),
-    } as Record<string, string>;
-  }, [t]);
-
-  const metaById = useMemo(() => {
-    return {
-      "dar-hatim": t("feed.darHatimMeta"),
-    } as Record<string, string>;
-  }, [t]);
-
-  const badgeLabel = useMemo(() => {
-    return (badge: string) => {
-      if (badge === "Open now") return tCommon("openNow");
-      const closesMatch = badge.match(/^Closes\s+(.+)$/i);
-      if (closesMatch?.[1]) return tCommon("closesAt", { time: closesMatch[1] });
-      return badge;
+  const localizedCategoryName = useMemo(() => {
+    return (category?: Category) => {
+      if (!category) return "";
+      if (params.locale === "ar") return category.name_ar ?? category.name_en ?? category.name_fr ?? category.name_es ?? "";
+      if (params.locale === "fr") return category.name_fr ?? category.name_en ?? category.name_es ?? category.name_ar ?? "";
+      if (params.locale === "es") return category.name_es ?? category.name_en ?? category.name_fr ?? category.name_ar ?? "";
+      return category.name_en ?? category.name_fr ?? category.name_es ?? category.name_ar ?? "";
     };
-  }, [tCommon]);
-  const visibleCards = useMemo(() => {
-    if (activeFilter === "all") {
-      return feedCards;
-    }
+  }, [params.locale]);
 
-    return feedCards.filter((card) =>
-      activeFilter === "restaurants" ? card.subtitle === "Restaurants" : card.subtitle === "Cafes",
-    );
-  }, [activeFilter]);
+  const visibleBusinesses = useMemo(() => {
+    const businesses = businessesQuery.data ?? [];
+    if (activeFilter === "all") return businesses;
+    return businesses.filter((business) => {
+      const label = localizedCategoryName(business.category).toLowerCase();
+      if (activeFilter === "restaurants") return label.includes("restaurant");
+      return label.includes("cafe") || label.includes("café");
+    });
+  }, [activeFilter, businessesQuery.data, localizedCategoryName]);
+
+  useEffect(() => {
+    if (!businessesQuery.data) return;
+    const ids = visibleBusinesses.slice(0, 10).map((b) => b.id);
+    if (ids.length === 0) return;
+
+    let cancelled = false;
+    void (async () => {
+      const entries = await Promise.all(
+        ids.map(async (id) => {
+          try {
+            const { average } = await api.getAverageRating(id);
+            return [id, average] as const;
+          } catch {
+            return [id, 0] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setAverageById((current) => {
+        const next = { ...current };
+        for (const [id, value] of entries) next[id] = value;
+        return next;
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [businessesQuery.data, visibleBusinesses]);
 
   return (
     <main className="mobile-app-shell">
@@ -136,59 +159,83 @@ export default function HomePage({
             </div>
 
             <div className="mt-4 space-y-5">
-              {visibleCards.map((card, index) => (
+              {businessesQuery.isLoading ? (
+                <div className="space-y-5">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="mobile-card overflow-hidden">
+                      <div className="h-[190px] bg-[#efece6]" />
+                      <div className="px-4 py-4">
+                        <SkeletonLine className="h-6 w-[70%]" />
+                        <SkeletonLine className="mt-2 h-4 w-[45%]" />
+                        <div className="mt-4 rounded-[18px] bg-[#f6f2ec] px-4 py-3">
+                          <SkeletonLine className="h-4 w-[90%]" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : businessesQuery.isError ? (
+                <ErrorState
+                  title={tCommon("errorTitle")}
+                  description={tCommon("errorDescription")}
+                  onRetry={() => businessesQuery.refetch()}
+                  retryLabel={tCommon("retry")}
+                />
+              ) : visibleBusinesses.map((business, index) => (
                 <Link
-                  key={card.id}
-                  href={card.id === "dar-hatim" ? `/${params.locale}/businesses/poterie` : `/${params.locale}/discover`}
+                  key={business.id}
+                  href={`/${params.locale}/businesses/${business.id}`}
                   className="mobile-card mobile-card-hover mobile-fade-up block overflow-hidden"
                   style={{ animationDelay: `${260 + index * 80}ms` }}
                 >
                   <div className="relative h-[190px] overflow-hidden">
-                    <OptimizedImage
-                      src={card.image}
-                      alt={card.name}
-                      width={900}
-                      height={675}
-                      sizes="100vw"
-                      widths={[480, 640, 828, 900]}
-                      className="h-full w-full object-cover"
-                    />
-                    <span className={`absolute left-3 top-3 rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] ${
-                      card.badgeTone === "green" ? "mobile-badge-green" : "mobile-badge-gold"
-                    }`}>
-                      {badgeLabel(card.badge)}
-                    </span>
+                    {business.images?.[0] ? (
+                      <OptimizedImage
+                        src={business.images[0]}
+                        alt={business.name}
+                        width={900}
+                        height={675}
+                        sizes="100vw"
+                        widths={[480, 640, 828, 900]}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-[#efece6]" />
+                    )}
                     <button
                       type="button"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        setSavedCards((current) => ({
-                          ...current,
-                          [card.id]: !current[card.id],
-                        }));
+                        void favorites.toggleFavorite(business.id);
                       }}
                       className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/88 text-[#9d958a] shadow-sm"
                     >
                       <span className="material-symbols-outlined text-[18px]">
-                        {savedCards[card.id] ? "bookmark" : "bookmark_add"}
+                        {favorites.isPending(business.id)
+                          ? "progress_activity"
+                          : favorites.isFavorite(business.id)
+                            ? "bookmark"
+                            : "bookmark_add"}
                       </span>
                     </button>
                   </div>
                   <div className="px-4 py-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h3 className="text-[1.45rem] font-extrabold tracking-[-0.05em] text-[#2a2730]">{card.name}</h3>
-                        <p className="mt-1 text-[13px] font-semibold text-[#877c6a]">{subtitleLabelByCard[card.subtitle] ?? card.subtitle}</p>
+                        <h3 className="text-[1.45rem] font-extrabold tracking-[-0.05em] text-[#2a2730]">{business.name}</h3>
+                        <p className="mt-1 text-[13px] font-semibold text-[#877c6a]">
+                          {localizedCategoryName(business.category)}
+                        </p>
                       </div>
                       <div className="mt-1 flex items-center gap-1 text-sm font-extrabold text-[#a36e00]">
                         <span className="material-symbols-outlined text-[16px]">star</span>
-                        {card.rating}
+                        {(averageById[business.id] ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div className="mt-4 rounded-[18px] bg-[#f6f2ec] px-4 py-3 text-[12px] font-semibold leading-5 text-[#8a8173]">
                       <span className="material-symbols-outlined mr-2 align-middle text-[15px] text-[#c59d4a]">directions_walk</span>
-                      {metaById[card.id] ?? card.meta}
+                      {[business.city, business.regionRel?.name].filter(Boolean).join(" · ")}
                     </div>
                   </div>
                 </Link>

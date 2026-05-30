@@ -1,36 +1,153 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
-import {
-  merchantDetailedReviews,
-  merchantReviewInsights,
-} from "@/lib/mobileData";
+import { ErrorState, SkeletonLine } from "@/components/UiState";
+import { API_BASE_URL, type Review } from "@/lib/api";
+import { getMerchantIdentity, fetchMyBusinesses, fetchApprovedReviewsForBusiness } from "@/lib/merchant";
 
 const filters = ["All", "Replied", "Pending Reply"] as const;
+
+type MerchantReviewItem = {
+  id: number;
+  name: string;
+  avatar?: string;
+  date: string;
+  rating: number;
+  status: "REPLIED" | "PENDING REPLY";
+  statusTone: "green" | "amber" | "gray";
+  text: string;
+  replyPlaceholder: string;
+  replyMessage?: string | null;
+};
 
 export default function MerchantReviewsPage({
   params,
 }: {
   params: { locale: string };
 }) {
+  const tCommon = useTranslations("common");
   const [selectedFilter, setSelectedFilter] =
     useState<(typeof filters)[number]>("All");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [replyState, setReplyState] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [reviews, setReviews] = useState<MerchantReviewItem[]>([]);
+  const [average, setAverage] = useState<{ average: number; count: number } | null>(null);
+
+  const identity = useMemo(() => getMerchantIdentity(), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+    setReviews([]);
+    setAverage(null);
+
+    void (async () => {
+      if (!identity?.token) {
+        setHasError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const businesses = await fetchMyBusinesses();
+        const allReviews = (
+          await Promise.all(
+            businesses.map(async (business) => {
+              try {
+                return await fetchApprovedReviewsForBusiness(business.id);
+              } catch {
+                return [] as Review[];
+              }
+            }),
+          )
+        ).flat();
+
+        if (cancelled) return;
+
+        const items = allReviews
+          .slice()
+          .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""))
+          .map((review) => {
+            const name = [review.user?.first_name, review.user?.last_name].filter(Boolean).join(" ") || tCommon("anonymous");
+            const isReplied = Boolean(review.reply?.message);
+            return {
+              id: review.id,
+              name,
+              avatar: review.user?.profile_image ?? undefined,
+              date: new Date(review.created_at).toLocaleDateString(),
+              rating: review.rating,
+              status: isReplied ? "REPLIED" : "PENDING REPLY",
+              statusTone: isReplied ? "gray" : "amber",
+              text: review.content ? `"${review.content}"` : "",
+              replyPlaceholder: isReplied ? "Reply already sent" : "Write a public reply…",
+              replyMessage: review.reply?.message ?? null,
+            } satisfies MerchantReviewItem;
+          });
+
+        const sum = allReviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+        const count = allReviews.length;
+        setAverage({ average: count > 0 ? sum / count : 0, count });
+        setReviews(items);
+        setIsLoading(false);
+      } catch {
+        if (cancelled) return;
+        setHasError(true);
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [identity, tCommon]);
 
   const visibleReviews = useMemo(() => {
     if (selectedFilter === "Replied") {
-      return merchantDetailedReviews.filter((review) => review.status === "REPLIED");
+      return reviews.filter((review) => review.status === "REPLIED");
     }
 
     if (selectedFilter === "Pending Reply") {
-      return merchantDetailedReviews.filter((review) => review.status !== "REPLIED");
+      return reviews.filter((review) => review.status !== "REPLIED");
     }
 
-    return merchantDetailedReviews;
-  }, [selectedFilter]);
+    return reviews;
+  }, [reviews, selectedFilter]);
+
+  async function handleSendReply(reviewId: number) {
+    if (!identity?.token) return;
+    const draft = (drafts[String(reviewId)] ?? "").trim();
+    if (!draft) return;
+    setReplyState((current) => ({ ...current, [String(reviewId)]: "" }));
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/reply`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${identity.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: draft }),
+      });
+      if (!response.ok) throw new Error("Request failed");
+
+      setReviews((current) =>
+        current.map((review) =>
+          review.id === reviewId
+            ? { ...review, status: "REPLIED", statusTone: "gray", replyMessage: draft, replyPlaceholder: "Reply already sent" }
+            : review,
+        ),
+      );
+      setReplyState((current) => ({ ...current, [String(reviewId)]: "Reply sent" }));
+    } catch {
+      setReplyState((current) => ({ ...current, [String(reviewId)]: tCommon("errorDescription") }));
+    }
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -53,6 +170,16 @@ export default function MerchantReviewsPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
+            {hasError ? (
+              <div className="mt-6">
+                <ErrorState
+                  title={tCommon("errorTitle")}
+                  description={tCommon("errorDescription")}
+                  onRetry={() => window.location.reload()}
+                  retryLabel={tCommon("retry")}
+                />
+              </div>
+            ) : null}
             <div
               className="mobile-card mobile-fade-up mt-4 rounded-[34px] px-5 py-5 text-center"
               style={{ animationDelay: "60ms" }}
@@ -62,17 +189,31 @@ export default function MerchantReviewsPage({
               </div>
               <div className="mt-2 flex items-center justify-center gap-2">
                 <span className="text-[3.2rem] font-extrabold leading-none tracking-[-0.08em] text-[#b27a00]">
-                  4.8
+                  {isLoading ? "—" : (average?.average ?? 0).toFixed(1)}
                 </span>
                 <span className="material-symbols-outlined text-[32px] text-[#e0a11f]">
                   star
                 </span>
               </div>
               <p className="mx-auto mt-2 max-w-[200px] text-[13px] leading-6 text-[#7f7467]">
-                Based on 1,248 reviews this season
+                {isLoading ? "—" : `Based on ${average?.count ?? 0} reviews`}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-3 text-left">
-                {merchantReviewInsights.map((item, index) => (
+                {[
+                  {
+                    label: "Response rate",
+                    value:
+                      reviews.length === 0
+                        ? "—"
+                        : `${Math.round((reviews.filter((r) => r.status === "REPLIED").length / reviews.length) * 100)}%`,
+                    tone: "green" as const,
+                  },
+                  {
+                    label: "Pending replies",
+                    value: String(reviews.filter((r) => r.status !== "REPLIED").length),
+                    tone: "amber" as const,
+                  },
+                ].map((item, index) => (
                   <div
                     key={item.label}
                     className="rounded-[22px] bg-[#f6f2eb] px-4 py-3"
@@ -116,7 +257,16 @@ export default function MerchantReviewsPage({
             </div>
 
             <div className="mt-6 space-y-4 pb-2">
-              {visibleReviews.map((review, index) => {
+              {isLoading ? (
+                Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="mobile-card rounded-[28px] px-4 py-4">
+                    <SkeletonLine className="h-4 w-[45%]" />
+                    <SkeletonLine className="mt-3 h-4 w-[85%]" />
+                    <SkeletonLine className="mt-2 h-4 w-[70%]" />
+                  </div>
+                ))
+              ) : (
+              visibleReviews.map((review, index) => {
                 const draft = drafts[review.id] ?? "";
                 const statusTone =
                   review.statusTone === "green"
@@ -132,11 +282,17 @@ export default function MerchantReviewsPage({
                     style={{ animationDelay: `${240 + index * 70}ms` }}
                   >
                     <div className="flex items-start gap-3">
-                      <img
-                        src={review.avatar}
-                        alt={review.name}
-                        className="h-11 w-11 rounded-full object-cover"
-                      />
+                      {review.avatar ? (
+                        <img
+                          src={review.avatar}
+                          alt={review.name}
+                          className="h-11 w-11 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="grid h-11 w-11 place-items-center rounded-full bg-[#2b2a2a] text-white">
+                          <span className="material-symbols-outlined text-[16px]">person</span>
+                        </div>
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-3">
                           <div>
@@ -164,63 +320,44 @@ export default function MerchantReviewsPage({
                           {review.text}
                         </p>
 
-                        {review.id === "jean-pierre" ? (
-                          <div className="mt-5">
-                            <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#b28a37]">
-                              Public Reply
-                            </div>
-                            <textarea
-                              className="mobile-input mt-3 min-h-[86px] resize-none"
-                              placeholder={review.replyPlaceholder}
-                              value={draft}
-                              onChange={(event) =>
-                                setDrafts((current) => ({
-                                  ...current,
-                                  [review.id]: event.target.value,
-                                }))
-                              }
-                            />
-                            <div className="mt-4 flex justify-end">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setReplyState((current) => ({
-                                    ...current,
-                                    [review.id]: "Reply sent",
-                                  }))
-                                }
-                                className="mobile-pill h-10 min-w-[118px] bg-[#b27a00] px-4 text-[12px] font-extrabold text-white"
-                              >
-                                Send Reply
-                              </button>
-                            </div>
-                            {replyState[review.id] ? (
-                              <p className="mt-3 text-right text-[12px] font-semibold text-[#5f8e70]">
-                                {replyState[review.id]}
-                              </p>
-                            ) : null}
+                        <div className="mt-5">
+                          <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#b28a37]">
+                            Public Reply
                           </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setReplyState((current) => ({
+                          <textarea
+                            className="mobile-input mt-3 min-h-[86px] resize-none"
+                            placeholder={review.replyPlaceholder}
+                            value={review.status === "REPLIED" ? review.replyMessage ?? "" : draft}
+                            disabled={review.status === "REPLIED"}
+                            onChange={(event) =>
+                              setDrafts((current) => ({
                                 ...current,
-                                [review.id]:
-                                  review.status === "REPLIED" ? "Reply already sent" : "Reply draft opened",
+                                [review.id]: event.target.value,
                               }))
                             }
-                            className="mobile-pill mt-5 h-11 w-full bg-[#f4efe7] text-[13px] font-extrabold text-[#9a6f1e]"
-                          >
-                            <span className="material-symbols-outlined mr-2 text-[15px]">reply</span>
-                            {replyState[review.id] ?? review.replyPlaceholder}
-                          </button>
-                        )}
+                          />
+                          <div className="mt-4 flex justify-end">
+                            <button
+                              type="button"
+                              disabled={review.status === "REPLIED"}
+                              onClick={() => void handleSendReply(review.id)}
+                              className="mobile-pill h-10 min-w-[118px] bg-[#b27a00] px-4 text-[12px] font-extrabold text-white disabled:opacity-60"
+                            >
+                              Send Reply
+                            </button>
+                          </div>
+                          {replyState[review.id] ? (
+                            <p className="mt-3 text-right text-[12px] font-semibold text-[#5f8e70]">
+                              {replyState[review.id]}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   </div>
                 );
-              })}
+              })
+              )}
             </div>
           </div>
 

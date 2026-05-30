@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import MerchantBottomNav from "@/components/MerchantBottomNav";
-import { merchantUploads } from "@/lib/mobileData";
+import { readMerchantSetupStep2, writeMerchantSetupStep2 } from "@/lib/merchantSetup";
 
 export default function MerchantPhotosSetupPage({
   params,
@@ -12,7 +12,34 @@ export default function MerchantPhotosSetupPage({
   params: { locale: string };
 }) {
   const t = useTranslations("merchantSetup");
-  const [uploads, setUploads] = useState(merchantUploads);
+  const [uploads, setUploads] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const saved = readMerchantSetupStep2();
+    if (!saved) return;
+    setUploads(saved.photos ?? []);
+  }, []);
+
+  useEffect(() => {
+    writeMerchantSetupStep2({ photos: uploads, logo: null });
+  }, [uploads]);
+
+  function readFileAsDataUrl(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const incoming = Array.from(files).slice(0, 10);
+    const dataUrls = await Promise.all(incoming.map((file) => readFileAsDataUrl(file)));
+    setUploads((current) => [...current, ...dataUrls].slice(0, 10));
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -59,6 +86,14 @@ export default function MerchantPhotosSetupPage({
             </div>
 
             <div className="mobile-fade-up mt-8 rounded-[34px] border border-dashed border-[#e2d5c3] bg-[#faf7f2] px-5 py-8 text-center" style={{ animationDelay: "150ms" }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(event) => void handleFiles(event.target.files)}
+              />
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-[#efe7db] text-[#ab853b]">
                 <span className="material-symbols-outlined text-[26px]">imagesmode</span>
               </div>
@@ -66,6 +101,13 @@ export default function MerchantPhotosSetupPage({
                 {t("photosUploadCta")}
               </p>
               <p className="mt-3 text-[12px] text-[#9b9181]">{t("photosSupport")}</p>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mobile-pill mobile-button-gold mx-auto mt-6 h-12 px-6 text-[13px] font-extrabold"
+              >
+                {t("addMore")}
+              </button>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -87,21 +129,6 @@ export default function MerchantPhotosSetupPage({
                   </button>
                 </div>
               ))}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setUploads((current) => [
-                    ...current,
-                    merchantUploads[current.length % merchantUploads.length],
-                  ])
-                }
-                className="mobile-fade-up flex h-[155px] w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-[#e2d5c3] bg-[#faf7f2] text-[#d0c3ae]"
-                style={{ animationDelay: "360ms" }}
-              >
-                <span className="material-symbols-outlined text-[34px]">add</span>
-                <span className="mt-3 text-[10px] font-extrabold uppercase tracking-[0.16em]">{t("addMore")}</span>
-              </button>
             </div>
 
             <div className="mobile-fade-up mt-6 flex gap-3" style={{ animationDelay: "420ms" }}>

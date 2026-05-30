@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
-import { aiRecommendations } from "@/lib/mobileData";
+import { ErrorState, SkeletonLine } from "@/components/UiState";
+import { API_BASE_URL, type Business } from "@/lib/api";
 
 export default function AiChatPage({
   params,
@@ -13,8 +14,93 @@ export default function AiChatPage({
   params: { locale: string };
 }) {
   const t = useTranslations("aiChat");
-  const [messageSent, setMessageSent] = useState(false);
-  const [itineraryReady, setItineraryReady] = useState(false);
+  const tCommon = useTranslations("common");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; text: string }>>([]);
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
+  const [recommendations, setRecommendations] = useState<Business[] | null>(null);
+  const [recommendationsError, setRecommendationsError] = useState(false);
+  const [itinerary, setItinerary] = useState<string | null>(null);
+  const [itineraryError, setItineraryError] = useState(false);
+  const [isBuildingItinerary, setIsBuildingItinerary] = useState(false);
+
+  const recommendationsLabel = useMemo(() => {
+    return params.locale === "ar" ? "مقترحات" : params.locale === "fr" ? "Suggestions" : params.locale === "es" ? "Sugerencias" : "Suggestions";
+  }, [params.locale]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setRecommendations(null);
+    setRecommendationsError(false);
+    void (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/ai/recommend?lang=${encodeURIComponent(params.locale)}`);
+        if (!response.ok) throw new Error("Request failed");
+        const payload = (await response.json()) as { data?: Business[] };
+        if (cancelled) return;
+        setRecommendations(Array.isArray(payload.data) ? payload.data : []);
+      } catch {
+        if (cancelled) return;
+        setRecommendationsError(true);
+        setRecommendations([]);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params.locale]);
+
+  async function handleSend() {
+    const trimmed = message.trim();
+    if (!trimmed || isSending) return;
+
+    setIsSending(true);
+    setSendError(false);
+    setMessage("");
+    setMessages((current) => [...current, { role: "user", text: trimmed }]);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed, lang: params.locale }),
+      });
+      if (!response.ok) throw new Error("Request failed");
+      const payload = (await response.json()) as { data?: { text?: string } };
+      const text = payload.data?.text ?? "";
+      setMessages((current) => [...current, { role: "assistant", text: text || tCommon("errorDescription") }]);
+    } catch {
+      setSendError(true);
+      setMessages((current) => [...current, { role: "assistant", text: tCommon("errorDescription") }]);
+    } finally {
+      setIsSending(false);
+    }
+  }
+
+  async function handleBuildItinerary() {
+    if (isBuildingItinerary) return;
+    setIsBuildingItinerary(true);
+    setItineraryError(false);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/itinerary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ city: "Fès", lang: params.locale }),
+      });
+      if (!response.ok) throw new Error("Request failed");
+      const payload = (await response.json()) as { data?: unknown };
+      const asString = typeof payload.data === "string" ? payload.data : JSON.stringify(payload.data);
+      setItinerary(asString);
+    } catch {
+      setItineraryError(true);
+      setItinerary(null);
+    } finally {
+      setIsBuildingItinerary(false);
+    }
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -40,55 +126,110 @@ export default function AiChatPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
-            <div className="mobile-fade-up ml-auto max-w-[255px] rounded-[30px] rounded-tr-[12px] bg-[#eba521] px-5 py-5 text-[15px] leading-7 text-white shadow-[0_16px_28px_rgba(235,165,33,0.28)]">
-              {t("sampleUserMessage")}
-              <div className="mt-2 text-right text-[10px] font-semibold text-white/70">14:32</div>
-            </div>
-
-            <div className="mobile-fade-up mt-6 rounded-[30px] border border-[#ecdabf] bg-white px-4 py-5 shadow-[0_14px_28px_rgba(31,26,10,0.06)]" style={{ animationDelay: "100ms" }}>
-              <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#a36e00]">
-                <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
-                {t("guideTitle")}
+            {messages.length === 0 ? (
+              <div className="mobile-fade-up mt-4 rounded-[30px] border border-[#ecdabf] bg-white px-4 py-5 shadow-[0_14px_28px_rgba(31,26,10,0.06)]">
+                <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#a36e00]">
+                  <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                  {t("guideTitle")}
+                </div>
+                <p className="mt-3 text-[14px] leading-6 text-[#6f665c]">{t("sampleAssistantMessage")}</p>
               </div>
-              <p className="mt-3 text-[14px] leading-6 text-[#6f665c]">
-                {t("sampleAssistantMessage")}
-              </p>
-            </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {messages.map((item, index) =>
+                  item.role === "user" ? (
+                    <div
+                      key={index}
+                      className="mobile-fade-up ml-auto max-w-[255px] rounded-[30px] rounded-tr-[12px] bg-[#eba521] px-5 py-5 text-[15px] leading-7 text-white shadow-[0_16px_28px_rgba(235,165,33,0.28)]"
+                    >
+                      {item.text}
+                    </div>
+                  ) : (
+                    <div
+                      key={index}
+                      className="mobile-fade-up rounded-[30px] border border-[#ecdabf] bg-white px-4 py-5 shadow-[0_14px_28px_rgba(31,26,10,0.06)]"
+                    >
+                      <div className="flex items-center gap-2 text-[15px] font-extrabold text-[#a36e00]">
+                        <span className="material-symbols-outlined text-[17px]">auto_awesome</span>
+                        {t("title")}
+                      </div>
+                      <p className="mt-3 text-[14px] leading-6 text-[#6f665c]">{item.text}</p>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
 
             <div className="mobile-scrollbar-hidden mobile-fade-up mt-5 flex gap-3 overflow-x-auto pb-2" style={{ animationDelay: "180ms" }}>
-              {aiRecommendations.map((place) => (
-                <Link
-                  key={place.id}
-                  href={`/${params.locale}/businesses/poterie`}
-                  className="mobile-card mobile-card-hover w-[175px] shrink-0 overflow-hidden"
-                >
-                  <div className="relative h-[140px]">
-                    <OptimizedImage
-                      src={place.image}
-                      alt={place.name}
-                      width={700}
-                      height={525}
-                      sizes="175px"
-                      widths={[350, 525, 700]}
-                      className="h-full w-full object-cover"
-                    />
-                    <span className="absolute left-3 top-3 rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] mobile-badge-green">
-                      {t(`recommendations.${place.id}.badge`)}
-                    </span>
-                  </div>
-                  <div className="px-4 py-4">
-                    <h3 className="text-[1.2rem] font-extrabold tracking-[-0.05em] text-[#2a2730]">{place.name}</h3>
-                    <div className="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#7b7267]">
-                      <span className="flex items-center gap-1 text-[#a36e00]">
-                        <span className="material-symbols-outlined text-[14px]">star</span>
-                        {place.rating}
-                      </span>
-                      <span>{t(`recommendations.${place.id}.walk`)}</span>
+              {recommendations === null ? (
+                <div className="flex gap-3">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="mobile-card w-[175px] shrink-0 overflow-hidden">
+                      <div className="h-[140px] bg-[#efece6]" />
+                      <div className="px-4 py-4">
+                        <SkeletonLine className="h-5 w-[75%]" />
+                        <SkeletonLine className="mt-2 h-4 w-[55%]" />
+                      </div>
                     </div>
-                    <div className="mt-3 text-[1rem] font-extrabold text-[#8f6510]">{place.price}</div>
-                  </div>
-                </Link>
-              ))}
+                  ))}
+                </div>
+              ) : recommendationsError ? (
+                <div className="w-full">
+                  <ErrorState
+                    title={tCommon("errorTitle")}
+                    description={tCommon("errorDescription")}
+                    onRetry={() => {
+                      setRecommendations(null);
+                      setRecommendationsError(false);
+                      void (async () => {
+                        try {
+                          const response = await fetch(`${API_BASE_URL}/ai/recommend?lang=${encodeURIComponent(params.locale)}`);
+                          if (!response.ok) throw new Error("Request failed");
+                          const payload = (await response.json()) as { data?: Business[] };
+                          setRecommendations(Array.isArray(payload.data) ? payload.data : []);
+                        } catch {
+                          setRecommendationsError(true);
+                          setRecommendations([]);
+                        }
+                      })();
+                    }}
+                    retryLabel={tCommon("retry")}
+                  />
+                </div>
+              ) : (
+                recommendations.slice(0, 8).map((place) => (
+                  <Link
+                    key={place.id}
+                    href={`/${params.locale}/businesses/${place.id}`}
+                    className="mobile-card mobile-card-hover w-[175px] shrink-0 overflow-hidden"
+                  >
+                    <div className="relative h-[140px]">
+                      {place.images?.[0] ? (
+                        <OptimizedImage
+                          src={place.images[0]}
+                          alt={place.name}
+                          width={700}
+                          height={525}
+                          sizes="175px"
+                          widths={[350, 525, 700]}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-[#efece6]" />
+                      )}
+                      <span className="absolute left-3 top-3 rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] mobile-badge-green">
+                        {recommendationsLabel}
+                      </span>
+                    </div>
+                    <div className="px-4 py-4">
+                      <h3 className="text-[1.2rem] font-extrabold tracking-[-0.05em] text-[#2a2730]">{place.name}</h3>
+                      <div className="mt-2 text-[12px] font-semibold text-[#7b7267]">
+                        {[place.city, place.regionRel?.name].filter(Boolean).join(" · ")}
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
             </div>
 
             <div className="mobile-fade-up mt-6" style={{ animationDelay: "240ms" }}>
@@ -98,8 +239,9 @@ export default function AiChatPage({
               <div className="mt-4 flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setItineraryReady(true)}
-                  className="mobile-pill mobile-button-gold h-12 flex-1 text-[13px] font-extrabold"
+                  onClick={() => void handleBuildItinerary()}
+                  disabled={isBuildingItinerary}
+                  className="mobile-pill mobile-button-gold h-12 flex-1 text-[13px] font-extrabold disabled:opacity-60"
                 >
                   {t("yesBuildItinerary")}
                 </button>
@@ -110,9 +252,18 @@ export default function AiChatPage({
                   {t("showOnMap")}
                 </Link>
               </div>
-              {itineraryReady ? (
+              {itineraryError ? (
+                <div className="mt-4">
+                  <ErrorState
+                    title={tCommon("errorTitle")}
+                    description={tCommon("errorDescription")}
+                    onRetry={() => void handleBuildItinerary()}
+                    retryLabel={tCommon("retry")}
+                  />
+                </div>
+              ) : itinerary ? (
                 <div className="mt-4 rounded-[24px] border border-[#eadcc6] bg-white px-4 py-4 text-[13px] leading-6 text-[#6f665c] shadow-[0_10px_22px_rgba(31,26,10,0.05)]">
-                  {t("itineraryReady")}
+                  {itinerary}
                 </div>
               ) : null}
             </div>
@@ -121,18 +272,24 @@ export default function AiChatPage({
               <p className="mb-3 text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#c2b7a2]">{t("quickExplore")}</p>
               <div className="mobile-search-shadow flex items-center gap-3 rounded-full bg-white px-4 py-3">
                 <span className="material-symbols-outlined text-[#d2b071]">auto_awesome</span>
-                <span className="flex-1 text-[14px] text-[#c2b9aa]">{t("askPlaceholder")}</span>
+                <input
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  placeholder={t("askPlaceholder")}
+                  className="w-full flex-1 bg-transparent text-[14px] text-[#2a2730] placeholder:text-[#c2b9aa] focus:outline-none"
+                />
                 <button
                   type="button"
-                  onClick={() => setMessageSent(true)}
-                  className="mobile-pill h-10 w-10 bg-[#e8a620] text-white"
+                  onClick={() => void handleSend()}
+                  disabled={isSending}
+                  className="mobile-pill h-10 w-10 bg-[#e8a620] text-white disabled:opacity-60"
                 >
                   <span className="material-symbols-outlined text-[18px]">send</span>
                 </button>
               </div>
-              {messageSent ? (
+              {sendError ? (
                 <p className="mt-3 text-[12px] font-semibold text-[#6f8d72]">
-                  {t("messageSent")}
+                  {tCommon("errorDescription")}
                 </p>
               ) : null}
             </div>

@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import MerchantBottomNav from "@/components/MerchantBottomNav";
+import { ErrorState } from "@/components/UiState";
+import { API_BASE_URL } from "@/lib/api";
+import { clearMerchantSetupDraft, readMerchantSetupStep1, readMerchantSetupStep2, writeMerchantSetupStep3 } from "@/lib/merchantSetup";
 
 const days = [
   { name: "Monday", start: "09:00 AM", end: "07:00 PM", enabled: true },
@@ -21,9 +25,74 @@ export default function MerchantContactSetupPage({
   params: { locale: string };
 }) {
   const t = useTranslations("merchantSetup");
+  const tCommon = useTranslations("common");
+  const router = useRouter();
   const [enabledDays, setEnabledDays] = useState<Record<string, boolean>>(
     Object.fromEntries(days.map((day) => [day.name, day.enabled])),
   );
+  const [whatsapp, setWhatsapp] = useState("");
+  const [phone, setPhone] = useState("");
+  const [submitError, setSubmitError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const openingHours = useMemo(() => {
+    return Object.fromEntries(
+      days.map((day) => [
+        day.name.toLowerCase(),
+        { start: day.start, end: day.end, enabled: Boolean(enabledDays[day.name]) },
+      ]),
+    );
+  }, [enabledDays]);
+
+  useEffect(() => {
+    writeMerchantSetupStep3({
+      openingHours,
+      whatsapp: whatsapp.trim() || undefined,
+      phone: phone.trim() || undefined,
+    });
+  }, [openingHours, phone, whatsapp]);
+
+  async function handleFinish() {
+    setSubmitError(false);
+    setIsSubmitting(true);
+
+    const step1 = readMerchantSetupStep1();
+    const step2 = readMerchantSetupStep2();
+    if (!step1 || !step2) {
+      setSubmitError(true);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai2/profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          step1: {
+            businessName: step1.businessName,
+            category: step1.category,
+          },
+          step2: {
+            logo: step2.logo,
+            photos: step2.photos,
+          },
+          step3: {
+            openingHours,
+            whatsapp: whatsapp.trim() || undefined,
+            phoneNumber: phone.trim() || undefined,
+          },
+        }),
+      });
+
+      if (!response.ok) throw new Error("Request failed");
+      clearMerchantSetupDraft();
+      router.replace(`/${params.locale}/merchant/submitted`);
+    } catch {
+      setSubmitError(true);
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -58,6 +127,16 @@ export default function MerchantContactSetupPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
+            {submitError ? (
+              <div className="mt-5">
+                <ErrorState
+                  title={tCommon("errorTitle")}
+                  description={tCommon("errorDescription")}
+                  onRetry={() => void handleFinish()}
+                  retryLabel={tCommon("retry")}
+                />
+              </div>
+            ) : null}
             <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
               <h1 className="text-[2.5rem] font-extrabold leading-[0.93] tracking-[-0.07em] text-[#23212c]">
                 {t("contactTitleLine1")}
@@ -124,8 +203,18 @@ export default function MerchantContactSetupPage({
                 {t("contactChannels")}
               </div>
               <div className="mt-4 space-y-3">
-                <input className="mobile-input" defaultValue="WhatsApp Business" />
-                <input className="mobile-input" defaultValue="+212 600 123 456" />
+                <input
+                  className="mobile-input"
+                  value={whatsapp}
+                  onChange={(event) => setWhatsapp(event.target.value)}
+                  placeholder="WhatsApp"
+                />
+                <input
+                  className="mobile-input"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="+212 ..."
+                />
               </div>
             </div>
 
@@ -139,13 +228,15 @@ export default function MerchantContactSetupPage({
               </Link>
             </div>
 
-            <Link
-              href={`/${params.locale}/merchant/submitted`}
-              className="mobile-pill mobile-button-gold mobile-fade-up mt-4 h-14 w-full text-[1.1rem] font-extrabold"
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => void handleFinish()}
+              className="mobile-pill mobile-button-gold mobile-fade-up mt-4 h-14 w-full text-[1.1rem] font-extrabold disabled:opacity-60"
               style={{ animationDelay: "300ms" }}
             >
-            {t("finish")}
-            </Link>
+              {t("finish")}
+            </button>
           </div>
 
           <MerchantBottomNav activeIndex={3} locale={params.locale} />

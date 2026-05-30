@@ -1,18 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
-import { merchantPhotoManagerShots } from "@/lib/mobileData";
+import { ErrorState, SkeletonLine } from "@/components/UiState";
+import { API_BASE_URL, type Business } from "@/lib/api";
+import { fetchMyBusinesses, getMerchantIdentity } from "@/lib/merchant";
 
 export default function MerchantPhotoManagerPage({
   params,
 }: {
   params: { locale: string };
 }) {
-  const [shots, setShots] = useState(merchantPhotoManagerShots);
-  const [selectedId, setSelectedId] = useState(merchantPhotoManagerShots[0]?.id ?? "");
+  const identity = useMemo(() => getMerchantIdentity(), []);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [shots, setShots] = useState<Array<{ id: string; label: string; image: string }>>([]);
+  const [selectedId, setSelectedId] = useState("");
   const [optimized, setOptimized] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedPhoto = useMemo(
     () =>
@@ -20,6 +27,100 @@ export default function MerchantPhotoManagerPage({
       shots[0],
     [selectedId, shots],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+    setBusiness(null);
+    setShots([]);
+    setSelectedId("");
+
+    void (async () => {
+      if (!identity?.token) {
+        setHasError(true);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const businesses = await fetchMyBusinesses();
+        const first = businesses[0] ?? null;
+        if (cancelled) return;
+        setBusiness(first);
+        const mapped = (first?.images ?? []).map((image, index) => ({
+          id: `${index}-${image}`,
+          label: `Photo ${index + 1}`,
+          image,
+        }));
+        setShots(mapped);
+        setSelectedId(mapped[0]?.id ?? "");
+        setIsLoading(false);
+      } catch {
+        if (cancelled) return;
+        setHasError(true);
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [identity]);
+
+  async function updateImages(nextImages: string[]) {
+    if (!identity?.token || !business) return;
+    const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${identity.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ images: nextImages }),
+    });
+    if (!response.ok) throw new Error("Request failed");
+    const updated = (await response.json()) as Business;
+    setBusiness(updated);
+    const mapped = (updated.images ?? []).map((image, index) => ({
+      id: `${index}-${image}`,
+      label: `Photo ${index + 1}`,
+      image,
+    }));
+    setShots(mapped);
+    setSelectedId(mapped[0]?.id ?? "");
+  }
+
+  function readFileAsDataUrl(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result ?? ""));
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleAddFiles(files: FileList | null) {
+    if (!files || files.length === 0 || !identity?.token || !business) return;
+    const incoming = Array.from(files).slice(0, 6);
+    const dataUrls = await Promise.all(incoming.map((file) => readFileAsDataUrl(file)));
+    const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${identity.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ images: dataUrls }),
+    });
+    if (!response.ok) throw new Error("Request failed");
+    const updated = (await response.json()) as Business;
+    setBusiness(updated);
+    const mapped = (updated.images ?? []).map((image, index) => ({
+      id: `${index}-${image}`,
+      label: `Photo ${index + 1}`,
+      image,
+    }));
+    setShots(mapped);
+    setSelectedId(mapped[0]?.id ?? "");
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -42,6 +143,16 @@ export default function MerchantPhotoManagerPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
+            {hasError ? (
+              <div className="mt-6">
+                <ErrorState
+                  title="Something went wrong"
+                  description="Check your connection and try again."
+                  onRetry={() => window.location.reload()}
+                  retryLabel="Retry"
+                />
+              </div>
+            ) : null}
             <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
               <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
                 Photo Manager
@@ -52,7 +163,12 @@ export default function MerchantPhotoManagerPage({
               </p>
             </div>
 
-            {selectedPhoto ? (
+            {isLoading ? (
+              <div className="mt-6 overflow-hidden rounded-[28px] border border-[#221d1a] bg-[#171614] px-4 py-5">
+                <SkeletonLine className="h-4 w-[55%]" />
+                <SkeletonLine className="mt-3 h-4 w-[80%]" />
+              </div>
+            ) : selectedPhoto ? (
               <div
                 className="mobile-fade-up mt-6 overflow-hidden rounded-[28px] border border-[#221d1a] bg-[#171614] shadow-[0_18px_34px_rgba(17,14,10,0.18)]"
                 style={{ animationDelay: "120ms" }}
@@ -71,8 +187,7 @@ export default function MerchantPhotoManagerPage({
                     type="button"
                     onClick={() => {
                       const remaining = shots.filter((shot) => shot.id !== selectedPhoto.id);
-                      setShots(remaining);
-                      setSelectedId(remaining[0]?.id ?? "");
+                      void updateImages(remaining.map((shot) => shot.image));
                     }}
                     className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-[#c26f55] shadow-sm"
                   >
@@ -86,8 +201,7 @@ export default function MerchantPhotoManagerPage({
                         const reordered = [...shots];
                         const [active] = reordered.splice(currentIndex, 1);
                         reordered.unshift(active);
-                        setShots(reordered);
-                        setSelectedId(active.id);
+                        void updateImages(reordered.map((shot) => shot.image));
                       }
                     }}
                     className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-[#2e2b28]/85 text-white shadow-sm"
@@ -123,15 +237,18 @@ export default function MerchantPhotoManagerPage({
 
             <button
               type="button"
-              onClick={() => {
-                const nextShot = merchantPhotoManagerShots[shots.length % merchantPhotoManagerShots.length];
-                const nextId = `${nextShot.id}-${shots.length}`;
-                setShots((current) => [...current, { ...nextShot, id: nextId }]);
-                setSelectedId(nextId);
-              }}
+              onClick={() => fileInputRef.current?.click()}
               className="mobile-fade-up mt-6 flex h-[138px] w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-[#d9d1c5] bg-[#f6f4f0] text-center"
               style={{ animationDelay: "320ms" }}
             >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(event) => void handleAddFiles(event.target.files)}
+              />
               <span className="material-symbols-outlined text-[26px] text-[#d2a85e]">add_photo_alternate</span>
               <span className="mt-2 text-[1rem] font-extrabold tracking-[-0.03em] text-[#c39128]">
                 Add Photos

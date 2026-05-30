@@ -5,17 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import OptimizedImage from "@/components/OptimizedImage";
-import { detailGallery } from "@/lib/mobileData";
+import { API_BASE_URL, api, type Business } from "@/lib/api";
+import { haversineKm } from "@/lib/geo";
+import { useFavorites } from "@/lib/favorites";
 
 const languageChips = ["EN", "FR", "AR", "ES"] as const;
 type LanguageChip = (typeof languageChips)[number];
-
-const generatedDescriptionByLanguage: Record<LanguageChip, string> = {
-  EN: "Discover the soul of this local atelier in Fès. Inspired by historic zellīj patterns and famous cobalt-blue tones, each piece is hand-thrown and painted with natural mineral pigments. Visitors can watch the wheel turn as master hands shape clay into glossy masterpieces.",
-  FR: "Découvrez l’âme de cet atelier local à Fès. Inspirées des motifs historiques de zellīj et des célèbres tons bleu cobalt, chaque pièce est tournée à la main puis peinte avec des pigments minéraux naturels. Vous pourrez voir le tour en action et les mains expertes transformer l’argile en pièces éclatantes.",
-  AR: "اكتشف روح هذا المشغل المحلي في فاس. مستوحى من زخارف الزليج التاريخية ودرجات الأزرق الكوبالت الشهيرة، تُصنع كل قطعة على الدولاب ثم تُلوَّن بأصباغ معدنية طبيعية. شاهد دوران الدولاب واليدين الخبيرتين وهما تشكّلان الطين إلى تحف لامعة.",
-  ES: "Descubre el alma de este taller local en Fez. Inspirado en los patrones históricos de zellīj y los famosos tonos azul cobalto, cada pieza se modela al torno y se pinta con pigmentos minerales naturales. Podrás ver girar la rueda y cómo manos expertas convierten el barro en piezas brillantes.",
-};
 
 function localeToChip(locale: string): LanguageChip {
   const normalized = locale.toLowerCase();
@@ -33,45 +28,141 @@ export default function PoteriePage({
   const t = useTranslations("poterie");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [saved, setSaved] = useState(false);
+  const favorites = useFavorites();
   const [activeLanguage, setActiveLanguage] = useState<LanguageChip>(() => localeToChip(params.locale));
   const [hoursExpanded, setHoursExpanded] = useState(false);
-  const primaryImage = useMemo(
-    () =>
-      "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=Moroccan%20artisan%20working%20on%20pottery%20in%20studio%2C%20warm%20window%20light%2C%20high-end%20travel%20editorial%20photography&image_size=portrait_16_9",
-    [],
-  );
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [businessError, setBusinessError] = useState(false);
+  const [rating, setRating] = useState<{ average: number; count: number } | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [generatedByLang, setGeneratedByLang] = useState<Partial<Record<LanguageChip, string>>>({});
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const businessId = 1;
+  const primaryImage = useMemo(() => business?.images?.[0] ?? null, [business?.images]);
 
   useEffect(() => {
     setActiveLanguage(localeToChip(params.locale));
   }, [params.locale]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBusiness(null);
+    setBusinessError(false);
+    setRating(null);
+    void (async () => {
+      try {
+        const [businessData, ratingData] = await Promise.all([
+          api.getBusinessById(businessId),
+          api.getAverageRating(businessId),
+        ]);
+        if (cancelled) return;
+        setBusiness(businessData);
+        setRating(ratingData);
+      } catch {
+        if (cancelled) return;
+        setBusinessError(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!business?.lat || !business?.lng) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const km = haversineKm(position.coords.latitude, position.coords.longitude, business.lat!, business.lng!);
+        setDistanceKm(km);
+      },
+      () => {
+        setDistanceKm(null);
+      },
+      { enableHighAccuracy: true, maximumAge: 60_000, timeout: 8_000 },
+    );
+  }, [business?.lat, business?.lng]);
+
+  useEffect(() => {
+    if (!business) return;
+    if (generatedByLang[activeLanguage]) return;
+    if (isGenerating) return;
+
+    let cancelled = false;
+    setIsGenerating(true);
+    void (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/ai1/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            businessType: business.name,
+            specialties: [business.category?.name_en, business.category?.name_fr, business.category?.name_ar, business.category?.name_es]
+              .filter(Boolean)
+              .slice(0, 1),
+            usps: business.description,
+            language: activeLanguage,
+            tone: "storytelling",
+            audience: "tourists",
+            tags: [business.city, business.regionRel?.name].filter(Boolean),
+          }),
+        });
+        if (!response.ok) throw new Error("Request failed");
+        const payload = (await response.json()) as { data?: { text?: string } };
+        const text = payload.data?.text ?? "";
+        if (cancelled) return;
+        setGeneratedByLang((current) => ({ ...current, [activeLanguage]: text || current[activeLanguage] || "" }));
+      } catch {
+        if (cancelled) return;
+        setGeneratedByLang((current) => ({ ...current, [activeLanguage]: "" }));
+      } finally {
+        if (!cancelled) setIsGenerating(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeLanguage, business, generatedByLang, isGenerating]);
 
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col">
           <div className="relative h-[310px]">
-            <OptimizedImage
-              src={primaryImage}
-              alt={t("heroAlt")}
-              width={1200}
-              height={900}
-              sizes="100vw"
-              widths={[640, 828, 1080, 1200]}
-              priority
-              className="h-full w-full object-cover"
-            />
+            {primaryImage ? (
+              <OptimizedImage
+                src={primaryImage}
+                alt={business?.name ?? t("heroAlt")}
+                width={1200}
+                height={900}
+                sizes="100vw"
+                widths={[640, 828, 1080, 1200]}
+                priority
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-[#efece6]" />
+            )}
             <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
               <Link href={`/${params.locale}/map`} className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm">
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               </Link>
               <button
                 type="button"
-                onClick={() => setSaved((current) => !current)}
+                onClick={() => void favorites.toggleFavorite(businessId)}
+                disabled={favorites.isPending(businessId)}
                 className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
               >
                 <span className="material-symbols-outlined text-[18px]">
-                  {saved ? "favorite" : "favorite_border"}
+                  {favorites.isPending(businessId)
+                    ? "progress_activity"
+                    : favorites.isFavorite(businessId)
+                      ? "favorite"
+                      : "favorite_border"}
                 </span>
               </button>
             </div>
@@ -88,28 +179,29 @@ export default function PoteriePage({
             </div>
 
             <h1 className="mt-4 text-[2.35rem] font-extrabold leading-[0.95] tracking-[-0.07em] text-[#23212c]">
-              L'Art de la
-              <br />
-              Poterie
+              {business?.name ?? tCommon("loading")}
             </h1>
-            <p className="mt-2 text-[15px] text-[#70685d]">2 Medina, Fès</p>
+            <p className="mt-2 text-[15px] text-[#70685d]">{[business?.user?.address, business?.city].filter(Boolean).join(" · ")}</p>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-[#7c7367]">
               <span className="flex items-center gap-1 font-extrabold text-[#a36e00]">
                 <span className="material-symbols-outlined text-[16px]">star</span>
-                4.8 <span className="font-semibold text-[#8d8476]">({t("reviewsCount", { count: "1.2k" })})</span>
+                {(rating?.average ?? 0).toFixed(1)}{" "}
+                <span className="font-semibold text-[#8d8476]">({t("reviewsCount", { count: String(rating?.count ?? 0) })})</span>
               </span>
               <span>{tCommon("openNow")}</span>
-              <span>{t("distanceAway", { distance: "1.2 km" })}</span>
+              {distanceKm !== null ? (
+                <span>{t("distanceAway", { distance: `${distanceKm.toFixed(1)} km` })}</span>
+              ) : null}
             </div>
 
             <div className="mt-5 flex items-center justify-between rounded-full border border-[#ece3d4] bg-white/80 px-2 py-2 shadow-[0_8px_24px_rgba(31,26,10,0.06)]">
               <button
                 type="button"
                 onClick={() => {
-                  if (typeof window !== "undefined") {
-                    window.location.href = "tel:+212535000000";
-                  }
+                  const phone = business?.user?.phone;
+                  if (!phone) return;
+                  if (typeof window !== "undefined") window.location.href = `tel:${phone}`;
                 }}
                 className="mobile-pill h-11 flex-1 text-[13px] font-bold text-[#7b7367]"
               >
@@ -158,7 +250,7 @@ export default function PoteriePage({
               </div>
 
               <div className="mt-4 rounded-[26px] border border-[#eadfce] bg-white px-4 py-4 text-[13px] leading-6 text-[#7a7266] shadow-[0_10px_25px_rgba(31,26,10,0.05)]">
-                {generatedDescriptionByLanguage[activeLanguage]}
+                {businessError ? tCommon("errorDescription") : (generatedByLang[activeLanguage] ?? (isGenerating ? tCommon("loading") : ""))}
               </div>
             </div>
 
@@ -190,7 +282,7 @@ export default function PoteriePage({
               </div>
 
               <div className="mobile-scrollbar-hidden mt-4 grid grid-cols-2 gap-3 overflow-x-auto">
-                {detailGallery.slice(0, 4).map((image, index) => (
+                {(business?.images ?? []).slice(0, 4).map((image, index) => (
                   <div key={image} className="relative overflow-hidden rounded-[22px]">
                     <OptimizedImage
                       src={image}
@@ -201,9 +293,9 @@ export default function PoteriePage({
                       widths={[180, 360, 540]}
                       className="h-[92px] w-full object-cover"
                     />
-                    {index === 3 && (
+                    {index === 3 && (business?.images?.length ?? 0) > 4 && (
                       <div className="absolute inset-0 grid place-items-center bg-black/45 text-xl font-extrabold text-white">
-                        +12
+                        +{(business?.images?.length ?? 4) - 3}
                       </div>
                     )}
                   </div>

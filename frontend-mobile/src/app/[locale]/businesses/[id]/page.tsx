@@ -7,6 +7,7 @@ import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { useFavorites } from "@/lib/favorites";
 import { useBusinessAverageRating, useBusinessDetail, useBusinessReviews } from "@/lib/queries";
 import OptimizedImage from "@/components/OptimizedImage";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function BusinessDetailPage({
   params,
@@ -29,6 +30,13 @@ export default function BusinessDetailPage({
   const primaryImage = useMemo(() => businessQuery.data?.images?.[0], [businessQuery.data?.images]);
 
   useEffect(() => {
+    if (!Number.isFinite(businessId)) return;
+    void fetch(`${API_BASE_URL}/analytics/event`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessId, eventType: "view" }),
+    }).catch(() => null);
+
     return () => {
       if (shareMessageTimerRef.current) {
         window.clearTimeout(shareMessageTimerRef.current);

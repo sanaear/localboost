@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import MerchantBottomNav from "@/components/MerchantBottomNav";
+import { readMerchantSetupStep1, writeMerchantSetupStep1 } from "@/lib/merchantSetup";
 
 const categories = ["traditionalPottery", "luxuryAccommodation", "restaurant", "handmadeSoukShop"] as const;
 
@@ -13,7 +15,26 @@ export default function MerchantBusinessSetupPage({
   params: { locale: string };
 }) {
   const t = useTranslations("merchantSetup");
+  const router = useRouter();
   const [categoryIndex, setCategoryIndex] = useState(0);
+  const [businessName, setBusinessName] = useState("");
+
+  useEffect(() => {
+    const saved = readMerchantSetupStep1();
+    if (!saved) return;
+    setBusinessName(saved.businessName ?? "");
+    const index = categories.findIndex((c) => c === saved.category);
+    if (index >= 0) setCategoryIndex(index);
+  }, []);
+
+  function handleNext() {
+    const category = categories[categoryIndex];
+    writeMerchantSetupStep1({
+      businessName: businessName.trim(),
+      category,
+    });
+    router.push(`/${params.locale}/merchant/setup/photos`);
+  }
 
   return (
     <main className="mobile-app-shell">
@@ -47,6 +68,8 @@ export default function MerchantBusinessSetupPage({
                 <input
                   className="mobile-input rounded-none border-x-0 border-t-0 bg-transparent px-0 pb-3 pt-1 text-[18px] placeholder:text-[#d3c8b8]"
                   placeholder={t("businessNamePlaceholder")}
+                  value={businessName}
+                  onChange={(event) => setBusinessName(event.target.value)}
                 />
               </div>
               <div>
@@ -65,13 +88,14 @@ export default function MerchantBusinessSetupPage({
             </form>
 
             <div className="mobile-fade-up mt-14 space-y-5" style={{ animationDelay: "240ms" }}>
-              <Link
-                href={`/${params.locale}/merchant/setup/photos`}
+              <button
+                type="button"
+                onClick={handleNext}
                 className="mobile-pill mobile-button-gold h-16 w-full text-[1.45rem] font-extrabold"
               >
                 {t("next")}
                 <span className="material-symbols-outlined ml-3 text-[22px]">arrow_forward</span>
-              </Link>
+              </button>
               <Link href={`/${params.locale}/merchant/dashboard`} className="block w-full text-center text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#9e9383]">
                 {t("saveForLater")}
               </Link>
