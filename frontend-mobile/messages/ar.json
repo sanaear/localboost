@@ -10,7 +10,8 @@
     "errorDescription": "تحقق من الاتصال ثم أعد المحاولة.",
     "openNow": "مفتوح الآن",
     "closesAt": "يغلق عند {time}",
-    "explore": "استكشاف"
+    "explore": "استكشاف",
+    "logout": "تسجيل الخروج"
   },
   "nav": {
     "explore": "استكشاف",

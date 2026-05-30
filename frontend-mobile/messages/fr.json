@@ -10,7 +10,8 @@
     "errorDescription": "Vérifiez votre connexion puis réessayez.",
     "openNow": "Ouvert",
     "closesAt": "Ferme à {time}",
-    "explore": "Explorer"
+    "explore": "Explorer",
+    "logout": "Se déconnecter"
   },
   "nav": {
     "explore": "Explorer",

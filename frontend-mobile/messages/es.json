@@ -10,7 +10,8 @@
     "errorDescription": "Comprueba tu conexión e inténtalo de nuevo.",
     "openNow": "Abierto",
     "closesAt": "Cierra a las {time}",
-    "explore": "Explorar"
+    "explore": "Explorar",
+    "logout": "Cerrar sesión"
   },
   "nav": {
     "explore": "Explorar",

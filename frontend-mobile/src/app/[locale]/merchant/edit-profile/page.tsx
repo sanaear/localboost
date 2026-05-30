@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
 import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
 import { API_BASE_URL, api, type Business, type Category } from "@/lib/api";
+import { clearStoredTokens } from "@/lib/auth";
 import { fetchMyBusinesses, getMerchantIdentity } from "@/lib/merchant";
 
 const weekDays = [
@@ -25,6 +28,8 @@ export default function MerchantEditProfilePage({
 }: {
   params: { locale: string };
 }) {
+  const tCommon = useTranslations("common");
+  const router = useRouter();
   const identity = useMemo(() => getMerchantIdentity(), []);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -450,6 +455,17 @@ export default function MerchantEditProfilePage({
                 Profile changes saved successfully.
               </p>
             ) : null}
+
+            <button
+              type="button"
+              onClick={() => {
+                clearStoredTokens();
+                router.replace(`/${params.locale}`);
+              }}
+              className="mobile-pill mt-4 h-12 w-full bg-[#9b3e3e] text-[12px] font-extrabold uppercase tracking-[0.14em] text-white"
+            >
+              {tCommon("logout")}
+            </button>
           </div>
 
           <div className="px-2 pb-3 pt-2">

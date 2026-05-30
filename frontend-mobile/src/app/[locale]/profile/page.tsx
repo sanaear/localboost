@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { clearStoredTokens } from "@/lib/auth";
 import { applyTheme, readStoredTheme, setTheme, type Theme } from "@/lib/theme";
 
 const languages = [
@@ -21,6 +22,7 @@ export default function ProfilePage({
 }) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const router = useRouter();
   const pathname = usePathname();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [theme, setThemeState] = useState<Theme>("light");
@@ -193,6 +195,20 @@ export default function ProfilePage({
                   </span>
                   <span className="material-symbols-outlined text-[18px] text-[#a39a8b]">chevron_right</span>
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearStoredTokens();
+                    router.replace(`/${params.locale}`);
+                  }}
+                  className="flex w-full items-center justify-between py-5 text-left"
+                >
+                  <span className="flex items-center gap-3 text-[15px] font-semibold text-[#9b3e3e]">
+                    <span className="material-symbols-outlined text-[18px] text-[#9b3e3e]">logout</span>
+                    {tCommon("logout")}
+                  </span>
+                  <span className="material-symbols-outlined text-[18px] text-[#a39a8b]">chevron_right</span>
+                </button>
               </div>
             </div>
           </div>

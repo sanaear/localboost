@@ -10,7 +10,8 @@
     "errorDescription": "Check your connection and try again.",
     "openNow": "Open now",
     "closesAt": "Closes {time}",
-    "explore": "Explore"
+    "explore": "Explore",
+    "logout": "Log out"
   },
   "nav": {
     "explore": "Explore",
