@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import OptimizedImage from "@/components/OptimizedImage";
 import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
-import type { SearchFilters } from "@/lib/api";
+import { api, type Business } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
-import { useBusinessesSearch } from "@/lib/queries";
 
 export default function SavedPage({
   params,
@@ -18,13 +17,49 @@ export default function SavedPage({
   const t = useTranslations("saved");
   const tCommon = useTranslations("common");
   const favorites = useFavorites();
-  const filters: SearchFilters = useMemo(() => ({}), []);
-  const businessesQuery = useBusinessesSearch(filters);
-  const businesses = businessesQuery.data ?? [];
-  const favoriteBusinesses = useMemo(
-    () => businesses.filter((business) => favorites.favoritesSet.has(business.id)),
-    [businesses, favorites.favoritesSet],
-  );
+  const favoriteIds = useMemo(() => Array.from(favorites.favoritesSet), [favorites.favoritesSet]);
+  const [favoriteBusinesses, setFavoriteBusinesses] = useState<Business[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+    setFavoriteBusinesses([]);
+
+    if (favoriteIds.length === 0) {
+      setIsLoading(false);
+      return;
+    }
+
+    void (async () => {
+      try {
+        const concurrency = 6;
+        const results: Business[] = [];
+        for (let i = 0; i < favoriteIds.length; i += concurrency) {
+          const batch = favoriteIds.slice(i, i + concurrency);
+          const items = await Promise.all(batch.map((id) => api.getBusinessById(id)));
+          results.push(...items);
+          if (cancelled) return;
+        }
+
+        if (cancelled) return;
+        setFavoriteBusinesses(results);
+        setIsLoading(false);
+      } catch {
+        if (cancelled) return;
+        setHasError(true);
+        setFavoriteBusinesses([]);
+        setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [favoriteIds, reloadKey]);
 
   return (
     <main className="mobile-app-shell">
@@ -51,7 +86,7 @@ export default function SavedPage({
                 </h2>
               </div>
               <div className="rounded-[22px] bg-[#f4efe5] px-4 py-3 text-center">
-                <div className="text-[1.5rem] font-extrabold text-[#8d6513]">{favoriteBusinesses.length}</div>
+                <div className="text-[1.5rem] font-extrabold text-[#8d6513]">{favoriteIds.length}</div>
                 <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#9a8f7f]">{t("countLabel")}</div>
               </div>
             </div>
@@ -67,7 +102,7 @@ export default function SavedPage({
               </div>
             ) : null}
 
-            {businessesQuery.isLoading ? (
+            {isLoading ? (
               <div className="mt-3 space-y-4">
                 {Array.from({ length: 3 }).map((_, index) => (
                   <div key={index} className="overflow-hidden rounded-[26px] border border-[#ece2d3] bg-white shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
@@ -79,12 +114,14 @@ export default function SavedPage({
                   </div>
                 ))}
               </div>
-            ) : businessesQuery.isError ? (
+            ) : hasError ? (
               <div className="mt-3">
                 <ErrorState
                   title={t("errorTitle")}
                   description={tCommon("errorDescription")}
-                  onRetry={() => businessesQuery.refetch()}
+                  onRetry={() => {
+                    setReloadKey((current) => current + 1);
+                  }}
                 />
               </div>
             ) : favoriteBusinesses.length === 0 ? (

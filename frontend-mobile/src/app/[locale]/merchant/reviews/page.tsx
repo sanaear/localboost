@@ -10,6 +10,13 @@ import { getMerchantIdentity, fetchMyBusinesses, fetchApprovedReviewsForBusiness
 
 const filters = ["All", "Replied", "Pending Reply"] as const;
 
+function formatDate(value: string | null | undefined, locale: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return date.toLocaleDateString(locale);
+}
+
 type MerchantReviewItem = {
   id: number;
   name: string;
@@ -80,7 +87,7 @@ export default function MerchantReviewsPage({
               id: review.id,
               name,
               avatar: review.user?.profile_image ?? undefined,
-              date: new Date(review.created_at).toLocaleDateString(),
+              date: formatDate(review.created_at, params.locale) || "—",
               rating: review.rating,
               status: isReplied ? "REPLIED" : "PENDING REPLY",
               statusTone: isReplied ? "gray" : "amber",
@@ -105,7 +112,7 @@ export default function MerchantReviewsPage({
     return () => {
       cancelled = true;
     };
-  }, [identity, tCommon]);
+  }, [identity, params.locale, tCommon]);
 
   const visibleReviews = useMemo(() => {
     if (selectedFilter === "Replied") {

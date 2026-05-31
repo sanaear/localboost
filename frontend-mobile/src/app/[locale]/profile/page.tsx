@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { clearStoredTokens } from "@/lib/auth";
 import { applyTheme, readStoredTheme, setTheme, type Theme } from "@/lib/theme";
+import { fetchMe } from "@/lib/merchant";
+import type { User } from "@/lib/api";
 
 const languages = [
   { country: "MA", code: "AR", locale: "ar" },
@@ -22,11 +24,14 @@ export default function ProfilePage({
 }) {
   const t = useTranslations("profile");
   const tCommon = useTranslations("common");
+  const tAuth = useTranslations("auth");
   const router = useRouter();
   const pathname = usePathname();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [theme, setThemeState] = useState<Theme>("light");
   const [avatarUpdated, setAvatarUpdated] = useState(false);
+  const [me, setMe] = useState<User | null>(null);
+  const [meLoading, setMeLoading] = useState(true);
 
   const activeLanguage = languages.find((item) => item.locale === params.locale);
   const isDarkMode = theme === "dark";
@@ -37,6 +42,32 @@ export default function ProfilePage({
     setThemeState(current);
     applyTheme(current);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setMeLoading(true);
+    void (async () => {
+      try {
+        const user = await fetchMe();
+        if (cancelled) return;
+        setMe(user);
+      } catch {
+        if (cancelled) return;
+        setMe(null);
+      } finally {
+        if (cancelled) return;
+        setMeLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayName =
+    [me?.first_name, me?.last_name].filter(Boolean).join(" ") ||
+    (me?.email ? me.email.split("@")[0] : "");
 
   return (
     <main className="mobile-app-shell">
@@ -61,7 +92,10 @@ export default function ProfilePage({
               <div className="relative">
                 <div className="grid h-[124px] w-[124px] place-items-center rounded-[36px] bg-[#215d6a] shadow-[0_18px_30px_rgba(32,87,99,0.22)]">
                   <img
-                    src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=clean%20avatar%20portrait%20for%20mobile%20profile%2C%20male%20traveler%2C%20simple%20graphic%20style%2C%20teal%20background&image_size=square"
+                    src={
+                      me?.profile_image ||
+                      "https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=clean%20avatar%20portrait%20for%20mobile%20profile%2C%20male%20traveler%2C%20simple%20graphic%20style%2C%20teal%20background&image_size=square"
+                    }
                     alt={t("profileAlt")}
                     className="h-[96px] w-[96px] rounded-[28px] object-cover"
                   />
@@ -75,13 +109,21 @@ export default function ProfilePage({
                 </button>
               </div>
               <h2 className="mt-6 text-[2.25rem] font-extrabold leading-[0.95] tracking-[-0.07em] text-[#23212c]">
-                Amine Alami
+                {meLoading ? tCommon("loading") : displayName || tAuth("signIn")}
               </h2>
-              <p className="mt-1 text-[15px] text-[#787064]">amine.alami@worldcup2030.ma</p>
+              <p className="mt-1 text-[15px] text-[#787064]">{meLoading ? "" : me?.email ?? ""}</p>
               {avatarUpdated ? (
                 <p className="mt-3 text-[12px] font-semibold text-[#5f8e70]">
                   {t("profilePhotoUpdated")}
                 </p>
+              ) : null}
+              {!meLoading && !me ? (
+                <Link
+                  href={`/${params.locale}`}
+                  className="mobile-pill mobile-button-gold mt-5 h-12 w-full max-w-[260px] text-[12px] font-extrabold uppercase tracking-[0.14em]"
+                >
+                  {tAuth("signIn")}
+                </Link>
               ) : null}
             </div>
 
@@ -115,7 +157,7 @@ export default function ProfilePage({
                       key={item.country}
                       type="button"
                       onClick={() => {
-                        window.location.assign(targetPath);
+                        router.replace(targetPath);
                       }}
                       className={`rounded-[24px] px-2 py-4 text-center transition ${
                         active ? "bg-[#eba521] text-white shadow-[0_14px_24px_rgba(235,165,33,0.22)]" : "bg-[#f1efea] text-[#696259]"

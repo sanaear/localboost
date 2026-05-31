@@ -30,7 +30,6 @@ export default function SignInPage({
   const [resetSent, setResetSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const destination = getDestination(params.locale, selectedPerspective);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -144,14 +143,15 @@ export default function SignInPage({
               {t("or")}
             </div>
 
-            <Link
-              href={destination}
+            <button
+              type="button"
+              onClick={() => setSubmitError(t("googleUnavailable"))}
               className="mobile-pill mobile-button-secondary mobile-fade-up mt-6 flex h-14 w-full items-center justify-center gap-3 text-[15px] font-bold"
               style={{ animationDelay: "460ms" }}
             >
               <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
               {t("continueWithGoogle")}
-            </Link>
+            </button>
 
             <p className="mt-8 text-center text-sm text-[#837966] mobile-fade-up" style={{ animationDelay: "520ms" }}>
               {t("newTo")}{" "}

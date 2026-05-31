@@ -22,6 +22,7 @@ export default function MerchantStatsPage({
     totalClicks: number;
     viewsActivity: number[];
     clicksByDay: number[];
+    bucketLabels: string[];
     viewsByBusiness: Array<{ business_id: number; name: string; count: number }>;
   } | null>(null);
 
@@ -64,9 +65,9 @@ export default function MerchantStatsPage({
         const clicksByDay = Array.isArray(payload.data?.clicksByDay) ? payload.data!.clicksByDay! : [];
 
         const today = new Date();
-        const last7 = Array.from({ length: 7 }).map((_, index) => {
+        const dates = Array.from({ length: days }).map((_, index) => {
           const d = new Date(today);
-          d.setDate(today.getDate() - (6 - index));
+          d.setDate(today.getDate() - (days - 1 - index));
           return d.toISOString().slice(0, 10);
         });
         const viewsMap = new Map<string, number>(
@@ -76,8 +77,27 @@ export default function MerchantStatsPage({
           clicksByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0]),
         );
 
-        const viewsActivity = last7.map((key) => viewsMap.get(key) ?? 0);
-        const clicksBars = last7.map((key) => clicksMap.get(key) ?? 0);
+        const bucketSize = Math.max(1, Math.ceil(days / 7));
+        const viewsActivity = Array.from({ length: 7 }).map((_, bucketIndex) => {
+          const start = bucketIndex * bucketSize;
+          const slice = dates.slice(start, start + bucketSize);
+          return slice.reduce((sum, key) => sum + (viewsMap.get(key) ?? 0), 0);
+        });
+        const clicksBars = Array.from({ length: 7 }).map((_, bucketIndex) => {
+          const start = bucketIndex * bucketSize;
+          const slice = dates.slice(start, start + bucketSize);
+          return slice.reduce((sum, key) => sum + (clicksMap.get(key) ?? 0), 0);
+        });
+        const bucketLabels = Array.from({ length: 7 }).map((_, bucketIndex) => {
+          const start = bucketIndex * bucketSize;
+          const slice = dates.slice(start, start + bucketSize);
+          const endKey = slice[slice.length - 1] ?? dates[dates.length - 1] ?? today.toISOString().slice(0, 10);
+          const end = new Date(endKey);
+          if (days === 7) {
+            return new Intl.DateTimeFormat(params.locale, { weekday: "short" }).format(end);
+          }
+          return new Intl.DateTimeFormat(params.locale, { month: "short", day: "numeric" }).format(end);
+        });
 
         const viewsByBusiness = Array.isArray(payload.data?.viewsByBusiness) ? payload.data!.viewsByBusiness! : [];
 
@@ -87,6 +107,7 @@ export default function MerchantStatsPage({
           totalClicks: Number(payload.data?.totalClicks) || 0,
           viewsActivity,
           clicksByDay: clicksBars,
+          bucketLabels,
           viewsByBusiness,
         });
         setIsLoading(false);
@@ -100,7 +121,7 @@ export default function MerchantStatsPage({
     return () => {
       cancelled = true;
     };
-  }, [days, identity]);
+  }, [days, identity, params.locale]);
 
   const highestBar = Math.max(...(summary?.clicksByDay ?? [0]));
 
@@ -199,10 +220,9 @@ export default function MerchantStatsPage({
                   </div>
                   <div className="mt-1 text-[1.5rem] font-extrabold tracking-[-0.05em] text-[#2a2826]">
                     {isLoading || !summary ? "—" : (() => {
-                      const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
                       const max = Math.max(...summary.viewsActivity, 0);
                       const idx = summary.viewsActivity.findIndex((v) => v === max);
-                      return idx >= 0 ? labels[idx] : "—";
+                      return idx >= 0 ? (summary.bucketLabels[idx] ?? "—") : "—";
                     })()}
                   </div>
                   <div className="text-[10px] text-[#a49a8d]">2.3x views</div>
@@ -247,8 +267,8 @@ export default function MerchantStatsPage({
                     />
                   </svg>
                   <div className="mt-2 flex justify-between text-[8px] font-extrabold uppercase tracking-[0.12em] text-[#baaf9e]">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                      <span key={day}>{day}</span>
+                    {(summary?.bucketLabels ?? Array.from({ length: 7 }).map(() => "")).map((day, index) => (
+                      <span key={`${day}-${index}`}>{day}</span>
                     ))}
                   </div>
                 </div>

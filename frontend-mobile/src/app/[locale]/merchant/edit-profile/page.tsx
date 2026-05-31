@@ -398,8 +398,8 @@ export default function MerchantEditProfilePage({
                           }`}
                         >
                           <span
-                            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white ${
-                              open ? "left-5.5" : "left-0.5"
+                            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white transition ${
+                              open ? "left-[22px]" : "left-0.5"
                             }`}
                           />
                         </button>

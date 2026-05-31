@@ -8,6 +8,7 @@ import OptimizedImage from "@/components/OptimizedImage";
 import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
 import type { Category, SearchFilters } from "@/lib/api";
 import { useFavorites } from "@/lib/favorites";
+import { haversineKm } from "@/lib/geo";
 import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
 
 function getCategoryLabel(category: Category | undefined, locale: string) {
@@ -33,6 +34,7 @@ export default function DiscoverPage({
   const [available, setAvailable] = useState(false);
   const [sortLabel, setSortLabel] = useState("Popularity");
   const [visibleCount, setVisibleCount] = useState(10);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const favorites = useFavorites();
 
   const categoriesQuery = useCategories();
@@ -56,8 +58,40 @@ export default function DiscoverPage({
 
   const businessesQuery = useBusinessesSearch(filters);
   const businesses = businessesQuery.data ?? [];
-  const visibleBusinesses = businesses.slice(0, visibleCount);
-  const hasMore = visibleCount < businesses.length;
+  const sortedBusinesses = useMemo(() => {
+    if (sortLabel !== "Distance" || !userLocation) return businesses;
+    return businesses
+      .slice()
+      .sort((a, b) => {
+        const aLat = typeof a.lat === "number" ? a.lat : null;
+        const aLng = typeof a.lng === "number" ? a.lng : null;
+        const bLat = typeof b.lat === "number" ? b.lat : null;
+        const bLng = typeof b.lng === "number" ? b.lng : null;
+        const aDist = aLat !== null && aLng !== null ? haversineKm(userLocation.lat, userLocation.lng, aLat, aLng) : null;
+        const bDist = bLat !== null && bLng !== null ? haversineKm(userLocation.lat, userLocation.lng, bLat, bLng) : null;
+        if (aDist === null && bDist === null) return 0;
+        if (aDist === null) return 1;
+        if (bDist === null) return -1;
+        return aDist - bDist;
+      });
+  }, [businesses, sortLabel, userLocation]);
+
+  const visibleBusinesses = sortedBusinesses.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedBusinesses.length;
+
+  useEffect(() => {
+    if (sortLabel !== "Distance") return;
+    if (userLocation) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+      },
+      () => null,
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60_000 },
+    );
+  }, [sortLabel, userLocation]);
 
   return (
     <main className="mobile-app-shell">

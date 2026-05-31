@@ -178,7 +178,7 @@ export default function MerchantContactSetupPage({
                         >
                           <span
                             className={`absolute top-0.5 h-6 w-6 rounded-full bg-white transition ${
-                              enabled ? "left-5.5" : "left-0.5"
+                              enabled ? "left-[22px]" : "left-0.5"
                             }`}
                           />
                         </button>

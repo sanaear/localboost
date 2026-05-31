@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
 
@@ -22,6 +22,24 @@ function localeToSuggestionLanguage(locale: string): SuggestionLanguage {
   return "EN";
 }
 
+async function copyText(text: string) {
+  if (typeof navigator === "undefined") throw new Error("Clipboard not available");
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "absolute";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
+
 export default function MerchantGenerateAiPage({
   params,
 }: {
@@ -36,6 +54,7 @@ export default function MerchantGenerateAiPage({
   const [suggestion, setSuggestion] = useState<string>(() => suggestionByLanguage[localeToSuggestionLanguage(params.locale)]);
   const [savedToProfile, setSavedToProfile] = useState(false);
   const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     const language = localeToSuggestionLanguage(params.locale);
@@ -44,6 +63,10 @@ export default function MerchantGenerateAiPage({
     setTags(defaultTags);
     setCopied(false);
     setSavedToProfile(false);
+
+    return () => {
+      if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+    };
   }, [defaultTags, params.locale]);
 
   return (
@@ -169,7 +192,18 @@ export default function MerchantGenerateAiPage({
                   <span>{t("charactersCount", { count: suggestion.length })}</span>
                   <button
                     type="button"
-                    onClick={() => setCopied(true)}
+                    onClick={() => {
+                      void (async () => {
+                        try {
+                          await copyText(suggestion);
+                          setCopied(true);
+                          if (copyTimerRef.current) window.clearTimeout(copyTimerRef.current);
+                          copyTimerRef.current = window.setTimeout(() => setCopied(false), 1600);
+                        } catch {
+                          setCopied(false);
+                        }
+                      })();
+                    }}
                     className="flex items-center gap-1 text-[#2e9c70]"
                   >
                     <span className="material-symbols-outlined text-[16px]">content_copy</span>

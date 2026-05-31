@@ -7,6 +7,8 @@ import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { API_BASE_URL, type Business } from "@/lib/api";
 import { fetchMyBusinesses, getMerchantIdentity } from "@/lib/merchant";
 
+const MAX_IMAGES = 8;
+
 export default function MerchantPhotoManagerPage({
   params,
 }: {
@@ -19,6 +21,8 @@ export default function MerchantPhotoManagerPage({
   const [shots, setShots] = useState<Array<{ id: string; label: string; image: string }>>([]);
   const [selectedId, setSelectedId] = useState("");
   const [optimized, setOptimized] = useState(false);
+  const [isMutating, setIsMutating] = useState(false);
+  const [mutationError, setMutationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const selectedPhoto = useMemo(
@@ -35,6 +39,8 @@ export default function MerchantPhotoManagerPage({
     setBusiness(null);
     setShots([]);
     setSelectedId("");
+    setIsMutating(false);
+    setMutationError(null);
 
     void (async () => {
       if (!identity?.token) {
@@ -69,24 +75,32 @@ export default function MerchantPhotoManagerPage({
 
   async function updateImages(nextImages: string[]) {
     if (!identity?.token || !business) return;
-    const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${identity.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ images: nextImages }),
-    });
-    if (!response.ok) throw new Error("Request failed");
-    const updated = (await response.json()) as Business;
-    setBusiness(updated);
-    const mapped = (updated.images ?? []).map((image, index) => ({
-      id: `${index}-${image}`,
-      label: `Photo ${index + 1}`,
-      image,
-    }));
-    setShots(mapped);
-    setSelectedId(mapped[0]?.id ?? "");
+    setIsMutating(true);
+    setMutationError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${identity.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ images: nextImages }),
+      });
+      if (!response.ok) throw new Error("Request failed");
+      const updated = (await response.json()) as Business;
+      setBusiness(updated);
+      const mapped = (updated.images ?? []).map((image, index) => ({
+        id: `${index}-${image}`,
+        label: `Photo ${index + 1}`,
+        image,
+      }));
+      setShots(mapped);
+      setSelectedId((current) => mapped.find((shot) => shot.id === current)?.id ?? mapped[0]?.id ?? "");
+    } catch {
+      setMutationError("Could not save photo changes. Please try again.");
+    } finally {
+      setIsMutating(false);
+    }
   }
 
   function readFileAsDataUrl(file: File) {
@@ -100,26 +114,46 @@ export default function MerchantPhotoManagerPage({
 
   async function handleAddFiles(files: FileList | null) {
     if (!files || files.length === 0 || !identity?.token || !business) return;
-    const incoming = Array.from(files).slice(0, 6);
-    const dataUrls = await Promise.all(incoming.map((file) => readFileAsDataUrl(file)));
-    const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${identity.token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ images: dataUrls }),
-    });
-    if (!response.ok) throw new Error("Request failed");
-    const updated = (await response.json()) as Business;
-    setBusiness(updated);
-    const mapped = (updated.images ?? []).map((image, index) => ({
-      id: `${index}-${image}`,
-      label: `Photo ${index + 1}`,
-      image,
-    }));
-    setShots(mapped);
-    setSelectedId(mapped[0]?.id ?? "");
+    setIsMutating(true);
+    setMutationError(null);
+    try {
+      const availableSlots = Math.max(0, MAX_IMAGES - shots.length);
+      if (availableSlots === 0) {
+        setMutationError(`You can upload up to ${MAX_IMAGES} photos.`);
+        return;
+      }
+
+      const incoming = Array.from(files).slice(0, Math.min(6, availableSlots));
+      const dataUrls = await Promise.all(incoming.map((file) => readFileAsDataUrl(file)));
+      const response = await fetch(`${API_BASE_URL}/businesses/${business.id}/images`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${identity.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ images: dataUrls }),
+      });
+      if (!response.ok) throw new Error("Request failed");
+      const updated = (await response.json()) as Business;
+      setBusiness(updated);
+      const mapped = (updated.images ?? []).map((image, index) => ({
+        id: `${index}-${image}`,
+        label: `Photo ${index + 1}`,
+        image,
+      }));
+      setShots(mapped);
+      setSelectedId((current) => mapped.find((shot) => shot.id === current)?.id ?? mapped[0]?.id ?? "");
+    } catch {
+      setMutationError("Upload failed. Check your connection and try again.");
+    } finally {
+      setIsMutating(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  function handleRemoveShot(id: string) {
+    const remaining = shots.filter((shot) => shot.id !== id);
+    void updateImages(remaining.map((shot) => shot.image));
   }
 
   return (
@@ -153,6 +187,11 @@ export default function MerchantPhotoManagerPage({
                 />
               </div>
             ) : null}
+            {mutationError ? (
+              <div className="mt-4 rounded-[18px] border border-[#f0d2c9] bg-[#fff6f3] px-4 py-3 text-[12px] font-semibold text-[#a84f3a]">
+                {mutationError}
+              </div>
+            ) : null}
             <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
               <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
                 Photo Manager
@@ -181,14 +220,14 @@ export default function MerchantPhotoManagerPage({
                   />
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,18,15,0.16),rgba(20,18,15,0.38))]" />
                   <div className="absolute left-3 top-3 rounded-full bg-[#d58d14] px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.15em] text-white">
-                    Main Photo
+                    {shots[0]?.id === selectedPhoto.id ? "Main Photo" : "Selected"}
                   </div>
                   <button
                     type="button"
                     onClick={() => {
-                      const remaining = shots.filter((shot) => shot.id !== selectedPhoto.id);
-                      void updateImages(remaining.map((shot) => shot.image));
+                      handleRemoveShot(selectedPhoto.id);
                     }}
+                    disabled={isMutating}
                     className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-[#c26f55] shadow-sm"
                   >
                     <span className="material-symbols-outlined text-[16px]">close</span>
@@ -204,6 +243,7 @@ export default function MerchantPhotoManagerPage({
                         void updateImages(reordered.map((shot) => shot.image));
                       }
                     }}
+                    disabled={isMutating}
                     className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-[#2e2b28]/85 text-white shadow-sm"
                   >
                     <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
@@ -217,20 +257,37 @@ export default function MerchantPhotoManagerPage({
                 const active = selectedId === shot.id;
 
                 return (
-                  <button
+                  <div
                     key={shot.id}
-                    type="button"
                     onClick={() => setSelectedId(shot.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setSelectedId(shot.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={isMutating ? -1 : 0}
                     className={`mobile-fade-up relative h-[86px] w-[86px] shrink-0 overflow-hidden rounded-full border-2 ${
                       active ? "border-[#b27a00]" : "border-white"
                     } shadow-[0_10px_20px_rgba(31,26,10,0.08)]`}
                     style={{ animationDelay: `${180 + index * 60}ms` }}
                   >
                     <img src={shot.image} alt={shot.label} className="h-full w-full object-cover" />
-                    <div className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-white/92 text-[#c26f55]">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        handleRemoveShot(shot.id);
+                      }}
+                      disabled={isMutating}
+                      className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-white/92 text-[#c26f55]"
+                      aria-label={`Remove ${shot.label}`}
+                    >
                       <span className="material-symbols-outlined text-[11px]">close</span>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -238,6 +295,7 @@ export default function MerchantPhotoManagerPage({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isMutating}
               className="mobile-fade-up mt-6 flex h-[138px] w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-[#d9d1c5] bg-[#f6f4f0] text-center"
               style={{ animationDelay: "320ms" }}
             >
@@ -248,6 +306,7 @@ export default function MerchantPhotoManagerPage({
                 multiple
                 className="hidden"
                 onChange={(event) => void handleAddFiles(event.target.files)}
+                disabled={isMutating}
               />
               <span className="material-symbols-outlined text-[26px] text-[#d2a85e]">add_photo_alternate</span>
               <span className="mt-2 text-[1rem] font-extrabold tracking-[-0.03em] text-[#c39128]">

@@ -7,6 +7,13 @@ import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
 import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { fetchApprovedReviewsForBusiness, fetchFavoriteCountForBusiness, fetchMe, fetchMyBusinesses, getMerchantIdentity } from "@/lib/merchant";
 
+function formatDate(value: string | null | undefined, locale: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return date.toLocaleDateString(locale);
+}
+
 export default function MerchantDashboardPage({
   params,
 }: {
@@ -78,7 +85,7 @@ export default function MerchantDashboardPage({
             id: review.id,
             rating: review.rating,
             text: review.content ?? "",
-            age: new Date(review.created_at).toLocaleDateString(),
+            age: formatDate(review.created_at, params.locale) || "—",
           })),
         );
 
@@ -100,7 +107,7 @@ export default function MerchantDashboardPage({
     return () => {
       cancelled = true;
     };
-  }, [identity]);
+  }, [identity, params.locale]);
 
   const statsCards = isLoading
     ? ([

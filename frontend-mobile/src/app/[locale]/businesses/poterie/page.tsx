@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import OptimizedImage from "@/components/OptimizedImage";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { API_BASE_URL, api, type Business } from "@/lib/api";
 import { haversineKm } from "@/lib/geo";
 import { useFavorites } from "@/lib/favorites";
@@ -132,43 +133,44 @@ export default function PoteriePage({
     <main className="mobile-app-shell">
       <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col">
-          <div className="relative h-[310px]">
-            {primaryImage ? (
-              <OptimizedImage
-                src={primaryImage}
-                alt={business?.name ?? t("heroAlt")}
-                width={1200}
-                height={900}
-                sizes="100vw"
-                widths={[640, 828, 1080, 1200]}
-                priority
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-[#efece6]" />
-            )}
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
-              <Link href={`/${params.locale}/map`} className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm">
-                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-              </Link>
-              <button
-                type="button"
-                onClick={() => void favorites.toggleFavorite(businessId)}
-                disabled={favorites.isPending(businessId)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  {favorites.isPending(businessId)
-                    ? "progress_activity"
-                    : favorites.isFavorite(businessId)
-                      ? "favorite"
-                      : "favorite_border"}
-                </span>
-              </button>
+          <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto">
+            <div className="relative h-[310px]">
+              {primaryImage ? (
+                <OptimizedImage
+                  src={primaryImage}
+                  alt={business?.name ?? t("heroAlt")}
+                  width={1200}
+                  height={900}
+                  sizes="100vw"
+                  widths={[640, 828, 1080, 1200]}
+                  priority
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-[#efece6]" />
+              )}
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+                <Link href={`/${params.locale}/map`} className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm">
+                  <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void favorites.toggleFavorite(businessId)}
+                  disabled={favorites.isPending(businessId)}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {favorites.isPending(businessId)
+                      ? "progress_activity"
+                      : favorites.isFavorite(businessId)
+                        ? "favorite"
+                        : "favorite_border"}
+                  </span>
+                </button>
+              </div>
             </div>
-          </div>
 
-          <div className="-mt-8 flex-1 rounded-t-[34px] bg-[#faf8f2] px-5 pb-6 pt-6">
+            <div className="-mt-8 flex-1 rounded-t-[34px] bg-[#faf8f2] px-5 pb-6 pt-6">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[#f7d98f] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#9a6b03]">
                 {t("badges.artisanWorkshop")}
@@ -187,7 +189,9 @@ export default function PoteriePage({
               <span className="flex items-center gap-1 font-extrabold text-[#a36e00]">
                 <span className="material-symbols-outlined text-[16px]">star</span>
                 {(rating?.average ?? 0).toFixed(1)}{" "}
-                <span className="font-semibold text-[#8d8476]">({t("reviewsCount", { count: String(rating?.count ?? 0) })})</span>
+                <span className="font-semibold text-[#8d8476]">
+                  ({t("reviewsCount", { count: rating?.count ?? 0 }).replace(/\s/g, "\u00a0")})
+                </span>
               </span>
               <span>{tCommon("openNow")}</span>
               {distanceKm !== null ? (
@@ -320,6 +324,11 @@ export default function PoteriePage({
               <span className="material-symbols-outlined mr-2 text-[18px]">route</span>
               {t("getDirections")}
             </button>
+          </div>
+          </div>
+
+          <div className="px-4 pb-4 pt-2">
+            <MobileBottomNav locale={params.locale} />
           </div>
         </div>
       </section>

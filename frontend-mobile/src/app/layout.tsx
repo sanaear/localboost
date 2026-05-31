@@ -10,11 +10,14 @@ export const metadata: Metadata = {
   title: "LocalBoost Mobile",
   description: "Mobile-first tourist experience for LocalBoost",
   manifest: "/manifest.json",
-  themeColor: "#a36e00",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
   },
+};
+
+export const viewport = {
+  themeColor: "#a36e00",
 };
 
 export default async function RootLayout({

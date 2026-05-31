@@ -123,29 +123,42 @@ describe("LB-73 favorites + share", () => {
   it("shows saved favorites and allows removal from Saved page", async () => {
     localStorage.setItem("lb:favorites:v1", JSON.stringify([1, 2]));
 
-    (queries as any).useBusinessesSearch.mockReturnValue({
-      data: [
-        { id: 1, user_id: 1, name: "One", images: [], created_at: "2026-01-01", updated_at: "2026-01-01" },
-        { id: 2, user_id: 1, name: "Two", images: [], created_at: "2026-01-01", updated_at: "2026-01-01" },
-        { id: 3, user_id: 1, name: "Three", images: [], created_at: "2026-01-01", updated_at: "2026-01-01" },
-      ],
-      isLoading: false,
-      isError: false,
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = input.toString();
+      if (url.endsWith("/businesses/1")) {
+        return new Response(
+          JSON.stringify({ id: 1, user_id: 1, name: "One", images: [], created_at: "2026-01-01", updated_at: "2026-01-01" }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      if (url.endsWith("/businesses/2")) {
+        return new Response(
+          JSON.stringify({ id: 2, user_id: 1, name: "Two", images: [], created_at: "2026-01-01", updated_at: "2026-01-01" }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      }
+      return new Response(null, { status: 404 });
     });
 
-    renderWithIntl(<SavedPage params={{ locale: "en" }} />);
+    vi.stubGlobal("fetch", fetchMock as any);
+    try {
+      renderWithIntl(<SavedPage params={{ locale: "en" }} />);
 
-    expect(screen.getAllByText("View details")).toHaveLength(2);
+      const items = await screen.findAllByText(/view details/i);
+      expect(items).toHaveLength(2);
 
-    const removeButtons = screen.getAllByText("favorite").map((node) => node.closest("button")).filter(Boolean);
-    fireEvent.click(removeButtons[0] as HTMLButtonElement);
+      const removeButtons = screen.getAllByText("favorite").map((node) => node.closest("button")).filter(Boolean);
+      fireEvent.click(removeButtons[0] as HTMLButtonElement);
 
-    await waitFor(() => {
-      expect(screen.getAllByText("View details")).toHaveLength(1);
-    });
+      await waitFor(() => {
+        expect(screen.getAllByText(/view details/i)).toHaveLength(1);
+      });
 
-    const stored = JSON.parse(localStorage.getItem("lb:favorites:v1") ?? "[]") as number[];
-    expect(stored).toHaveLength(1);
+      const stored = JSON.parse(localStorage.getItem("lb:favorites:v1") ?? "[]") as number[];
+      expect(stored).toHaveLength(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("syncs local favorites with API when authenticated", async () => {
@@ -171,18 +184,21 @@ describe("LB-73 favorites + share", () => {
     });
 
     vi.stubGlobal("fetch", fetchMock as any);
+    try {
+      function Harness() {
+        const { favoriteIds } = useFavorites();
+        return <div data-testid="ids">{favoriteIds.join(",")}</div>;
+      }
 
-    function Harness() {
-      const { favoriteIds } = useFavorites();
-      return <div data-testid="ids">{favoriteIds.join(",")}</div>;
+      render(<Harness />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("ids")).toHaveTextContent("1,2");
+      });
+
+      expect(fetchMock).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
     }
-
-    render(<Harness />);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("ids")).toHaveTextContent("1,2");
-    });
-
-    expect(fetchMock).toHaveBeenCalled();
   });
 });

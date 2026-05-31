@@ -2,12 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { metadata } from "@/app/layout";
+import { metadata, viewport } from "@/app/layout";
 
 describe("LB-73 PWA offline", () => {
   it("exposes manifest metadata", () => {
     expect(metadata.manifest).toBe("/manifest.json");
-    expect((metadata as any).themeColor).toBeTruthy();
+    expect((viewport as any).themeColor).toBeTruthy();
   });
 
   it("has a valid manifest.json in public", () => {

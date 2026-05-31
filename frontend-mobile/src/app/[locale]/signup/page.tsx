@@ -28,7 +28,6 @@ export default function SignupPage({
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsWarning, setTermsWarning] = useState(false);
-  const googleSignupHref = getSignupDestination(params.locale, selectedRole);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -228,13 +227,14 @@ export default function SignupPage({
 
               <div className="mobile-divider mt-7">{t("or")}</div>
 
-              <Link
-                href={googleSignupHref}
+              <button
+                type="button"
+                onClick={() => setSubmitError(t("googleUnavailable"))}
                 className="mobile-pill mobile-button-secondary mt-6 flex h-14 w-full items-center justify-center gap-3 text-[15px] font-bold"
               >
                 <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
                 {t("continueWithGoogle")}
-              </Link>
+              </button>
               </form>
             </div>
 

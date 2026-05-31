@@ -8,6 +8,55 @@ import OptimizedImage from "@/components/OptimizedImage";
 import { ErrorState, SkeletonLine } from "@/components/UiState";
 import { API_BASE_URL, type Business } from "@/lib/api";
 
+type ItineraryBusiness = {
+  id?: string | number;
+  name?: string;
+  category?: string;
+  city?: string;
+  images?: string[];
+  avgRating?: number | null;
+  reviewCount?: number | null;
+  estimatedPrice?: number | null;
+  description?: string;
+};
+
+type ItineraryStep = {
+  order?: number;
+  time?: string;
+  tip?: string;
+  business?: ItineraryBusiness;
+};
+
+type ItineraryPayload = {
+  city?: string;
+  lang?: string;
+  steps: ItineraryStep[];
+  totalEstimatedCost?: number | null;
+  message?: string;
+};
+
+function parseItineraryPayload(data: unknown): ItineraryPayload | null {
+  let value = data;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value) as unknown;
+    } catch {
+      return null;
+    }
+  }
+
+  if (!value || typeof value !== "object") return null;
+  const steps = (value as { steps?: unknown }).steps;
+  if (!Array.isArray(steps)) return null;
+
+  return value as ItineraryPayload;
+}
+
+function getFiniteNumber(value: unknown) {
+  const asNumber = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(asNumber) ? asNumber : null;
+}
+
 export default function AiChatPage({
   params,
 }: {
@@ -21,9 +70,10 @@ export default function AiChatPage({
   const [sendError, setSendError] = useState(false);
   const [recommendations, setRecommendations] = useState<Business[] | null>(null);
   const [recommendationsError, setRecommendationsError] = useState(false);
-  const [itinerary, setItinerary] = useState<string | null>(null);
+  const [itinerary, setItinerary] = useState<ItineraryPayload | null>(null);
   const [itineraryError, setItineraryError] = useState(false);
   const [isBuildingItinerary, setIsBuildingItinerary] = useState(false);
+  const [itineraryCity, setItineraryCity] = useState("Fès");
 
   const recommendationsLabel = useMemo(() => {
     return params.locale === "ar" ? "مقترحات" : params.locale === "fr" ? "Suggestions" : params.locale === "es" ? "Sugerencias" : "Suggestions";
@@ -85,15 +135,17 @@ export default function AiChatPage({
     setItineraryError(false);
 
     try {
+      const city = itineraryCity.trim() || "Fès";
       const response = await fetch(`${API_BASE_URL}/ai/itinerary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ city: "Fès", lang: params.locale }),
+        body: JSON.stringify({ city, lang: params.locale }),
       });
       if (!response.ok) throw new Error("Request failed");
       const payload = (await response.json()) as { data?: unknown };
-      const asString = typeof payload.data === "string" ? payload.data : JSON.stringify(payload.data);
-      setItinerary(asString);
+      const parsed = parseItineraryPayload(payload.data);
+      if (!parsed) throw new Error("Invalid itinerary response");
+      setItinerary(parsed);
     } catch {
       setItineraryError(true);
       setItinerary(null);
@@ -236,6 +288,15 @@ export default function AiChatPage({
               <p className="text-[17px] font-semibold italic leading-7 text-[#786f64]">
                 {t("questionItinerary")}
               </p>
+              <div className="mt-4 flex items-center gap-3 rounded-full bg-white px-4 py-3 mobile-search-shadow">
+                <span className="material-symbols-outlined text-[#b9ad99]">location_city</span>
+                <input
+                  value={itineraryCity}
+                  onChange={(event) => setItineraryCity(event.target.value)}
+                  placeholder={t("itineraryCityPlaceholder")}
+                  className="w-full flex-1 bg-transparent text-[14px] font-semibold text-[#6d6459] outline-none"
+                />
+              </div>
               <div className="mt-4 flex gap-3">
                 <button
                   type="button"
@@ -261,9 +322,85 @@ export default function AiChatPage({
                     retryLabel={tCommon("retry")}
                   />
                 </div>
+              ) : isBuildingItinerary ? (
+                <div className="mt-4 rounded-[24px] border border-[#eadcc6] bg-white px-4 py-4 shadow-[0_10px_22px_rgba(31,26,10,0.05)]">
+                  <SkeletonLine className="h-5 w-[55%]" />
+                  <SkeletonLine className="mt-3 h-4 w-[85%]" />
+                  <SkeletonLine className="mt-2 h-4 w-[75%]" />
+                </div>
               ) : itinerary ? (
-                <div className="mt-4 rounded-[24px] border border-[#eadcc6] bg-white px-4 py-4 text-[13px] leading-6 text-[#6f665c] shadow-[0_10px_22px_rgba(31,26,10,0.05)]">
-                  {itinerary}
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-[24px] border border-[#eadcc6] bg-white px-4 py-4 shadow-[0_10px_22px_rgba(31,26,10,0.05)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#c2b7a2]">{t("itineraryTitle")}</p>
+                        <p className="mt-1 text-[18px] font-extrabold tracking-[-0.04em] text-[#2a2730]">{itinerary.city ?? "—"}</p>
+                      </div>
+                      {typeof itinerary.totalEstimatedCost === "number" ? (
+                        <div className="rounded-full bg-[#d8f5df] px-3 py-2 text-[11px] font-extrabold text-[#1f9a60]">
+                          {t("itineraryTotalLabel")} {Math.round(itinerary.totalEstimatedCost)} MAD
+                        </div>
+                      ) : null}
+                    </div>
+                    {itinerary.message ? <p className="mt-3 text-[13px] leading-6 text-[#6f665c]">{itinerary.message}</p> : null}
+                    {itinerary.steps.length === 0 && !itinerary.message ? (
+                      <p className="mt-3 text-[13px] leading-6 text-[#6f665c]">{t("itineraryNoSteps")}</p>
+                    ) : null}
+                  </div>
+
+                  {itinerary.steps.map((step, index) => {
+                    const business = step.business;
+                    const businessId = getFiniteNumber(business?.id);
+                    const order = step.order ?? index + 1;
+                    const estimatedPrice = typeof business?.estimatedPrice === "number" ? Math.round(business.estimatedPrice) : null;
+                    const rating = typeof business?.avgRating === "number" ? business.avgRating : null;
+                    const reviewCount = typeof business?.reviewCount === "number" ? business.reviewCount : null;
+
+                    return (
+                      <div key={`${order}-${business?.name ?? "step"}`} className="rounded-[24px] border border-[#eadcc6] bg-white px-4 py-4 shadow-[0_10px_22px_rgba(31,26,10,0.05)]">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#c2b7a2]">
+                              {t("itineraryStepLabel")} {order}
+                              {step.time ? ` · ${step.time}` : ""}
+                            </p>
+                            <p className="mt-1 text-[16px] font-extrabold tracking-[-0.03em] text-[#2a2730]">{business?.name ?? "—"}</p>
+                            <p className="mt-1 text-[12px] font-semibold text-[#7b7267]">
+                              {[business?.category, business?.city].filter(Boolean).join(" · ")}
+                            </p>
+                          </div>
+                          {businessId !== null ? (
+                            <Link
+                              href={`/${params.locale}/businesses/${businessId}`}
+                              className="mobile-pill h-10 shrink-0 border border-[#e4d9ca] bg-white px-4 text-[12px] font-bold text-[#6f675b]"
+                            >
+                              {t("itineraryViewBusiness")}
+                            </Link>
+                          ) : null}
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {estimatedPrice !== null ? (
+                            <span className="rounded-full bg-[#f3efe6] px-3 py-1 text-[11px] font-bold text-[#6f665c]">
+                              {t("itineraryEstimatedPriceLabel")} {estimatedPrice} MAD
+                            </span>
+                          ) : null}
+                          {rating !== null ? (
+                            <span className="rounded-full bg-[#f3efe6] px-3 py-1 text-[11px] font-bold text-[#6f665c]">
+                              {rating.toFixed(1)}
+                              {reviewCount !== null ? ` (${reviewCount})` : ""}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {step.tip ? (
+                          <p className="mt-3 text-[13px] leading-6 text-[#6f665c]">
+                            <span className="font-extrabold text-[#a36e00]">{t("itineraryTipLabel")}</span> {step.tip}
+                          </p>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : null}
             </div>
