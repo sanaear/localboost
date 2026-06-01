@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import MobileBottomNav from '@/components/MobileBottomNav';
@@ -23,9 +23,23 @@ export default function HomePage({
   const tCommon = useTranslations('common');
   const router = useRouter();
   const favorites = useFavorites();
+  const [searchValue, setSearchValue] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>('all');
   const businessesQuery = useBusinessesSearch({});
   const [averageById, setAverageById] = useState<Record<number, number>>({});
+  const searchSuggestionsQuery = useBusinessesSearch(
+    { q: debouncedSearch },
+    { enabled: debouncedSearch.length >= 2 }
+  );
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedSearch(searchValue.trim());
+    }, 250);
+
+    return () => window.clearTimeout(timeout);
+  }, [searchValue]);
 
   const localizedCategoryName = useMemo(() => {
     return (category?: Category) => {
@@ -49,6 +63,28 @@ export default function HomePage({
       return label.includes('cafe') || label.includes('café');
     });
   }, [activeFilter, businessesQuery.data, localizedCategoryName]);
+
+  const searchSuggestions = useMemo(
+    () => (searchSuggestionsQuery.data ?? []).slice(0, 5),
+    [searchSuggestionsQuery.data]
+  );
+
+  const showSuggestions = searchValue.trim().length >= 2;
+
+  function openDiscoverSearch(query: string) {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      router.push(`/${params.locale}/discover`);
+      return;
+    }
+    router.push(`/${params.locale}/discover?q=${encodeURIComponent(trimmed)}`);
+  }
+
+  function handleSearchKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    openDiscoverSearch(searchValue);
+  }
 
   useEffect(() => {
     if (!businessesQuery.data) return;
@@ -100,24 +136,96 @@ export default function HomePage({
               </div>
             </div>
 
-            <div
-              className="mobile-fade-up mt-4 flex items-center gap-3 rounded-full bg-white px-4 py-3 mobile-search-shadow"
-              style={{ animationDelay: '80ms' }}
-            >
-              <span className="material-symbols-outlined text-[#b9ad99]">search</span>
-              <Link
-                href={`/${params.locale}/discover`}
-                className="flex-1 text-[14px] text-[#c0b7aa]"
-              >
-                {t('searchCta')}
-              </Link>
-              <button
-                type="button"
-                onClick={() => router.push(`/${params.locale}/discover`)}
-                className="mobile-pill h-9 w-9 bg-[#e2a11b] text-white"
-              >
-                <span className="material-symbols-outlined text-[18px]">tune</span>
-              </button>
+            <div className="mobile-fade-up mt-4" style={{ animationDelay: '80ms' }}>
+              <div className="flex items-center gap-3 rounded-full bg-white px-4 py-3 mobile-search-shadow">
+                <span className="material-symbols-outlined text-[#b9ad99]">search</span>
+                <input
+                  value={searchValue}
+                  onChange={(event) => setSearchValue(event.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder={t('searchCta')}
+                  aria-label={t('searchCta')}
+                  className="flex-1 bg-transparent text-[14px] font-semibold text-[#6d6459] outline-none placeholder:text-[#c0b7aa]"
+                />
+                <button
+                  type="button"
+                  onClick={() => openDiscoverSearch(searchValue)}
+                  className="mobile-pill h-9 w-9 bg-[#e2a11b] text-white"
+                  aria-label={tCommon('explore')}
+                >
+                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+              </div>
+
+              {showSuggestions ? (
+                <div className="mt-3 overflow-hidden rounded-[24px] bg-white mobile-search-shadow">
+                  {searchSuggestionsQuery.isLoading ? (
+                    <div className="space-y-3 px-4 py-4">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <SkeletonLine key={index} className="h-5 w-full" />
+                      ))}
+                    </div>
+                  ) : searchSuggestionsQuery.isError ? (
+                    <button
+                      type="button"
+                      onClick={() => searchSuggestionsQuery.refetch()}
+                      className="flex w-full items-center justify-between px-4 py-4 text-left text-[13px] font-bold text-[#8a6142]"
+                    >
+                      <span>{tCommon('errorDescription')}</span>
+                      <span className="text-[#b27a00]">{tCommon('retry')}</span>
+                    </button>
+                  ) : searchSuggestions.length > 0 ? (
+                    <div className="divide-y divide-[#f1ece2]">
+                      {searchSuggestions.map((business) => (
+                        <Link
+                          key={business.id}
+                          href={`/${params.locale}/businesses/${business.id}`}
+                          className="flex items-center gap-3 px-4 py-3"
+                        >
+                          {business.images?.[0] ? (
+                            <OptimizedImage
+                              src={business.images[0]}
+                              alt={business.name}
+                              width={48}
+                              height={48}
+                              sizes="48px"
+                              widths={[48, 96]}
+                              className="h-12 w-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-12 w-12 rounded-full bg-[#efece6]" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[14px] font-extrabold text-[#2a2730]">
+                              {business.name}
+                            </p>
+                            <p className="mt-1 truncate text-[12px] font-semibold text-[#8a8173]">
+                              {[localizedCategoryName(business.category), business.city]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </p>
+                          </div>
+                          <span className="material-symbols-outlined text-[18px] text-[#c7b9a1]">
+                            chevron_right
+                          </span>
+                        </Link>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => openDiscoverSearch(searchValue)}
+                        className="flex w-full items-center justify-between px-4 py-3 text-left text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#a36e00]"
+                      >
+                        <span>{t('viewAll')}</span>
+                        <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-4 text-[13px] font-semibold text-[#8a8173]">
+                      {tCommon('noResults')}
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
 
             <div

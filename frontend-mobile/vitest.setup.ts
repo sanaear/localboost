@@ -4,6 +4,12 @@ import { vi } from 'vitest';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/en',
+  useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
 }));
 
 vi.mock('next-intl', () => {
