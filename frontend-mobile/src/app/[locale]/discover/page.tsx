@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { use, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import OptimizedImage from '@/components/OptimizedImage';
@@ -24,9 +25,11 @@ export default function DiscoverPage({
   params: Promise<{ locale: string }>;
 }) {
   const params = use(paramsPromise);
+  const searchParams = useSearchParams();
   const t = useTranslations('discover');
   const tCommon = useTranslations('common');
-  const [q, setQ] = useState('');
+  const searchQuery = searchParams.get('q') ?? '';
+  const [q, setQ] = useState(searchQuery);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [city, setCity] = useState('');
   const [regionId, setRegionId] = useState<number | undefined>(undefined);
@@ -54,6 +57,10 @@ export default function DiscoverPage({
   useEffect(() => {
     setVisibleCount(10);
   }, [filters]);
+
+  useEffect(() => {
+    setQ(searchQuery);
+  }, [searchQuery]);
 
   const businessesQuery = useBusinessesSearch(filters);
   const businesses = businessesQuery.data ?? [];

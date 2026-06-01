@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import { api, type SearchFilters } from '@/lib/api';
 
 export const queryKeys = {
@@ -10,12 +10,18 @@ export const queryKeys = {
   averageRating: (businessId: number) => ['reviews', 'average', businessId] as const,
 };
 
-export function useBusinessesSearch(filters: SearchFilters) {
+type BusinessesSearchResult = Awaited<ReturnType<typeof api.searchBusinesses>>;
+
+export function useBusinessesSearch(
+  filters: SearchFilters,
+  options?: Pick<UseQueryOptions<BusinessesSearchResult>, 'enabled'>
+) {
   return useQuery({
     queryKey: queryKeys.businesses(filters),
     queryFn: () => api.searchBusinesses(filters),
     staleTime: 0,
     refetchOnMount: 'always',
+    enabled: options?.enabled,
   });
 }
 
