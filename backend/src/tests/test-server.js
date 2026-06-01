@@ -11,7 +11,7 @@ try {
   console.log('🔧 [4] Creating app...');
   const app = express();
   app.use(express.json());
-  
+
   console.log('🔧 [5] Adding test route...');
   app.get('/health', (req, res) => {
     res.json({ status: 'OK' });
@@ -28,7 +28,6 @@ try {
   });
 
   console.log('🔧 [8] Event listeners attached');
-  
 } catch (err) {
   console.error('❌ ERROR:', err.message);
   console.error('📍 Stack:', err.stack);

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { api, sharingService, Locale } from "@/lib/api";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useState } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { api, sharingService, Locale, resolveMediaUrl } from '@/lib/api';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useState } from 'react';
 
 export default function BusinessDetailPage() {
   const params = useParams<{ locale: Locale; id: string }>();
@@ -15,8 +15,12 @@ export default function BusinessDetailPage() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const { data: business, isLoading: businessLoading, error: businessError } = useQuery({
-    queryKey: ["business", businessId],
+  const {
+    data: business,
+    isLoading: businessLoading,
+    error: businessError,
+  } = useQuery({
+    queryKey: ['business', businessId],
     queryFn: async () => {
       try {
         return await api.getBusinessById(businessId);
@@ -27,7 +31,7 @@ export default function BusinessDetailPage() {
   });
 
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
-    queryKey: ["reviews", businessId],
+    queryKey: ['reviews', businessId],
     queryFn: async () => {
       try {
         return await api.getReviewsByBusiness(businessId);
@@ -39,7 +43,7 @@ export default function BusinessDetailPage() {
   });
 
   const { data: ratingData, isLoading: ratingLoading } = useQuery({
-    queryKey: ["averageRating", businessId],
+    queryKey: ['averageRating', businessId],
     queryFn: async () => {
       try {
         return await api.getAverageRating(businessId);
@@ -67,13 +71,13 @@ export default function BusinessDetailPage() {
   }
 
   const getCategoryName = () => {
-    if (!business.category) return "";
+    if (!business.category) return '';
     switch (params.locale) {
-      case "ar":
+      case 'ar':
         return business.category.name_ar;
-      case "fr":
+      case 'fr':
         return business.category.name_fr;
-      case "es":
+      case 'es':
         return business.category.name_es;
       default:
         return business.category.name_en;
@@ -81,27 +85,27 @@ export default function BusinessDetailPage() {
   };
 
   const renderStars = (rating: number) => {
-    return "⭐".repeat(Math.round(rating)) + "☆".repeat(5 - Math.round(rating));
+    return '⭐'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
   };
 
-  const handleShare = async (type: "url" | "whatsapp" | "copy") => {
+  const handleShare = async (type: 'url' | 'whatsapp' | 'copy') => {
     if (!business) return;
     const url = sharingService.getShareURL(business.id, params.locale);
     const text = `Check out ${business.name} on LocalBoost!`;
 
     switch (type) {
-      case "copy":
+      case 'copy':
         const success = await sharingService.copyToClipboard(url);
         if (success) {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         }
         break;
-      case "whatsapp":
-        window.open(sharingService.getWhatsAppURL(text, url), "_blank");
+      case 'whatsapp':
+        window.open(sharingService.getWhatsAppURL(text, url), '_blank');
         break;
-      case "url":
-        window.open(url, "_blank");
+      case 'url':
+        window.open(url, '_blank');
         break;
     }
     setShowShareMenu(false);
@@ -109,7 +113,10 @@ export default function BusinessDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Link href={`/${params.locale}/businesses`} className="text-blue-600 hover:underline mb-4 inline-block">
+      <Link
+        href={`/${params.locale}/businesses`}
+        className="text-blue-600 hover:underline mb-4 inline-block"
+      >
         ← Back to businesses
       </Link>
 
@@ -117,12 +124,8 @@ export default function BusinessDetailPage() {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">{business.name}</h1>
-            {getCategoryName() && (
-              <p className="text-lg text-gray-600 mb-2">{getCategoryName()}</p>
-            )}
-            {business.city && (
-              <p className="text-gray-700 mb-4">{business.city}</p>
-            )}
+            {getCategoryName() && <p className="text-lg text-gray-600 mb-2">{getCategoryName()}</p>}
+            {business.city && <p className="text-gray-700 mb-4">{business.city}</p>}
             {!ratingLoading && ratingData && (
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl">{renderStars(ratingData.average)}</span>
@@ -136,8 +139,10 @@ export default function BusinessDetailPage() {
               onClick={() => toggleFavorite(business.id)}
               className="w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
             >
-              <span className={`material-symbols-outlined text-3xl ${isFavorite(business.id) ? "text-red-500 fill-red-500" : "text-gray-400"}`}>
-                {isFavorite(business.id) ? "favorite" : "favorite_border"}
+              <span
+                className={`material-symbols-outlined text-3xl ${isFavorite(business.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
+              >
+                {isFavorite(business.id) ? 'favorite' : 'favorite_border'}
               </span>
             </button>
 
@@ -152,21 +157,21 @@ export default function BusinessDetailPage() {
               {showShareMenu && (
                 <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-2 w-48 z-50">
                   <button
-                    onClick={() => handleShare("url")}
+                    onClick={() => handleShare('url')}
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 rounded-md flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined">link</span>
                     Open Link
                   </button>
                   <button
-                    onClick={() => handleShare("copy")}
+                    onClick={() => handleShare('copy')}
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 rounded-md flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined">content_copy</span>
-                    {copied ? "Copied!" : "Copy Link"}
+                    {copied ? 'Copied!' : 'Copy Link'}
                   </button>
                   <button
-                    onClick={() => handleShare("whatsapp")}
+                    onClick={() => handleShare('whatsapp')}
                     className="w-full px-4 py-2 text-left hover:bg-gray-50 rounded-md flex items-center gap-2"
                   >
                     <span className="material-symbols-outlined">whatsapp</span>
@@ -185,7 +190,7 @@ export default function BusinessDetailPage() {
             {business.images.map((image, index) => (
               <div key={index} className="rounded-lg overflow-hidden">
                 <img
-                  src={image}
+                  src={resolveMediaUrl(image)}
                   alt={`${business.name} - Image ${index + 1}`}
                   className="w-full h-64 object-cover"
                 />
@@ -216,9 +221,7 @@ export default function BusinessDetailPage() {
                     {review.user?.first_name} {review.user?.last_name}
                   </span>
                 </div>
-                {review.content && (
-                  <p className="text-gray-700">{review.content}</p>
-                )}
+                {review.content && <p className="text-gray-700">{review.content}</p>}
                 <p className="text-sm text-gray-500 mt-2">
                   {new Date(review.created_at).toLocaleDateString()}
                 </p>

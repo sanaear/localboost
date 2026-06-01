@@ -1,23 +1,19 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
-export default function MobileBottomNav({
-  locale,
-}: {
-  locale: string;
-}) {
+export default function MobileBottomNav({ locale }: { locale: string }) {
   const pathname = usePathname();
-  const t = useTranslations("nav");
+  const t = useTranslations('nav');
 
   const items = [
-    { key: "explore", label: t("explore"), icon: "explore", href: "/home" },
-    { key: "map", label: t("map"), icon: "map", href: "/map" },
-    { key: "chat", label: t("chat"), icon: "auto_awesome", href: "/ai-chat", highlight: true },
-    { key: "saved", label: t("saved"), icon: "bookmark", href: "/saved" },
-    { key: "profile", label: t("profile"), icon: "person", href: "/profile" },
+    { key: 'explore', label: t('explore'), icon: 'explore', href: '/home' },
+    { key: 'map', label: t('map'), icon: 'map', href: '/map' },
+    { key: 'chat', label: t('chat'), icon: 'auto_awesome', href: '/ai-chat', highlight: true },
+    { key: 'saved', label: t('saved'), icon: 'bookmark', href: '/saved' },
+    { key: 'profile', label: t('profile'), icon: 'person', href: '/profile' },
   ];
 
   return (
@@ -49,10 +45,14 @@ export default function MobileBottomNav({
               href={`/${locale}${item.href}`}
               className="flex flex-col items-center gap-1 rounded-2xl py-2 text-center transition hover:bg-[#faf7f1]"
             >
-              <span className={`material-symbols-outlined text-[20px] ${active ? "text-[#b27a00]" : "text-[#c4c0b6]"}`}>
+              <span
+                className={`material-symbols-outlined text-[20px] ${active ? 'text-[#b27a00]' : 'text-[#c4c0b6]'}`}
+              >
                 {item.icon}
               </span>
-              <span className={`text-[9px] font-extrabold uppercase tracking-[0.14em] ${active ? "text-[#b27a00]" : "text-[#c8b28c]"}`}>
+              <span
+                className={`text-[9px] font-extrabold uppercase tracking-[0.14em] ${active ? 'text-[#b27a00]' : 'text-[#c8b28c]'}`}
+              >
                 {item.label}
               </span>
             </Link>

@@ -1,18 +1,18 @@
-jest.mock("nodemailer", () => ({
+jest.mock('nodemailer', () => ({
   createTransport: jest.fn(() => ({
-    sendMail: jest.fn().mockResolvedValue({})
-  }))
+    sendMail: jest.fn().mockResolvedValue({}),
+  })),
 }));
 
-const { sendReviewEmail } = require("../services/email.service.js");
+const { sendReviewEmail } = require('../services/email.service.js');
 
-describe("Email Service", () => {
-  it("should call sendMail without error", async () => {
+describe('Email Service', () => {
+  it('should call sendMail without error', async () => {
     await expect(
-      sendReviewEmail("test@mail.com", {
-        businessName: "Test",
+      sendReviewEmail('test@mail.com', {
+        businessName: 'Test',
         rating: 5,
-        content: "Allay3ti lmok Se7a <3"
+        content: 'Allay3ti lmok Se7a <3',
       })
     ).resolves.not.toThrow();
   });

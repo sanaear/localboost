@@ -1,37 +1,38 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import MobileBottomNav from "@/components/MobileBottomNav";
-import OptimizedImage from "@/components/OptimizedImage";
-import { EmptyState, ErrorState, SkeletonLine } from "@/components/UiState";
-import type { Category, SearchFilters } from "@/lib/api";
-import { useFavorites } from "@/lib/favorites";
-import { useBusinessesSearch, useCategories, useRegions } from "@/lib/queries";
+import Link from 'next/link';
+import { use, useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import MobileBottomNav from '@/components/MobileBottomNav';
+import OptimizedImage from '@/components/OptimizedImage';
+import { EmptyState, ErrorState, SkeletonLine } from '@/components/UiState';
+import type { Category, SearchFilters } from '@/lib/api';
+import { useFavorites } from '@/lib/favorites';
+import { useBusinessesSearch, useCategories, useRegions } from '@/lib/queries';
 
 function getCategoryLabel(category: Category | undefined, locale: string) {
-  if (!category) return "";
-  if (locale === "ar") return category.name_ar ?? category.name_en ?? "";
-  if (locale === "fr") return category.name_fr ?? category.name_en ?? "";
-  if (locale === "es") return category.name_es ?? category.name_en ?? "";
-  return category.name_en ?? "";
+  if (!category) return '';
+  if (locale === 'ar') return category.name_ar ?? category.name_en ?? '';
+  if (locale === 'fr') return category.name_fr ?? category.name_en ?? '';
+  if (locale === 'es') return category.name_es ?? category.name_en ?? '';
+  return category.name_en ?? '';
 }
 
 export default function DiscoverPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("discover");
-  const tCommon = useTranslations("common");
-  const [q, setQ] = useState("");
+  const params = use(paramsPromise);
+  const t = useTranslations('discover');
+  const tCommon = useTranslations('common');
+  const [q, setQ] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState('');
   const [regionId, setRegionId] = useState<number | undefined>(undefined);
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [available, setAvailable] = useState(false);
-  const [sortLabel, setSortLabel] = useState("Popularity");
+  const [sortLabel, setSortLabel] = useState('Popularity');
   const [visibleCount, setVisibleCount] = useState(10);
   const favorites = useFavorites();
 
@@ -47,7 +48,7 @@ export default function DiscoverPage({
       rating,
       available: available ? true : undefined,
     }),
-    [available, categoryId, city, q, rating, regionId],
+    [available, categoryId, city, q, rating, regionId]
   );
 
   useEffect(() => {
@@ -65,35 +66,47 @@ export default function DiscoverPage({
         <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#fbfaf6]">
           <div className="px-4 pb-2 pt-5">
             <div className="mobile-fade-up flex items-center justify-between">
-              <span className="text-xl font-extrabold tracking-[-0.05em] text-[#a36e00]">{tCommon("brand")}</span>
+              <span className="text-xl font-extrabold tracking-[-0.05em] text-[#a36e00]">
+                {tCommon('brand')}
+              </span>
               <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[12px] font-bold text-[#7f7669] mobile-search-shadow">
                 <span className="material-symbols-outlined text-[16px]">globe</span>
                 {params.locale.toUpperCase()}
               </div>
             </div>
 
-            <div className="mobile-fade-up mt-4 flex items-center gap-3 rounded-full bg-white px-4 py-3 mobile-search-shadow" style={{ animationDelay: "80ms" }}>
+            <div
+              className="mobile-fade-up mt-4 flex items-center gap-3 rounded-full bg-white px-4 py-3 mobile-search-shadow"
+              style={{ animationDelay: '80ms' }}
+            >
               <span className="material-symbols-outlined text-[#b9ad99]">search</span>
               <input
                 value={q}
                 onChange={(event) => setQ(event.target.value)}
-                placeholder={t("searchPlaceholder")}
+                placeholder={t('searchPlaceholder')}
                 className="flex-1 bg-transparent text-[14px] font-semibold text-[#6d6459] outline-none"
               />
-              <button type="button" onClick={() => setQ("")} className="text-[#c7b79d]">
+              <button type="button" onClick={() => setQ('')} className="text-[#c7b79d]">
                 <span className="material-symbols-outlined text-[18px]">cancel</span>
               </button>
             </div>
 
-            <div className="mobile-scrollbar-hidden mobile-fade-up mt-4 flex items-center gap-3 overflow-x-auto pb-2" style={{ animationDelay: "140ms" }}>
+            <div
+              className="mobile-scrollbar-hidden mobile-fade-up mt-4 flex items-center gap-3 overflow-x-auto pb-2"
+              style={{ animationDelay: '140ms' }}
+            >
               <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[12px] font-bold text-[#7f7669] mobile-search-shadow">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">{t("filters.category")}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">
+                  {t('filters.category')}
+                </span>
                 <select
-                  value={categoryId?.toString() ?? ""}
-                  onChange={(event) => setCategoryId(event.target.value ? Number(event.target.value) : undefined)}
+                  value={categoryId?.toString() ?? ''}
+                  onChange={(event) =>
+                    setCategoryId(event.target.value ? Number(event.target.value) : undefined)
+                  }
                   className="bg-transparent text-[12px] font-bold text-[#7f7669] outline-none"
                 >
-                  <option value="">{t("filters.all")}</option>
+                  <option value="">{t('filters.all')}</option>
                   {(categoriesQuery.data ?? []).map((category) => (
                     <option key={category.id} value={category.id}>
                       {getCategoryLabel(category, params.locale)}
@@ -103,7 +116,9 @@ export default function DiscoverPage({
               </div>
 
               <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[12px] font-bold text-[#7f7669] mobile-search-shadow">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">{t("filters.city")}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">
+                  {t('filters.city')}
+                </span>
                 <input
                   value={city}
                   onChange={(event) => setCity(event.target.value)}
@@ -112,13 +127,17 @@ export default function DiscoverPage({
               </div>
 
               <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[12px] font-bold text-[#7f7669] mobile-search-shadow">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">{t("filters.region")}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">
+                  {t('filters.region')}
+                </span>
                 <select
-                  value={regionId?.toString() ?? ""}
-                  onChange={(event) => setRegionId(event.target.value ? Number(event.target.value) : undefined)}
+                  value={regionId?.toString() ?? ''}
+                  onChange={(event) =>
+                    setRegionId(event.target.value ? Number(event.target.value) : undefined)
+                  }
                   className="bg-transparent text-[12px] font-bold text-[#7f7669] outline-none"
                 >
-                  <option value="">{t("filters.all")}</option>
+                  <option value="">{t('filters.all')}</option>
                   {(regionsQuery.data ?? []).map((region) => (
                     <option key={region.id} value={region.id}>
                       {region.name}
@@ -128,13 +147,17 @@ export default function DiscoverPage({
               </div>
 
               <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[12px] font-bold text-[#7f7669] mobile-search-shadow">
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">{t("filters.rating")}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#b27a00]">
+                  {t('filters.rating')}
+                </span>
                 <select
-                  value={rating?.toString() ?? ""}
-                  onChange={(event) => setRating(event.target.value ? Number(event.target.value) : undefined)}
+                  value={rating?.toString() ?? ''}
+                  onChange={(event) =>
+                    setRating(event.target.value ? Number(event.target.value) : undefined)
+                  }
                   className="bg-transparent text-[12px] font-bold text-[#7f7669] outline-none"
                 >
-                  <option value="">{t("filters.all")}</option>
+                  <option value="">{t('filters.all')}</option>
                   <option value="3">3+</option>
                   <option value="4">4+</option>
                   <option value="5">5</option>
@@ -145,18 +168,16 @@ export default function DiscoverPage({
                 type="button"
                 onClick={() => setAvailable((current) => !current)}
                 className={`mobile-pill h-10 shrink-0 px-4 text-[11px] font-extrabold uppercase tracking-[0.12em] ${
-                  available ? "bg-[#9c6a00] text-white" : "bg-[#efede8] text-[#9c9388]"
+                  available ? 'bg-[#9c6a00] text-white' : 'bg-[#efede8] text-[#9c9388]'
                 }`}
               >
-                {t("filters.availability")}
+                {t('filters.availability')}
               </button>
 
               <button
                 type="button"
                 onClick={() =>
-                  setSortLabel((current) =>
-                    current === "Popularity" ? "Distance" : "Popularity",
-                  )
+                  setSortLabel((current) => (current === 'Popularity' ? 'Distance' : 'Popularity'))
                 }
                 className="mobile-pill h-10 w-10 shrink-0 bg-white text-[#b7aa95] mobile-search-shadow"
               >
@@ -166,14 +187,16 @@ export default function DiscoverPage({
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
-            <div className="mobile-fade-up mt-3 flex items-end justify-between" style={{ animationDelay: "200ms" }}>
+            <div
+              className="mobile-fade-up mt-3 flex items-end justify-between"
+              style={{ animationDelay: '200ms' }}
+            >
               <div className="flex items-baseline gap-2">
                 <h2 className="text-[1.7rem] font-extrabold tracking-[-0.05em] text-[#25222d]">
-                  {t("results", { count: businesses.length })}
+                  {t('results', { count: businesses.length })}
                 </h2>
                 <p className="text-[13px] text-[#8b816f]">
-                  {t("sortedBy")}{" "}
-                  <span className="font-extrabold text-[#b27a00]">{sortLabel}</span>
+                  {t('sortedBy')} <span className="font-extrabold text-[#b27a00]">{sortLabel}</span>
                 </p>
               </div>
             </div>
@@ -181,7 +204,11 @@ export default function DiscoverPage({
             {favorites.error ? (
               <div className="mt-4 flex items-center justify-between gap-3 rounded-[18px] border border-[#f1d0d0] bg-white px-4 py-3 text-[12px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
                 <span className="min-w-0 flex-1 truncate">{favorites.error}</span>
-                <button type="button" onClick={favorites.clearError} className="shrink-0 text-[#9b3e3e]">
+                <button
+                  type="button"
+                  onClick={favorites.clearError}
+                  className="shrink-0 text-[#9b3e3e]"
+                >
                   <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
               </div>
@@ -190,7 +217,10 @@ export default function DiscoverPage({
             {businessesQuery.isLoading ? (
               <div className="mt-6 space-y-4">
                 {Array.from({ length: 6 }).map((_, index) => (
-                  <div key={index} className="flex items-start gap-4 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                  <div
+                    key={index}
+                    className="flex items-start gap-4 rounded-[26px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.05)]"
+                  >
                     <div className="h-[82px] w-[82px] rounded-full bg-[#efece6]" />
                     <div className="flex-1 space-y-3">
                       <SkeletonLine className="h-5 w-[70%]" />
@@ -202,27 +232,27 @@ export default function DiscoverPage({
               </div>
             ) : businessesQuery.isError ? (
               <div className="mt-6">
-                <ErrorState title={t("error")} onRetry={() => businessesQuery.refetch()} />
+                <ErrorState title={t('error')} onRetry={() => businessesQuery.refetch()} />
               </div>
             ) : businesses.length === 0 ? (
               <div className="mt-6">
                 <EmptyState
-                  title={t("noResults")}
-                  description={t("noResultsDescription")}
+                  title={t('noResults')}
+                  description={t('noResultsDescription')}
                   action={
                     <button
                       type="button"
                       onClick={() => {
-                        setQ("");
+                        setQ('');
                         setCategoryId(undefined);
-                        setCity("");
+                        setCity('');
                         setRegionId(undefined);
                         setRating(undefined);
                         setAvailable(false);
                       }}
                       className="mobile-pill h-11 w-full bg-[#efede8] text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#6f675b]"
                     >
-                      {tCommon("resetFilters")}
+                      {tCommon('resetFilters')}
                     </button>
                   }
                 />
@@ -279,14 +309,14 @@ export default function DiscoverPage({
                               void favorites.toggleFavorite(business.id);
                             }}
                             disabled={favorites.isPending(business.id)}
-                            className={`text-[#c7b9a1] ${favorites.isPending(business.id) ? "opacity-60" : ""}`}
+                            className={`text-[#c7b9a1] ${favorites.isPending(business.id) ? 'opacity-60' : ''}`}
                           >
                             <span className="material-symbols-outlined text-[18px]">
                               {favorites.isPending(business.id)
-                                ? "progress_activity"
+                                ? 'progress_activity'
                                 : favorites.isFavorite(business.id)
-                                  ? "bookmark"
-                                  : "bookmark_add"}
+                                  ? 'bookmark'
+                                  : 'bookmark_add'}
                             </span>
                           </button>
                         </div>
@@ -315,7 +345,7 @@ export default function DiscoverPage({
                     onClick={() => setVisibleCount((current) => current + 10)}
                     className="mobile-pill mobile-button-secondary h-12 w-full text-[13px] font-extrabold uppercase tracking-[0.14em]"
                   >
-                    {t("loadMore")}
+                    {t('loadMore')}
                   </button>
                 ) : null}
               </div>

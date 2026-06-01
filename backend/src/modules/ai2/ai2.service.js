@@ -3,29 +3,147 @@ const path = require('path');
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { id: 1,  label: { EN: 'Traditional Restaurant', FR: 'Restaurant Traditionnel', AR: 'مطعم تقليدي', ES: 'Restaurante Tradicional' }, icon: '🍽️' },
-  { id: 2,  label: { EN: 'Café & Tea House', FR: 'Café & Maison de Thé', AR: 'مقهى وبيت شاي', ES: 'Café y Casa de Té' }, icon: '☕' },
-  { id: 3,  label: { EN: 'Pottery & Ceramics', FR: 'Poterie & Céramique', AR: 'فخار وسيراميك', ES: 'Alfarería y Cerámica' }, icon: '🏺' },
-  { id: 4,  label: { EN: 'Leather & Bags', FR: 'Cuir & Maroquinerie', AR: 'جلود وحقائب', ES: 'Cuero y Bolsos' }, icon: '👜' },
-  { id: 5,  label: { EN: 'Spices & Argan Oil', FR: 'Épices & Huile d\'Argan', AR: 'توابل وزيت الأرغان', ES: 'Especias y Aceite de Argán' }, icon: '🌶️' },
-  { id: 6,  label: { EN: 'Jewelry & Silver', FR: 'Bijoux & Argent', AR: 'مجوهرات وفضة', ES: 'Joyería y Plata' }, icon: '💎' },
-  { id: 7,  label: { EN: 'Carpet & Textile', FR: 'Tapis & Textile', AR: 'سجاد ومنسوجات', ES: 'Alfombras y Textiles' }, icon: '🧶' },
-  { id: 8,  label: { EN: 'Riad / Guesthouse', FR: 'Riad / Maison d\'hôtes', AR: 'رياض / بيت ضيافة', ES: 'Riad / Casa de Huéspedes' }, icon: '🏨' },
-  { id: 9,  label: { EN: 'Hammam & Spa', FR: 'Hammam & Spa', AR: 'حمام وسبا', ES: 'Hammam y Spa' }, icon: '🧖' },
-  { id: 10, label: { EN: 'Bakery & Patisserie', FR: 'Boulangerie & Pâtisserie', AR: 'مخبزة وحلويات', ES: 'Panadería y Pastelería' }, icon: '🥐' },
-  { id: 11, label: { EN: 'Tour Guide', FR: 'Guide Touristique', AR: 'مرشد سياحي', ES: 'Guía Turístico' }, icon: '🗺️' },
-  { id: 12, label: { EN: 'Tailor & Couture', FR: 'Tailleur & Couture', AR: 'خياطة وأزياء', ES: 'Sastrería y Costura' }, icon: '🧵' },
+  {
+    id: 1,
+    label: {
+      EN: 'Traditional Restaurant',
+      FR: 'Restaurant Traditionnel',
+      AR: 'مطعم تقليدي',
+      ES: 'Restaurante Tradicional',
+    },
+    icon: '🍽️',
+  },
+  {
+    id: 2,
+    label: {
+      EN: 'Café & Tea House',
+      FR: 'Café & Maison de Thé',
+      AR: 'مقهى وبيت شاي',
+      ES: 'Café y Casa de Té',
+    },
+    icon: '☕',
+  },
+  {
+    id: 3,
+    label: {
+      EN: 'Pottery & Ceramics',
+      FR: 'Poterie & Céramique',
+      AR: 'فخار وسيراميك',
+      ES: 'Alfarería y Cerámica',
+    },
+    icon: '🏺',
+  },
+  {
+    id: 4,
+    label: {
+      EN: 'Leather & Bags',
+      FR: 'Cuir & Maroquinerie',
+      AR: 'جلود وحقائب',
+      ES: 'Cuero y Bolsos',
+    },
+    icon: '👜',
+  },
+  {
+    id: 5,
+    label: {
+      EN: 'Spices & Argan Oil',
+      FR: "Épices & Huile d'Argan",
+      AR: 'توابل وزيت الأرغان',
+      ES: 'Especias y Aceite de Argán',
+    },
+    icon: '🌶️',
+  },
+  {
+    id: 6,
+    label: {
+      EN: 'Jewelry & Silver',
+      FR: 'Bijoux & Argent',
+      AR: 'مجوهرات وفضة',
+      ES: 'Joyería y Plata',
+    },
+    icon: '💎',
+  },
+  {
+    id: 7,
+    label: {
+      EN: 'Carpet & Textile',
+      FR: 'Tapis & Textile',
+      AR: 'سجاد ومنسوجات',
+      ES: 'Alfombras y Textiles',
+    },
+    icon: '🧶',
+  },
+  {
+    id: 8,
+    label: {
+      EN: 'Riad / Guesthouse',
+      FR: "Riad / Maison d'hôtes",
+      AR: 'رياض / بيت ضيافة',
+      ES: 'Riad / Casa de Huéspedes',
+    },
+    icon: '🏨',
+  },
+  {
+    id: 9,
+    label: { EN: 'Hammam & Spa', FR: 'Hammam & Spa', AR: 'حمام وسبا', ES: 'Hammam y Spa' },
+    icon: '🧖',
+  },
+  {
+    id: 10,
+    label: {
+      EN: 'Bakery & Patisserie',
+      FR: 'Boulangerie & Pâtisserie',
+      AR: 'مخبزة وحلويات',
+      ES: 'Panadería y Pastelería',
+    },
+    icon: '🥐',
+  },
+  {
+    id: 11,
+    label: { EN: 'Tour Guide', FR: 'Guide Touristique', AR: 'مرشد سياحي', ES: 'Guía Turístico' },
+    icon: '🗺️',
+  },
+  {
+    id: 12,
+    label: {
+      EN: 'Tailor & Couture',
+      FR: 'Tailleur & Couture',
+      AR: 'خياطة وأزياء',
+      ES: 'Sastrería y Costura',
+    },
+    icon: '🧵',
+  },
   { id: 13, label: { EN: 'Pharmacy', FR: 'Pharmacie', AR: 'صيدلية', ES: 'Farmacia' }, icon: '💊' },
-  { id: 14, label: { EN: 'Supermarket', FR: 'Supermarché', AR: 'سوبر ماركت', ES: 'Supermercado' }, icon: '🛒' },
+  {
+    id: 14,
+    label: { EN: 'Supermarket', FR: 'Supermarché', AR: 'سوبر ماركت', ES: 'Supermercado' },
+    icon: '🛒',
+  },
   { id: 15, label: { EN: 'Other', FR: 'Autre', AR: 'أخرى', ES: 'Otro' }, icon: '🏪' },
 ];
 
 // ─── Moroccan Cities ──────────────────────────────────────────────────────────
 const CITIES = [
-  'Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir',
-  'Tanger', 'Meknès', 'Oujda', 'Tétouan', 'Safi',
-  'Ifrane', 'Errachidia', 'Ouarzazate', 'Essaouira', 'Chefchaouen',
-  'El Jadida', 'Beni Mellal', 'Kenitra', 'Nador', 'Dakhla'
+  'Casablanca',
+  'Rabat',
+  'Fès',
+  'Marrakech',
+  'Agadir',
+  'Tanger',
+  'Meknès',
+  'Oujda',
+  'Tétouan',
+  'Safi',
+  'Ifrane',
+  'Errachidia',
+  'Ouarzazate',
+  'Essaouira',
+  'Chefchaouen',
+  'El Jadida',
+  'Beni Mellal',
+  'Kenitra',
+  'Nador',
+  'Dakhla',
 ];
 
 /**
@@ -35,10 +153,8 @@ function validateStep1(data) {
   const errors = [];
   if (!data.businessName || data.businessName.trim().length < 2)
     errors.push('Business name is required (min 2 characters).');
-  if (!data.category)
-    errors.push('Category is required.');
-  if (!data.city)
-    errors.push('City is required.');
+  if (!data.category) errors.push('Category is required.');
+  if (!data.city) errors.push('City is required.');
   if (!data.address || data.address.trim().length < 5)
     errors.push('Address is required (min 5 characters).');
   if (!data.phoneNumber || !/^\+?[\d\s\-]{7,15}$/.test(data.phoneNumber))
@@ -70,7 +186,7 @@ function buildProfile(body) {
   const lang = step1.lang ? step1.lang.toUpperCase() : 'EN';
 
   // Find category label
-  const cat = CATEGORIES.find(c => String(c.id) === String(step1.category));
+  const cat = CATEGORIES.find((c) => String(c.id) === String(step1.category));
   let categoryLabel = step1.category;
   if (cat) {
     categoryLabel = cat.label[lang] || cat.label['EN'] || cat.label;
@@ -129,5 +245,5 @@ module.exports = {
   validateStep1,
   validateStep3,
   buildProfile,
-  calcCompletionScore
+  calcCompletionScore,
 };

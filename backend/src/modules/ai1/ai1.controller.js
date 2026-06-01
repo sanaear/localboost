@@ -7,29 +7,29 @@ const { run, all, get } = require('../../database/sqlite.js');
  */
 const generateStoryController = async (req, res, next) => {
   try {
-    const { 
-      businessType, 
-      specialties = [], 
-      usps, 
-      language = 'EN', 
+    const {
+      businessType,
+      specialties = [],
+      usps,
+      language = 'EN',
       tone = 'storytelling',
       audience,
       tags = [],
       length,
-      imageUrl
+      imageUrl,
     } = req.body;
 
     // Call service to generate story
-    const story = generateStory({ 
-      businessType, 
-      specialties, 
-      usps, 
-      language, 
+    const story = generateStory({
+      businessType,
+      specialties,
+      usps,
+      language,
       tone,
       audience,
       tags,
       length: length ? parseInt(length) : null,
-      imageUrl
+      imageUrl,
     });
 
     // Save to SQLite
@@ -48,12 +48,12 @@ const generateStoryController = async (req, res, next) => {
           audience || null,
           story,
           story.split(/\s+/).length,
-          imageUrl || null
+          imageUrl || null,
         ]
       );
       savedId = result.id;
     } catch (dbErr) {
-      console.error("[SQLite Save AI1 Error]", dbErr);
+      console.error('[SQLite Save AI1 Error]', dbErr);
     }
 
     res.status(200).json({
@@ -62,8 +62,8 @@ const generateStoryController = async (req, res, next) => {
         id: savedId,
         text: story,
         length: story.length,
-        wordCount: story.split(/\s+/).length
-      }
+        wordCount: story.split(/\s+/).length,
+      },
     });
   } catch (error) {
     next(error);
@@ -77,17 +77,16 @@ const generateStoryController = async (req, res, next) => {
 const getDescriptionsController = async (req, res, next) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 20;
-    const rows = await all(
-      `SELECT * FROM ai1_descriptions ORDER BY created_at DESC LIMIT ?`,
-      [limit]
-    );
-    const parsedRows = rows.map(r => ({
+    const rows = await all(`SELECT * FROM ai1_descriptions ORDER BY created_at DESC LIMIT ?`, [
+      limit,
+    ]);
+    const parsedRows = rows.map((r) => ({
       ...r,
-      tags: r.tags ? JSON.parse(r.tags) : []
+      tags: r.tags ? JSON.parse(r.tags) : [],
     }));
     res.status(200).json({
       success: true,
-      data: parsedRows
+      data: parsedRows,
     });
   } catch (error) {
     next(error);
@@ -115,7 +114,7 @@ const rateDescriptionController = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Description rated successfully!'
+      message: 'Description rated successfully!',
     });
   } catch (error) {
     next(error);
@@ -125,5 +124,5 @@ const rateDescriptionController = async (req, res, next) => {
 module.exports = {
   generateStoryController,
   getDescriptionsController,
-  rateDescriptionController
+  rateDescriptionController,
 };

@@ -1,31 +1,47 @@
-"use client";
+'use client';
 
-export default function DauChart() {
+import { useTranslations } from 'next-intl';
+
+interface DauChartProps {
+  title?: string;
+  touristsLabel?: string;
+  shopsLabel?: string;
+  dauValue?: string;
+  growth?: string;
+}
+
+export default function DauChart({
+  title: _title,
+  touristsLabel: _touristsLabel,
+  shopsLabel: _shopsLabel,
+  dauValue = '42.8k',
+  growth = '+12% vs last month',
+}: DauChartProps) {
+  const t = useTranslations('admin.analytics');
+
   return (
     <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
       <div className="flex justify-between items-center mb-10">
         <div>
-          <h3 className="text-xl font-headline font-bold text-on-surface">
-            Daily Active Users (DAU)
-          </h3>
+          <h3 className="text-xl font-headline font-bold text-on-surface">{t('dauTitle')}</h3>
           <div className="flex gap-6 mt-2">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-primary"></span>
               <span className="text-xs font-label text-on-surface-variant uppercase tracking-wider">
-                Tourists
+                {t('dauTourists')}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-secondary"></span>
               <span className="text-xs font-label text-on-surface-variant uppercase tracking-wider">
-                Shops
+                {t('dauShops')}
               </span>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <span className="text-3xl font-headline font-black text-primary">42.8k</span>
-          <p className="text-xs font-label text-secondary font-bold">+12% vs last month</p>
+          <span className="text-3xl font-headline font-black text-primary">{dauValue}</span>
+          <p className="text-xs font-label text-secondary font-bold">{growth}</p>
         </div>
       </div>
 
@@ -33,12 +49,12 @@ export default function DauChart() {
         <svg className="w-full h-full" viewBox="0 0 1000 200">
           <defs>
             <linearGradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: "#eba020", stopOpacity: 0.2 }}></stop>
-              <stop offset="100%" style={{ stopColor: "#eba020", stopOpacity: 0 }}></stop>
+              <stop offset="0%" style={{ stopColor: '#eba020', stopOpacity: 0.2 }}></stop>
+              <stop offset="100%" style={{ stopColor: '#eba020', stopOpacity: 0 }}></stop>
             </linearGradient>
             <linearGradient id="grad2" x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" style={{ stopColor: "#2D9E75", stopOpacity: 0.2 }}></stop>
-              <stop offset="100%" style={{ stopColor: "#2D9E75", stopOpacity: 0 }}></stop>
+              <stop offset="0%" style={{ stopColor: '#2D9E75', stopOpacity: 0.2 }}></stop>
+              <stop offset="100%" style={{ stopColor: '#2D9E75', stopOpacity: 0 }}></stop>
             </linearGradient>
           </defs>
           <path

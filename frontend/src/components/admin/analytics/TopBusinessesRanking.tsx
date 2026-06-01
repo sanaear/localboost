@@ -1,4 +1,6 @@
-"use client";
+'use client';
+
+import { useTranslations } from 'next-intl';
 
 interface BusinessRow {
   rank: number;
@@ -10,59 +12,71 @@ interface BusinessRow {
   textColor: string;
 }
 
-export default function TopBusinessesRanking() {
-  const businesses: BusinessRow[] = [
+interface TopBusinessesRankingProps {
+  businesses?: BusinessRow[];
+  showEntitiesTotal?: string;
+}
+
+export default function TopBusinessesRanking({
+  businesses,
+  showEntitiesTotal,
+}: TopBusinessesRankingProps) {
+  const t = useTranslations('admin.analytics');
+
+  const defaultBusinesses: BusinessRow[] = [
     {
       rank: 1,
-      initials: "RK",
-      name: "Riad Kniza Gastronomy",
+      initials: 'RK',
+      name: 'Riad Kniza Gastronomy',
       rating: 4.9,
       growth: 18.2,
-      bgColor: "bg-primary-fixed",
-      textColor: "text-primary",
+      bgColor: 'bg-primary-fixed',
+      textColor: 'text-primary',
     },
     {
       rank: 2,
-      initials: "BA",
-      name: "Blue Alley Textiles",
+      initials: 'BA',
+      name: 'Blue Alley Textiles',
       rating: 4.8,
       growth: 12.5,
-      bgColor: "bg-secondary-fixed",
-      textColor: "text-secondary",
+      bgColor: 'bg-secondary-fixed',
+      textColor: 'text-secondary',
     },
     {
       rank: 3,
-      initials: "MJ",
-      name: "Majorelle Jewelry",
+      initials: 'MJ',
+      name: 'Majorelle Jewelry',
       rating: 4.8,
       growth: 9.1,
-      bgColor: "bg-tertiary-fixed",
-      textColor: "text-tertiary",
+      bgColor: 'bg-tertiary-fixed',
+      textColor: 'text-tertiary',
     },
   ];
+
+  const data = businesses ?? defaultBusinesses;
 
   return (
     <div className="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/10">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-headline font-bold text-on-surface">Top Businesses</h3>
-        <button className="text-xs font-bold text-primary hover:underline">View All</button>
+        <h3 className="text-lg font-headline font-bold text-on-surface">{t('topBusinesses')}</h3>
+        <button className="text-xs font-bold text-primary hover:underline">{t('viewAll')}</button>
       </div>
 
       <div className="space-y-2">
         <div className="grid grid-cols-12 px-4 py-2 text-[10px] font-label text-slate-400 uppercase tracking-widest border-b border-surface-container">
           <div className="col-span-1">#</div>
-          <div className="col-span-7">Business Name</div>
-          <div className="col-span-2 text-right">Rating</div>
-          <div className="col-span-2 text-right">Growth</div>
+          <div className="col-span-7">{t('businessName')}</div>
+          <div className="col-span-2 text-right">{t('rating')}</div>
+          <div className="col-span-2 text-right">{t('growth')}</div>
         </div>
 
-        {businesses.map((business) => (
+        {data.map((business) => (
           <div
             key={business.rank}
             className="grid grid-cols-12 px-4 py-3 text-sm items-center hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group"
           >
             <div className="col-span-1 font-bold text-slate-400">
-              {business.rank.toString().padStart(2, "0")}
+              {business.rank.toString().padStart(2, '0')}
             </div>
             <div className="col-span-7 flex items-center gap-3">
               <div
@@ -89,7 +103,7 @@ export default function TopBusinessesRanking() {
 
         <div className="py-2 text-center">
           <span className="text-[10px] font-label text-slate-300 uppercase tracking-widest">
-            Showing Top 3 of 842 Entities
+            {showEntitiesTotal ?? t('topBusinessesCount', { count: 842 })}
           </span>
         </div>
       </div>

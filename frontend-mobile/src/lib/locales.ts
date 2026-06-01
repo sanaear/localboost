@@ -1,4 +1,4 @@
-export const locales = ["en", "fr", "es", "ar"] as const;
+export const locales = ['en', 'fr', 'es', 'ar'] as const;
 export type Locale = (typeof locales)[number];
 
 export function isLocale(value: string): value is Locale {
@@ -13,6 +13,5 @@ export function getLocaleFromPathname(pathname: string): Locale | undefined {
 }
 
 export function isRtlLocale(locale: string) {
-  return locale === "ar";
+  return locale === 'ar';
 }
-

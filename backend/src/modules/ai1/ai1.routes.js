@@ -1,5 +1,9 @@
 const express = require('express');
-const { generateStoryController, getDescriptionsController, rateDescriptionController } = require('./ai1.controller.js');
+const {
+  generateStoryController,
+  getDescriptionsController,
+  rateDescriptionController,
+} = require('./ai1.controller.js');
 
 const router = express.Router();
 

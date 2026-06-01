@@ -1,16 +1,18 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import { use } from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 export default function AboutPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("about");
-  const tCommon = useTranslations("common");
+  const params = use(paramsPromise);
+  const t = useTranslations('about');
+  const tCommon = useTranslations('common');
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
@@ -24,7 +26,7 @@ export default function AboutPage({
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               </Link>
               <h1 className="text-[1.6rem] font-extrabold tracking-[-0.05em] text-[#a36e00]">
-                {t("title")}
+                {t('title')}
               </h1>
               <span className="h-9 w-9" />
             </div>
@@ -33,13 +35,11 @@ export default function AboutPage({
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-5 pb-5">
             <div className="mobile-card mobile-fade-up mt-5 rounded-[30px] px-5 py-6">
               <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
-                {tCommon("brand")}
+                {tCommon('brand')}
               </h2>
-              <p className="mt-4 text-[14px] leading-7 text-[#786f64]">
-                {t("body1")}
-              </p>
+              <p className="mt-4 text-[14px] leading-7 text-[#786f64]">{t('body1')}</p>
               <div className="mt-6 rounded-[22px] bg-[#f4efe5] px-4 py-4 text-[13px] leading-6 text-[#6f675b]">
-                {t("body2")}
+                {t('body2')}
               </div>
             </div>
           </div>

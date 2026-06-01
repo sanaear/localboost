@@ -1,7 +1,7 @@
-import { NextIntlClientProvider } from "next-intl";
-import { notFound } from "next/navigation";
-import QueryProvider from "@/components/providers/QueryProvider";
-import { locales } from "@/lib/locales";
+import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
+import QueryProvider from '@/components/providers/QueryProvider';
+import { locales } from '@/lib/locales';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -20,14 +20,16 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  if (!locales.includes(params.locale as any)) notFound();
+  const { locale } = await params;
 
-  const messages = await getMessages(params.locale);
+  if (!locales.includes(locale as any)) notFound();
+
+  const messages = await getMessages(locale);
 
   return (
-    <NextIntlClientProvider locale={params.locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <QueryProvider>{children}</QueryProvider>
     </NextIntlClientProvider>
   );

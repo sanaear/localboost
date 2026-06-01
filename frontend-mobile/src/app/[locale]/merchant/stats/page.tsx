@@ -1,327 +1,352 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
-import { ErrorState } from "@/components/UiState";
-import { API_BASE_URL } from "@/lib/api";
-import { getMerchantIdentity } from "@/lib/merchant";
+import Link from 'next/link';
+import { use, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import MerchantAppBottomNav from '@/components/MerchantAppBottomNav';
+import { ErrorState } from '@/components/UiState';
+import { API_BASE_URL } from '@/lib/api';
+import { getMerchantIdentity } from '@/lib/merchant';
+
+const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+async function fetchSummary(token: string, days: number) {
+  const response = await fetch(`${API_BASE_URL}/analytics/merchant/summary?days=${days}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.ok) throw new Error('Request failed');
+  const payload = (await response.json()) as {
+    data?: {
+      totalViews?: number;
+      totalClicks?: number;
+      viewsByDay?: Array<{ day: string; count: number }>;
+      clicksByDay?: Array<{ day: string; count: number }>;
+      viewsByBusiness?: Array<{ business_id: number; name: string; count: number }>;
+    };
+  };
+  return payload.data;
+}
 
 export default function MerchantStatsPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const params = use(paramsPromise);
+  const t = useTranslations('merchantStats');
   const identity = useMemo(() => getMerchantIdentity(), []);
-  const [selectedRange, setSelectedRange] = useState("30d");
+  const [selectedRange, setSelectedRange] = useState<string>('7d');
   const [reportExpanded, setReportExpanded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [summary, setSummary] = useState<{
-    totalViews: number;
-    totalClicks: number;
-    viewsActivity: number[];
-    clicksByDay: number[];
-    viewsByBusiness: Array<{ business_id: number; name: string; count: number }>;
-  } | null>(null);
 
-  const ranges = useMemo(() => ["7d", "30d", "90d", "Custom"], []);
   const days = useMemo(() => {
-    if (selectedRange === "7d") return 7;
-    if (selectedRange === "90d") return 90;
-    if (selectedRange === "Custom") return 30;
+    if (selectedRange === '7d') return 7;
+    if (selectedRange === '90d') return 90;
     return 30;
   }, [selectedRange]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setHasError(false);
-    setSummary(null);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['merchant-stats', days, identity?.token],
+    queryFn: () => fetchSummary(identity!.token!, days),
+    enabled: !!identity?.token,
+  });
 
-    void (async () => {
-      if (!identity?.token) {
-        setHasError(true);
-        setIsLoading(false);
-        return;
-      }
+  const totalViews = data?.totalViews ?? 0;
+  const totalClicks = data?.totalClicks ?? 0;
+  const viewsByDay = data?.viewsByDay ?? [];
+  const clicksByDay = data?.clicksByDay ?? [];
+  const viewsByBusiness = data?.viewsByBusiness ?? [];
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/analytics/merchant/summary?days=${days}`, {
-          headers: { Authorization: `Bearer ${identity.token}` },
-        });
-        if (!response.ok) throw new Error("Request failed");
-        const payload = (await response.json()) as {
-          data?: {
-            totalViews?: number;
-            totalClicks?: number;
-            viewsByDay?: Array<{ day: string; count: number }>;
-            clicksByDay?: Array<{ day: string; count: number }>;
-            viewsByBusiness?: Array<{ business_id: number; name: string; count: number }>;
-          };
-        };
-        const viewsByDay = Array.isArray(payload.data?.viewsByDay) ? payload.data!.viewsByDay! : [];
-        const clicksByDay = Array.isArray(payload.data?.clicksByDay) ? payload.data!.clicksByDay! : [];
+  const today = new Date();
+  const last7 = Array.from({ length: 7 }).map((_, index) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - index));
+    return d.toISOString().slice(0, 10);
+  });
+  const viewsMap = new Map<string, number>(
+    viewsByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0])
+  );
+  const clicksMap = new Map<string, number>(
+    clicksByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0])
+  );
+  const viewsActivity = last7.map((key) => viewsMap.get(key) ?? 0);
+  const clicksBars = last7.map((key) => clicksMap.get(key) ?? 0);
+  const highestBar = Math.max(...(clicksBars.length ? clicksBars : [0]));
+  const maxViews = Math.max(...(viewsActivity.length ? viewsActivity : [1]));
 
-        const today = new Date();
-        const last7 = Array.from({ length: 7 }).map((_, index) => {
-          const d = new Date(today);
-          d.setDate(today.getDate() - (6 - index));
-          return d.toISOString().slice(0, 10);
-        });
-        const viewsMap = new Map<string, number>(
-          viewsByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0]),
-        );
-        const clicksMap = new Map<string, number>(
-          clicksByDay.map((row) => [String(row.day).slice(0, 10), Number(row.count) || 0]),
-        );
+  const ctr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
 
-        const viewsActivity = last7.map((key) => viewsMap.get(key) ?? 0);
-        const clicksBars = last7.map((key) => clicksMap.get(key) ?? 0);
-
-        const viewsByBusiness = Array.isArray(payload.data?.viewsByBusiness) ? payload.data!.viewsByBusiness! : [];
-
-        if (cancelled) return;
-        setSummary({
-          totalViews: Number(payload.data?.totalViews) || 0,
-          totalClicks: Number(payload.data?.totalClicks) || 0,
-          viewsActivity,
-          clicksByDay: clicksBars,
-          viewsByBusiness,
-        });
-        setIsLoading(false);
-      } catch {
-        if (cancelled) return;
-        setHasError(true);
-        setIsLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [days, identity]);
-
-  const highestBar = Math.max(...(summary?.clicksByDay ?? [0]));
+  const peakIdx = viewsActivity.indexOf(Math.max(...viewsActivity));
+  const peakLabel = peakIdx >= 0 ? dayLabels[peakIdx] : '—';
+  const peakValue = peakIdx >= 0 ? viewsActivity[peakIdx] : 0;
+  const reportInsight =
+    viewsByBusiness.length > 0
+      ? `${viewsByBusiness[0].name} is currently your strongest discovery source with ${viewsByBusiness[0].count.toLocaleString()} view${viewsByBusiness[0].count === 1 ? '' : 's'}. Keep profile copy, photos, and offers fresh there first.`
+      : 'No discovery trend is available yet. Views will appear here after tourists open your business profile.';
 
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
-        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#fbfaf6]">
+        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#f9f9f7]">
           <div className="px-4 pb-2 pt-5">
             <div className="mobile-fade-up flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#303741] text-white shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">bar_chart</span>
-                </span>
-                <h1 className="text-[1.4rem] font-extrabold tracking-[-0.05em] text-[#a36e00]">
+                <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+                  <span className="material-symbols-outlined text-[16px] text-on-primary-container">
+                    bar_chart
+                  </span>
+                </div>
+                <h1 className="text-[1.4rem] font-extrabold tracking-[-0.05em] text-primary">
                   LocalBoost
                 </h1>
               </div>
-              <Link href={`/${params.locale}/merchant/updates`} className="text-[#d19923]">
+              <Link href={`/${params.locale}/merchant/updates`} className="text-primary-container">
                 <span className="material-symbols-outlined text-[18px]">notifications</span>
               </Link>
             </div>
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
-            {hasError ? (
+            {isError ? (
               <div className="mt-6">
                 <ErrorState
                   title="Something went wrong"
                   description="Check your connection and try again."
-                  onRetry={() => window.location.reload()}
+                  onRetry={() => refetch()}
                   retryLabel="Retry"
                 />
               </div>
             ) : null}
-            <div className="mobile-fade-up mt-4" style={{ animationDelay: "60ms" }}>
-              <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
-                Visibility Stats
+
+            <div className="mobile-fade-up mt-4" style={{ animationDelay: '60ms' }}>
+              <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-on-surface">
+                {t('title')}
               </h2>
-              <p className="mt-2 text-[14px] leading-6 text-[#8b8174]">
-                Real-time performance for your shop.
-              </p>
+              <p className="mt-2 text-[14px] leading-6 text-on-surface-variant">{t('subtitle')}</p>
             </div>
 
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {ranges.map((range, index) => {
-                const active = selectedRange === range;
-
-                return (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => setSelectedRange(range)}
-                    className={`mobile-pill mobile-fade-up h-9 shrink-0 px-4 text-[11px] font-extrabold ${
-                      active
-                        ? "bg-[#f1ece5] text-[#4a4037] shadow-[0_10px_20px_rgba(31,26,10,0.08)]"
-                        : "bg-transparent text-[#9d9386]"
-                    }`}
-                    style={{ animationDelay: `${100 + index * 40}ms` }}
-                  >
-                    {range}
-                  </button>
-                );
-              })}
+            <div className="mt-4 bg-surface-container-low p-1.5 rounded-full flex gap-1 items-center">
+              {['7d', '30d', '90d'].map((range) => (
+                <button
+                  key={range}
+                  type="button"
+                  onClick={() => setSelectedRange(range)}
+                  className={`flex-1 py-2 text-xs font-label font-bold text-center rounded-full ${
+                    selectedRange === range
+                      ? 'bg-surface-container-lowest text-on-surface shadow-sm'
+                      : 'text-on-surface-variant hover:bg-surface-container-high transition-colors'
+                  }`}
+                >
+                  {range}
+                </button>
+              ))}
+              <div className="w-[1px] h-4 bg-outline-variant/30 mx-1"></div>
+              <button
+                type="button"
+                onClick={() => setSelectedRange('30d')}
+                className="px-4 py-2 text-xs font-label font-bold text-center rounded-full text-on-surface-variant flex items-center justify-center gap-1"
+              >
+                <span className="material-symbols-outlined text-sm">calendar_today</span>
+                Custom
+              </button>
             </div>
 
-            <div
-              className="mobile-card mobile-fade-up mt-5 rounded-[30px] px-5 py-5"
-              style={{ animationDelay: "200ms" }}
-            >
-              <div className="text-[9px] font-extrabold uppercase tracking-[0.16em] text-[#c1b4a6]">
-                Total Views
-              </div>
-              <div className="mt-2 flex items-end gap-2">
-                <span className="text-[2.2rem] font-extrabold tracking-[-0.06em] text-[#b27a00]">
-                  {isLoading ? "—" : (summary?.totalViews ?? 0).toLocaleString()}
+            <div className="grid grid-cols-2 gap-4 mt-5">
+              <div className="col-span-2 bg-surface-container-low rounded-lg p-5 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+                <span className="text-on-surface-variant text-xs font-label tracking-wider uppercase mb-2">
+                  {t('totalViews')}
                 </span>
-                <span className="pb-2 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#2caa72]">
-                  {isLoading ? "" : ""}
-                </span>
-              </div>
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-[22px] bg-[#f7f4ef] px-4 py-3">
-                  <div className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#c0b3a4]">
-                    CTR (%)
-                  </div>
-                  <div className="mt-1 text-[1.7rem] font-extrabold tracking-[-0.05em] text-[#2a2826]">
-                    {isLoading || !summary?.totalViews
-                      ? "—"
-                      : `${Math.round(((summary.totalClicks ?? 0) / summary.totalViews) * 1000) / 10}%`}
-                  </div>
-                  <div className="text-[10px] text-[#a49a8d]">Avg. interaction</div>
-                </div>
-                <div className="rounded-[22px] bg-[#f7f4ef] px-4 py-3">
-                  <div className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#c0b3a4]">
-                    Peak Day
-                  </div>
-                  <div className="mt-1 text-[1.5rem] font-extrabold tracking-[-0.05em] text-[#2a2826]">
-                    {isLoading || !summary ? "—" : (() => {
-                      const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                      const max = Math.max(...summary.viewsActivity, 0);
-                      const idx = summary.viewsActivity.findIndex((v) => v === max);
-                      return idx >= 0 ? labels[idx] : "—";
-                    })()}
-                  </div>
-                  <div className="text-[10px] text-[#a49a8d]">2.3x views</div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-headline font-bold text-primary">
+                    {isLoading ? '—' : totalViews.toLocaleString()}
+                  </span>
                 </div>
               </div>
-            </div>
-
-            <div className="mobile-fade-up mt-7" style={{ animationDelay: "260ms" }}>
-              <div className="flex items-center justify-between">
-                <h3 className="text-[1.3rem] font-extrabold tracking-[-0.05em] text-[#23212c]">
-                  Views Activity
-                </h3>
-                <span className="text-[9px] font-extrabold uppercase tracking-[0.14em] text-[#b7aa9b]">
-                  Live updates
+              <div className="bg-surface-container-low rounded-lg p-5 flex flex-col">
+                <span className="text-on-surface-variant text-[10px] font-label tracking-wider uppercase mb-1">
+                  {t('ctr')}
+                </span>
+                <span className="text-xl font-headline font-bold text-on-surface">
+                  {isLoading ? '—' : `${ctr}%`}
+                </span>
+                <span className="text-on-surface-variant text-[10px] mt-1">{t('avgLabel')}</span>
+              </div>
+              <div className="bg-surface-container-low rounded-lg p-5 flex flex-col">
+                <span className="text-on-surface-variant text-[10px] font-label tracking-wider uppercase mb-1">
+                  {t('peakDay')}
+                </span>
+                <span className="text-xl font-headline font-bold text-on-surface">
+                  {isLoading ? '—' : peakLabel}
+                </span>
+                <span className="text-on-surface-variant text-[10px] mt-1">
+                  {isLoading
+                    ? ''
+                    : `${peakValue.toLocaleString()} ${t('viewsCount', { count: peakValue })}`}
                 </span>
               </div>
-              <div className="mt-4 rounded-[28px] bg-[#f7f4ee] px-4 py-5">
-                <div className="relative h-[180px] rounded-[24px] bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(243,239,232,0.92))] px-3 pb-6 pt-4">
-                  <div className="absolute inset-x-3 top-6 bottom-10 grid grid-rows-4">
+            </div>
+
+            <div className="mt-7">
+              <div className="flex justify-between items-end mb-4">
+                <h2 className="font-headline font-bold text-lg text-on-surface">
+                  {t('viewsActivity')}
+                </h2>
+                <span className="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest">
+                  {t('liveUpdates')}
+                </span>
+              </div>
+              <div className="bg-surface-container-lowest rounded-lg p-6 shadow-[0_12px_48px_rgba(26,28,27,0.04)]">
+                <div className="h-48 w-full flex items-end gap-2 relative">
+                  <div className="absolute inset-0 flex flex-col justify-between py-2">
                     {[0, 1, 2, 3].map((row) => (
-                      <div key={row} className="border-b border-[#eee4d7]" />
+                      <div
+                        key={row}
+                        className="border-b border-outline-variant/10 w-full h-0"
+                      ></div>
                     ))}
                   </div>
                   <svg
-                    viewBox="0 0 220 120"
-                    className="relative z-10 h-full w-full"
-                    aria-label="Views activity chart"
+                    className="absolute inset-0 w-full h-full overflow-visible"
+                    preserveAspectRatio="none"
                   >
-                    <polyline
-                      fill="none"
-                      stroke="#b27a00"
-                      strokeWidth="2.5"
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                      points={(summary?.viewsActivity ?? Array.from({ length: 7 }).map(() => 0))
-                        .map((value, index, array) => {
-                          const max = Math.max(...array, 1);
-                          const y = 115 - (value / max) * 90;
-                          return `${index * 30},${y}`;
-                        })
-                        .join(" ")}
-                    />
-                  </svg>
-                  <div className="mt-2 flex justify-between text-[8px] font-extrabold uppercase tracking-[0.12em] text-[#baaf9e]">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-                      <span key={day}>{day}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="mobile-fade-up mt-7" style={{ animationDelay: "320ms" }}>
-              <h3 className="text-[1.3rem] font-extrabold tracking-[-0.05em] text-[#23212c]">
-                Clicks by Day
-              </h3>
-              <div className="mt-4 rounded-[28px] bg-[#f7f4ee] px-4 py-4">
-                <div className="flex h-[120px] items-end gap-3 rounded-[24px] bg-[linear-gradient(180deg,rgba(255,255,255,0.7),rgba(243,239,232,0.95))] px-4 py-4">
-                  {(summary?.clicksByDay ?? Array.from({ length: 7 }).map(() => 0)).map((value, index) => {
-                    const active = value === highestBar;
-
-                    return (
-                      <div key={`${value}-${index}`} className="flex flex-1 items-end justify-center">
-                        <div
-                          className={`w-full rounded-t-[8px] ${
-                            active ? "bg-[#bd5300]" : "bg-[#dfdad1]"
-                          }`}
-                          style={{ height: `${highestBar > 0 ? (value / highestBar) * 84 : 0}px` }}
+                    <defs>
+                      <linearGradient id="lineGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#EBA020', stopOpacity: 0.2 }}></stop>
+                        <stop offset="100%" style={{ stopColor: '#EBA020', stopOpacity: 0 }}></stop>
+                      </linearGradient>
+                    </defs>
+                    {!isLoading && viewsActivity.length > 0 ? (
+                      <>
+                        <path
+                          d={viewsActivity
+                            .map((v, i, arr) => {
+                              const x = (i / (arr.length - 1)) * 100;
+                              const y = maxViews > 0 ? 100 - (v / maxViews) * 80 : 100;
+                              return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+                            })
+                            .join(' ')}
+                          fill="none"
+                          stroke="#825500"
+                          strokeLinecap="round"
+                          strokeWidth="3"
                         />
-                      </div>
-                    );
-                  })}
+                        <path
+                          d={`${viewsActivity
+                            .map((v, i, arr) => {
+                              const x = (i / (arr.length - 1)) * 100;
+                              const y = maxViews > 0 ? 100 - (v / maxViews) * 80 : 100;
+                              return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+                            })
+                            .join(' ')} V100 H0 Z`}
+                          fill="url(#lineGrad)"
+                        />
+                      </>
+                    ) : null}
+                  </svg>
                 </div>
-              </div>
-            </div>
-
-            <div className="mobile-fade-up mt-7 pb-2" style={{ animationDelay: "380ms" }}>
-              <h3 className="text-[1.3rem] font-extrabold tracking-[-0.05em] text-[#23212c]">
-                How tourists found you
-              </h3>
-              <div className="mt-4 rounded-[28px] bg-white px-4 py-4 shadow-[0_10px_22px_rgba(31,26,10,0.04)]">
-                <div className="space-y-4">
-                  {(summary?.viewsByBusiness ?? []).map((item, index) => (
-                    <div key={item.business_id} className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[16px] text-[#b27a00]">
-                          {index === 0
-                            ? "search"
-                            : index === 1
-                              ? "explore"
-                              : index === 2
-                                ? "location_on"
-                                : "hotel_class"}
-                        </span>
-                        <span className="text-[13px] leading-5 text-[#5f564b]">{item.name}</span>
-                      </div>
-                      <span className="rounded-full bg-[#f4efe5] px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.12em] text-[#b27a00]">
-                        {String(item.count)}
-                      </span>
-                    </div>
+                <div className="flex justify-between mt-4 text-[10px] font-label font-bold text-on-surface-variant/60 uppercase tracking-tighter">
+                  {dayLabels.map((day) => (
+                    <span key={day}>{day}</span>
                   ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setReportExpanded((current) => !current)}
-                  className="mt-5 text-[12px] font-extrabold text-[#9b6d19]"
-                >
-                  View Full Keyword Report
-                  <span className="material-symbols-outlined ml-1 align-middle text-[14px]">
-                    arrow_right_alt
-                  </span>
-                </button>
-                {reportExpanded ? (
-                  <div className="mt-4 rounded-[20px] bg-[#f8f5ef] px-4 py-4 text-[12px] leading-6 text-[#6f675b]">
-                    Best growth comes from discovery queries tied to crafts, souks, and nearby
-                    landmarks. Focus your profile copy and photos on those themes.
-                  </div>
-                ) : null}
               </div>
+            </div>
+
+            <div className="mt-7">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="font-headline font-bold text-lg text-on-surface">
+                  {t('clicksByDay')}
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-tertiary"></span>
+                  <span className="text-[10px] font-bold text-on-surface-variant uppercase">
+                    {t('conversion')}
+                  </span>
+                </div>
+              </div>
+              <div className="bg-surface-container-lowest rounded-lg p-6 shadow-[0_12px_48px_rgba(26,28,27,0.04)]">
+                <div className="h-32 w-full flex items-end justify-between gap-3">
+                  {clicksBars.length > 0
+                    ? clicksBars.map((value, index) => {
+                        const pct = highestBar > 0 ? (value / highestBar) * 100 : 0;
+                        const isMax = value === highestBar && value > 0;
+                        return (
+                          <div
+                            key={index}
+                            className="flex-1 flex items-end justify-center relative"
+                          >
+                            {isMax ? (
+                              <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-inverse-surface text-inverse-on-surface text-[8px] py-0.5 px-1.5 rounded font-bold">
+                                {value}
+                              </div>
+                            ) : null}
+                            <div
+                              className={`w-full rounded-t-sm ${isMax ? 'bg-tertiary' : 'bg-surface-container-high'}`}
+                              style={{ height: `${Math.max(pct, 4)}%` }}
+                            ></div>
+                          </div>
+                        );
+                      })
+                    : Array.from({ length: 7 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="flex-1 bg-surface-container-high rounded-t-sm"
+                          style={{ height: '10%' }}
+                        ></div>
+                      ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-7 pb-2">
+              <h2 className="font-headline font-bold text-lg text-on-surface mb-4 px-1">
+                {t('howFound')}
+              </h2>
+              <div className="bg-surface-container-low rounded-lg overflow-hidden">
+                <div className="flex flex-col">
+                  {(isLoading ? [] : viewsByBusiness).length > 0 ? (
+                    viewsByBusiness.map((item, index) => {
+                      const icons = ['search', 'explore', 'location_on', 'hotel_class'];
+                      return (
+                        <div
+                          key={item.business_id}
+                          className="flex justify-between items-center p-4 hover:bg-surface-container-high transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="material-symbols-outlined text-primary text-xl">
+                              {icons[index] || 'search'}
+                            </span>
+                            <span className="font-medium text-on-surface">{item.name}</span>
+                          </div>
+                          <span className="bg-primary-fixed-dim text-on-primary-fixed-variant text-[10px] font-bold px-2.5 py-1 rounded-full">
+                            {item.count.toLocaleString()}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-6 text-center text-on-surface-variant text-sm">
+                      No keyword data available
+                    </div>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportExpanded((current) => !current)}
+                className="w-full mt-4 py-4 text-primary font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:bg-primary/5 rounded-full transition-all"
+              >
+                {t('viewFullReport')}
+                <span className="material-symbols-outlined text-sm">
+                  {reportExpanded ? 'expand_less' : 'arrow_forward'}
+                </span>
+              </button>
+              {reportExpanded ? (
+                <div className="mt-4 rounded-[20px] bg-surface-container-low px-4 py-4 text-[12px] leading-6 text-on-surface-variant">
+                  {reportInsight}
+                </div>
+              ) : null}
             </div>
           </div>
 

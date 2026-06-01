@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useId, useMemo, useRef } from "react";
-import type { Business } from "@/lib/api";
+import { useEffect, useId, useMemo, useRef } from 'react';
+import type { Business } from '@/lib/api';
 
 type LatLng = { lat: number; lng: number };
 
@@ -9,22 +9,22 @@ const MOROCCO_CENTER: [number, number] = [31.6295, -7.9811];
 const MOROCCO_ZOOM = 6;
 
 function getBusinessLatLng(business: Business): LatLng | null {
-  if (typeof business.lat === "number" && typeof business.lng === "number") {
+  if (typeof business.lat === 'number' && typeof business.lng === 'number') {
     return { lat: business.lat, lng: business.lng };
   }
 
-  const city = (business.city ?? "").trim().toLowerCase();
+  const city = (business.city ?? '').trim().toLowerCase();
   if (!city) return null;
 
   const cityCenters: Record<string, LatLng> = {
-    "fès": { lat: 34.0331, lng: -5.0003 },
-    "fes": { lat: 34.0331, lng: -5.0003 },
-    "marrakech": { lat: 31.6295, lng: -7.9811 },
-    "casablanca": { lat: 33.5731, lng: -7.5898 },
-    "rabat": { lat: 34.0209, lng: -6.8416 },
-    "tanger": { lat: 35.7595, lng: -5.834 },
-    "tangier": { lat: 35.7595, lng: -5.834 },
-    "agadir": { lat: 30.4278, lng: -9.5981 },
+    fès: { lat: 34.0331, lng: -5.0003 },
+    fes: { lat: 34.0331, lng: -5.0003 },
+    marrakech: { lat: 31.6295, lng: -7.9811 },
+    casablanca: { lat: 33.5731, lng: -7.5898 },
+    rabat: { lat: 34.0209, lng: -6.8416 },
+    tanger: { lat: 35.7595, lng: -5.834 },
+    tangier: { lat: 35.7595, lng: -5.834 },
+    agadir: { lat: 30.4278, lng: -9.5981 },
   };
 
   return cityCenters[city] ?? null;
@@ -57,24 +57,24 @@ export default function LeafletBusinessesMap({
       businesses
         .map((business) => ({ business, coords: getBusinessLatLng(business) }))
         .filter((item): item is { business: Business; coords: LatLng } => Boolean(item.coords)),
-    [businesses],
+    [businesses]
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (mapRef.current) return;
 
     let mounted = true;
 
     const init = async () => {
-      const L = (await import("leaflet")).default;
-      await import("leaflet.markercluster");
+      const L = (await import('leaflet')).default;
+      await import('leaflet.markercluster');
 
       if (!mounted) return;
       leafletRef.current = L;
 
       if (!mapContainerRef.current) return;
-      mapContainerRef.current.innerHTML = "";
+      mapContainerRef.current.innerHTML = '';
 
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
@@ -82,14 +82,14 @@ export default function LeafletBusinessesMap({
       }).setView(MOROCCO_CENTER, MOROCCO_ZOOM);
       mapRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
         maxZoom: 19,
       }).addTo(map);
 
       const markerClusterFactory = (L as any).markerClusterGroup ?? (L as any).MarkerClusterGroup;
 
-      if (typeof markerClusterFactory === "function") {
+      if (typeof markerClusterFactory === 'function') {
         const clusterGroup =
           markerClusterFactory === (L as any).MarkerClusterGroup
             ? markerClusterFactory({
@@ -115,7 +115,7 @@ export default function LeafletBusinessesMap({
 
       L.control
         .zoom({
-          position: "bottomright",
+          position: 'bottomright',
         })
         .addTo(map);
     };
@@ -158,7 +158,7 @@ export default function LeafletBusinessesMap({
 
       const marker = leafletRef.current.marker([item.coords.lat, item.coords.lng], {
         icon: leafletRef.current.divIcon({
-          className: "lb-leaflet-marker",
+          className: 'lb-leaflet-marker',
           html: `<div style="width:18px;height:18px;border-radius:999px;background:#b27a00;border:3px solid #ffffff;box-shadow:0 10px 22px rgba(33,24,8,0.22)"></div>`,
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -166,24 +166,24 @@ export default function LeafletBusinessesMap({
       });
 
       const categoryLabel =
-        locale === "ar"
+        locale === 'ar'
           ? (item.business.category?.name_ar ?? item.business.category?.name_en)
-          : locale === "fr"
+          : locale === 'fr'
             ? (item.business.category?.name_fr ?? item.business.category?.name_en)
-            : locale === "es"
+            : locale === 'es'
               ? (item.business.category?.name_es ?? item.business.category?.name_en)
               : item.business.category?.name_en;
 
       const popupHtml = `
         <div style="min-width:180px">
           <div style="font-weight:800;margin-bottom:6px">${item.business.name}</div>
-          ${item.business.city ? `<div style="color:#6d6459;font-weight:700;margin-bottom:4px">${item.business.city}</div>` : ""}
-          ${categoryLabel ? `<div style="color:#0c9159;font-weight:800;font-size:12px">${categoryLabel}</div>` : ""}
+          ${item.business.city ? `<div style="color:#6d6459;font-weight:700;margin-bottom:4px">${item.business.city}</div>` : ''}
+          ${categoryLabel ? `<div style="color:#0c9159;font-weight:800;font-size:12px">${categoryLabel}</div>` : ''}
         </div>
       `;
 
       marker.bindPopup(popupHtml, { closeButton: false });
-      marker.on("click", () => onBusinessClick(item.business));
+      marker.on('click', () => onBusinessClick(item.business));
 
       layer.addLayer(marker);
       markerByIdRef.current.set(item.business.id, marker);
@@ -196,7 +196,7 @@ export default function LeafletBusinessesMap({
 
     if (businessesWithCoords.length > 0) {
       const bounds = leafletRef.current.latLngBounds(
-        businessesWithCoords.map((item) => [item.coords.lat, item.coords.lng]),
+        businessesWithCoords.map((item) => [item.coords.lat, item.coords.lng])
       );
       mapRef.current.fitBounds(bounds, { padding: [60, 60] });
       return;
@@ -223,7 +223,7 @@ export default function LeafletBusinessesMap({
     userMarkerRef.current = leafletRef.current
       .marker([userLocation.lat, userLocation.lng], {
         icon: leafletRef.current.divIcon({
-          className: "lb-user-marker",
+          className: 'lb-user-marker',
           html: `<div style="width:18px;height:18px;border-radius:999px;background:#006c4c;border:3px solid #ffffff;box-shadow:0 10px 22px rgba(33,24,8,0.22)"></div>`,
           iconSize: [18, 18],
           iconAnchor: [9, 9],
@@ -235,8 +235,8 @@ export default function LeafletBusinessesMap({
       userRadiusRef.current = leafletRef.current
         .circle([userLocation.lat, userLocation.lng], {
           radius: radiusKm * 1000,
-          color: "#006c4c",
-          fillColor: "#006c4c",
+          color: '#006c4c',
+          fillColor: '#006c4c',
           fillOpacity: 0.08,
           weight: 2,
         })
@@ -246,4 +246,3 @@ export default function LeafletBusinessesMap({
 
   return <div ref={mapContainerRef} id={mapId} className="h-full w-full" />;
 }
-

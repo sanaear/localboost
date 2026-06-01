@@ -1,32 +1,39 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
-import { decodeJwtPayload, loginWithBackend, setStoredTokens } from "@/lib/auth";
+import Link from 'next/link';
+import { use, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { decodeJwtPayload, loginWithBackend, setStoredTokens } from '@/lib/auth';
 
-const perspectives = ["tourist", "shopOwner", "admin"] as const;
+const perspectives = ['tourist', 'shopOwner', 'admin'] as const;
 
 function getDestination(locale: string, perspective: (typeof perspectives)[number]) {
-  if (perspective === "shopOwner") {
+  if (perspective === 'shopOwner') {
     return `/${locale}/merchant/dashboard`;
   }
 
   return `/${locale}/home`;
 }
 
+function getAdminLoginUrl(locale: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_DESKTOP_URL || 'http://localhost:3000';
+  return `${baseUrl}/${locale}/admin/login`;
+}
+
 export default function SignInPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("auth");
-  const tCommon = useTranslations("common");
+  const params = use(paramsPromise);
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const router = useRouter();
-  const [selectedPerspective, setSelectedPerspective] = useState<(typeof perspectives)[number]>("tourist");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [selectedPerspective, setSelectedPerspective] =
+    useState<(typeof perspectives)[number]>('tourist');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [resetSent, setResetSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -42,12 +49,13 @@ export default function SignInPage({
       setStoredTokens(accessToken, refreshToken);
       const payload = decodeJwtPayload(accessToken);
 
-      const role = payload?.role ?? (selectedPerspective === "shopOwner" ? "merchant" : selectedPerspective);
+      const role =
+        payload?.role ?? (selectedPerspective === 'shopOwner' ? 'merchant' : selectedPerspective);
       const target =
-        role === "merchant" ? `/${params.locale}/merchant/dashboard` : `/${params.locale}/home`;
+        role === 'merchant' ? `/${params.locale}/merchant/dashboard` : `/${params.locale}/home`;
       router.replace(target);
     } catch {
-      setSubmitError(tCommon("errorDescription"));
+      setSubmitError(tCommon('errorDescription'));
       setIsSubmitting(false);
     }
   }
@@ -61,25 +69,31 @@ export default function SignInPage({
               <span className="material-symbols-outlined text-[30px]">confirmation_number</span>
             </div>
 
-            <div className="mt-5 text-center mobile-fade-up" style={{ animationDelay: "80ms" }}>
-              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">{tCommon("brand")}</h1>
-              <p className="mt-2 text-sm font-medium text-[#8f8577]">{t("welcomeBack")}</p>
+            <div className="mt-5 text-center mobile-fade-up" style={{ animationDelay: '80ms' }}>
+              <h1 className="text-[2rem] font-extrabold tracking-[-0.05em] text-[#24222f]">
+                {tCommon('brand')}
+              </h1>
+              <p className="mt-2 text-sm font-medium text-[#8f8577]">{t('welcomeBack')}</p>
             </div>
 
-            <div className="mt-8 w-full mobile-fade-up" style={{ animationDelay: "140ms" }}>
+            <div className="mt-8 w-full mobile-fade-up" style={{ animationDelay: '140ms' }}>
               <p className="text-center text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a907d]">
-                {t("selectPerspective")}
+                {t('selectPerspective')}
               </p>
               <div className="mt-4 flex rounded-full bg-[#f0ede6] p-1.5">
                 {perspectives.map((perspective) => (
                   <button
                     key={perspective}
                     type="button"
-                    onClick={() => setSelectedPerspective(perspective)}
+                    onClick={() => {
+                      if (perspective === 'admin') {
+                        window.location.href = getAdminLoginUrl(params.locale);
+                        return;
+                      }
+                      setSelectedPerspective(perspective);
+                    }}
                     className={`mobile-pill h-11 flex-1 text-[13px] font-extrabold transition-all ${
-                      selectedPerspective === perspective
-                        ? "mobile-button-gold"
-                        : "text-[#66605a]"
+                      selectedPerspective === perspective ? 'mobile-button-gold' : 'text-[#66605a]'
                     }`}
                   >
                     {t(`perspectives.${perspective}`)}
@@ -91,10 +105,10 @@ export default function SignInPage({
             <form
               onSubmit={handleSubmit}
               className="mt-8 w-full space-y-5 mobile-fade-up"
-              style={{ animationDelay: "220ms" }}
+              style={{ animationDelay: '220ms' }}
             >
               <div>
-                <label className="mobile-label">{t("email")}</label>
+                <label className="mobile-label">{t('email')}</label>
                 <input
                   className="mobile-input"
                   value={email}
@@ -103,7 +117,7 @@ export default function SignInPage({
                 />
               </div>
               <div>
-                <label className="mobile-label">{t("password")}</label>
+                <label className="mobile-label">{t('password')}</label>
                 <input
                   className="mobile-input"
                   type="password"
@@ -113,16 +127,18 @@ export default function SignInPage({
                 />
               </div>
               {submitError ? (
-                <p className="text-center text-[12px] font-semibold text-[#b15f36]">{submitError}</p>
+                <p className="text-center text-[12px] font-semibold text-[#b15f36]">
+                  {submitError}
+                </p>
               ) : null}
 
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="mobile-pill mobile-button-gold mobile-fade-up mt-2 h-14 w-full text-base font-extrabold disabled:opacity-60"
-                style={{ animationDelay: "340ms" }}
+                style={{ animationDelay: '340ms' }}
               >
-                {t("signIn")}
+                {t('signIn')}
               </button>
             </form>
 
@@ -130,33 +146,41 @@ export default function SignInPage({
               type="button"
               onClick={() => setResetSent(true)}
               className="mt-5 text-sm font-extrabold text-[#b27a00] transition hover:text-[#8d6300] mobile-fade-up"
-              style={{ animationDelay: "280ms" }}
+              style={{ animationDelay: '280ms' }}
             >
-              {t("forgotPassword")}
+              {t('forgotPassword')}
             </button>
             {resetSent ? (
               <p className="mt-2 text-center text-[12px] font-semibold text-[#5f8e70] mobile-fade-up">
-                {t("resetSent")}
+                {t('resetSent')}
               </p>
             ) : null}
 
-            <div className="mobile-divider mt-8 w-full mobile-fade-up" style={{ animationDelay: "400ms" }}>
-              {t("or")}
+            <div
+              className="mobile-divider mt-8 w-full mobile-fade-up"
+              style={{ animationDelay: '400ms' }}
+            >
+              {t('or')}
             </div>
 
             <Link
               href={destination}
               className="mobile-pill mobile-button-secondary mobile-fade-up mt-6 flex h-14 w-full items-center justify-center gap-3 text-[15px] font-bold"
-              style={{ animationDelay: "460ms" }}
+              style={{ animationDelay: '460ms' }}
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">G</span>
-              {t("continueWithGoogle")}
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-white text-sm shadow-sm">
+                G
+              </span>
+              {t('continueWithGoogle')}
             </Link>
 
-            <p className="mt-8 text-center text-sm text-[#837966] mobile-fade-up" style={{ animationDelay: "520ms" }}>
-              {t("newTo")}{" "}
+            <p
+              className="mt-8 text-center text-sm text-[#837966] mobile-fade-up"
+              style={{ animationDelay: '520ms' }}
+            >
+              {t('newTo')}{' '}
               <Link href={`/${params.locale}/signup`} className="font-extrabold text-[#b27a00]">
-                {t("createAccount")}
+                {t('createAccount')}
               </Link>
             </p>
           </div>

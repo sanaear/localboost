@@ -1,24 +1,20 @@
-import { notFound } from "next/navigation";
-import { ReactNode } from "react";
-import localFont from "next/font/local";
-import QueryProvider from "@/components/providers/QueryProvider";
-import "../globals.css";
+import { notFound } from 'next/navigation';
+import { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import QueryProvider from '@/components/providers/QueryProvider';
 
-const geistSans = localFont({
-  src: "../fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "../fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
-
-const locales = ["en", "fr", "es", "ar"];
+const locales = ['en', 'fr', 'es', 'ar'];
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
+}
+
+async function getMessages(locale: string) {
+  try {
+    return (await import(`../../../messages/${locale}.json`)).default;
+  } catch {
+    notFound();
+  }
 }
 
 export default async function LocaleLayout({
@@ -29,20 +25,14 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   if (!locales.includes(locale)) notFound();
 
-  const isRTL = locale === "ar";
+  const messages = await getMessages(locale);
 
   return (
-    <html lang={locale} dir={isRTL ? "rtl" : "ltr"}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <QueryProvider>
-          {children}
-        </QueryProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <QueryProvider>{children}</QueryProvider>
+    </NextIntlClientProvider>
   );
 }

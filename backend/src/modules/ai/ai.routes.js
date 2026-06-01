@@ -1,5 +1,5 @@
-const express = require("express");
-const { chat, getChatHistory, buildItinerary, recommend, health } = require("./ai.controller.js");
+const express = require('express');
+const { chat, getChatHistory, buildItinerary, recommend, health } = require('./ai.controller.js');
 
 const router = express.Router();
 
@@ -8,14 +8,14 @@ const router = express.Router();
  * @desc   Health check de la partie AI
  * @access Public
  */
-router.get("/health", health);
+router.get('/health', health);
 
 /**
  * @route  GET /api/v1/ai/chat/history
  * @desc   Récupère l'historique récent du chatbot
  * @access Public
  */
-router.get("/chat/history", getChatHistory);
+router.get('/chat/history', getChatHistory);
 
 /**
  * @route  POST /api/v1/ai/chat
@@ -23,7 +23,7 @@ router.get("/chat/history", getChatHistory);
  * @body   { message: string, history?: array }
  * @access Public
  */
-router.post("/chat", chat);
+router.post('/chat', chat);
 
 /**
  * @route  POST /api/v1/ai/itinerary
@@ -31,7 +31,7 @@ router.post("/chat", chat);
  * @body   { city: string, preferences?: { category, vegetarian, halal } }
  * @access Public
  */
-router.post("/itinerary", buildItinerary);
+router.post('/itinerary', buildItinerary);
 
 /**
  * @route  GET /api/v1/ai/recommend
@@ -39,6 +39,6 @@ router.post("/itinerary", buildItinerary);
  * @query  city, category, maxPrice, vegetarian, halal
  * @access Public
  */
-router.get("/recommend", recommend);
+router.get('/recommend', recommend);
 
 module.exports = router;

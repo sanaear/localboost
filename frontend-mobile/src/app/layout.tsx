@@ -1,29 +1,28 @@
-import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { isRtlLocale } from "@/lib/locales";
-import "leaflet/dist/leaflet.css";
-import "leaflet.markercluster/dist/MarkerCluster.css";
-import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import { headers } from 'next/headers';
+import { isRtlLocale } from '@/lib/locales';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "LocalBoost Mobile",
-  description: "Mobile-first tourist experience for LocalBoost",
-  manifest: "/manifest.json",
-  themeColor: "#a36e00",
+  title: 'LocalBoost Mobile',
+  description: 'Mobile-first tourist experience for LocalBoost',
+  manifest: '/manifest.json',
   icons: {
-    icon: "/icon.svg",
-    apple: "/icon.svg",
+    icon: '/icon.svg',
+    apple: '/icon.svg',
   },
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const locale = (await headers()).get("x-next-intl-locale") ?? "en";
-  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+export const viewport: Viewport = {
+  themeColor: '#a36e00',
+};
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = (await headers()).get('x-next-intl-locale') ?? 'en';
+  const dir = isRtlLocale(locale) ? 'rtl' : 'ltr';
   const themeScript = `(() => {
   try {
     const value = localStorage.getItem("lb:theme");

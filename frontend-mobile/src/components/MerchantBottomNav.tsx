@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 const items = [
-  { labelKey: "progress", icon: "dashboard", href: "/merchant/setup/business" },
-  { labelKey: "identity", icon: "storefront", href: "/merchant/setup/business" },
-  { labelKey: "atmosphere", icon: "photo_library", href: "/merchant/setup/photos" },
-  { labelKey: "submit", icon: "send", href: "/merchant/setup/contact" },
+  { labelKey: 'progress', icon: 'analytics', href: '/merchant/setup/business' },
+  { labelKey: 'identity', icon: 'badge', href: '/merchant/setup/business' },
+  { labelKey: 'storefront', icon: 'storefront', href: '/merchant/setup/photos' },
+  { labelKey: 'submit', icon: 'send', href: '/merchant/setup/contact' },
 ];
 
 export default function MerchantBottomNav({
@@ -17,7 +17,7 @@ export default function MerchantBottomNav({
   activeIndex: number;
   locale: string;
 }) {
-  const t = useTranslations("merchantNav");
+  const t = useTranslations('merchantNav');
   return (
     <nav className="border-t border-[#eee6da] bg-white/96 px-2 py-2">
       <div className="grid grid-cols-4 gap-1">
@@ -32,14 +32,14 @@ export default function MerchantBottomNav({
             >
               <span
                 className={`material-symbols-outlined text-[18px] ${
-                  active ? "text-[#e5a321]" : "text-[#c9c5bc]"
+                  active ? 'text-[#e5a321]' : 'text-[#c9c5bc]'
                 }`}
               >
                 {item.icon}
               </span>
               <span
                 className={`text-[8px] font-extrabold uppercase tracking-[0.14em] ${
-                  active ? "text-[#c08a12]" : "text-[#cec7bc]"
+                  active ? 'text-[#c08a12]' : 'text-[#cec7bc]'
                 }`}
               >
                 {t(item.labelKey)}

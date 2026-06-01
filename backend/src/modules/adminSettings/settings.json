@@ -1,0 +1,15 @@
+{
+  "maintenanceMode": false,
+  "maxPhotosPerBusiness": 10,
+  "aiModerationThreshold": 0.7,
+  "aiSchedule": "daily",
+  "twoFactorAuth": false,
+  "passwordRotationDays": 90,
+  "recentSessions": [],
+  "serverHealth": {
+    "status": "healthy",
+    "uptimeSeconds": 0,
+    "memoryMb": 0,
+    "lastChecked": "2026-05-31T10:10:04.818Z"
+  }
+}

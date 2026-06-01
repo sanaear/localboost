@@ -11,6 +11,7 @@
     "openNow": "Abierto",
     "closesAt": "Cierra a las {time}",
     "explore": "Explorar",
+    "signIn": "Iniciar sesión",
     "logout": "Cerrar sesión"
   },
   "nav": {
@@ -132,7 +133,14 @@
     "shareOpened": "Enlace abierto",
     "shareOpenFailed": "No se pudo abrir el enlace",
     "shareWhatsappOpened": "WhatsApp abierto",
-    "shareWhatsappFailed": "No se pudo compartir en WhatsApp"
+    "shareWhatsappFailed": "No se pudo compartir en WhatsApp",
+    "writeReview": "Escribir resena",
+    "yourRating": "Tu valoracion",
+    "stars": "estrellas",
+    "reviewPlaceholder": "Comparte lo que otros visitantes deberian saber...",
+    "submitReview": "Enviar resena",
+    "reviewPending": "Gracias. Tu resena espera moderacion.",
+    "reviewSignInRequired": "Inicia sesion como turista para escribir una resena."
   },
   "aiChat": {
     "title": "LocalBoost IA",
@@ -210,6 +218,7 @@
     "progress": "Progreso",
     "identity": "Identidad",
     "atmosphere": "Ambiente",
+    "storefront": "Escaparate",
     "submit": "Enviar"
   },
   "merchantDashboard": {
@@ -220,12 +229,15 @@
     "photoManager": "Gestor de fotos",
     "generateAiDescription": "Generar descripción con IA",
     "viewReviews": "Ver reseñas",
+    "editProfile": "Editar perfil",
     "recentReviews": "Reseñas recientes",
     "viewAll": "Ver todo",
     "reply": "Responder",
+    "noReviews": "Aún no hay reseñas",
     "stats": {
       "viewsThisWeek": "Vistas esta semana",
       "profileClicks": "Clics en el perfil",
+      "totalReviews": "Reseñas totales",
       "totalSaves": "Guardados totales",
       "savedByTourists": "Guardado por turistas"
     }
@@ -241,12 +253,28 @@
     "businessNameLabel": "Nombre del negocio",
     "businessNamePlaceholder": "p. ej. Café de la Poste",
     "categoryLabel": "Categoría",
+    "cityLabel": "Ciudad",
+    "selectCity": "Elige una ciudad",
+    "addressLabel": "Dirección",
+    "addressPlaceholder": "Nombre de la calle y número",
+    "phoneLabel": "Número de teléfono",
+    "phonePlaceholder": "600-000000",
+    "whatsappLabel": "Número de WhatsApp",
+    "whatsappDescription": "Se compartirá con los turistas para facilitar reservas y consultas directas.",
+    "websiteLabel": "URL del sitio web",
+    "websitePlaceholder": "https://tutienda.com",
     "categories": {
+      "restaurants": "Restaurantes",
+      "artisans": "Artesanos",
+      "cafes": "Cafés",
+      "boutiques": "Boutiques",
+      "other": "Otro",
       "traditionalPottery": "Taller de cerámica tradicional",
       "luxuryAccommodation": "Alojamiento de lujo",
       "restaurant": "Restaurante",
       "handmadeSoukShop": "Tienda artesanal del zoco"
     },
+    "cities": ["Casablanca", "Marrakech", "Fès", "Rabat", "Tanger", "Agadir", "Otro"],
     "next": "Siguiente",
     "saveForLater": "Guardar para después",
     "photosTitleLine1": "Añade tus mejores",
@@ -276,14 +304,48 @@
     "to": "a",
     "contactChannels": "Canales de contacto",
     "previousStep": "Paso anterior",
-    "finish": "Finalizar"
+    "contactQuote": "Un Riad acogedor comienza con una comunicación clara. Asegúrate de que tus horarios reflejen tu disponibilidad.",
+    "finish": "Finalizar",
+    "profileSubmitted": "¡Perfil enviado!",
+    "profileSubmittedDescription": "Nuestro equipo está revisando tu perfil. Te notificaremos en cuanto esté en vivo.",
+    "goToDashboard": "Ir al panel",
+    "reviewTypically": "La revisión suele tomar 24-48 horas"
+  },
+  "merchantEditProfile": {
+    "subtitle": "Actualiza tu presencia comercial para la comunidad local.",
+    "businessInfo": "Información del negocio",
+    "name": "Nombre del negocio",
+    "category": "Categoría",
+    "description": "Descripción",
+    "location": "Ubicación y mapa",
+    "streetAddress": "Dirección",
+    "city": "Ciudad",
+    "postalCode": "Código postal",
+    "contactChannels": "Canales de contacto",
+    "phone": "Teléfono",
+    "whatsapp": "WhatsApp Business",
+    "website": "URL del sitio web",
+    "weeklyHours": "Horario semanal",
+    "closed": "Cerrado",
+    "photosAtmosphere": "Fotos y ambiente",
+    "imagesCount": "{current} / {max} imágenes",
+    "addPhoto": "AÑADIR",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "savedConfirmation": "Cambios del perfil guardados.",
+    "noBusinessFound": "No se encontró negocio",
+    "noBusinessDescription": "Crea un perfil de negocio primero para editarlo aquí.",
+    "pinRefreshed": "Pin actualizado para la ubicación de tu tienda."
   },
   "merchantAi": {
     "title": "Generar con IA",
     "subtitle": "Crea la historia perfecta para tu tienda en segundos con un toque local.",
     "businessTypeLabel": "Tipo de negocio",
+    "businessTypePlaceholder": "p. ej. Taller de cerámica tradicional",
     "defaultBusinessType": "Taller de cerámica tradicional",
     "highlightsLabel": "Destacados",
+    "defaultTag1": "Ceramica artesanal",
+    "defaultTag2": "Taller en la medina",
     "addTag": "+ Añadir etiqueta",
     "highlightN": "Destacado {n}",
     "uniqueSellingPointsLabel": "Puntos diferenciales",
@@ -323,5 +385,51 @@
     "storiesTitle": "Historias de turistas",
     "seeAll": "Ver todo",
     "getDirections": "Obtener indicaciones"
+  },
+  "merchantStats": {
+    "title": "Estadísticas de visibilidad",
+    "subtitle": "Rendimiento en tiempo real de tu tienda.",
+    "totalViews": "Vistas totales",
+    "ctr": "CTR (%)",
+    "avgLabel": "Prom.",
+    "peakDay": "Día punta",
+    "viewsCount": "{count} vistas",
+    "viewsActivity": "Actividad de vistas",
+    "liveUpdates": "Actualizaciones en vivo",
+    "clicksByDay": "Clics por día",
+    "conversion": "Conversión",
+    "howFound": "Cómo te encontraron los turistas",
+    "viewFullReport": "Ver informe completo de palabras clave"
+  },
+  "merchantPhotoManager": {
+    "title": "Gestor de fotos",
+    "subtitle": "Organiza la historia visual de tu tienda. Arrastra para reordenar las fotos.",
+    "mainPhoto": "Foto principal",
+    "addPhotos": "Añadir fotos",
+    "maxFileSize": "Máx. 10 MB por archivo",
+    "photoOptimized": "Fotos auto-optimizadas para carga rápida ✓"
+  },
+  "merchantReviews": {
+    "averageRating": "Valoración media",
+    "basedOn": "Basado en {count} reseñas esta temporada",
+    "responseRate": "Tasa de respuesta",
+    "avgTime": "Tiempo medio",
+    "all": "Todo",
+    "replied": "Respondido",
+    "pendingReply": "Pendiente",
+    "flagged": "Marcado",
+    "publicReply": "Respuesta pública",
+    "sendReply": "Enviar respuesta",
+    "respondTo": "Responder a {name}",
+    "youReplied": "Has respondido",
+    "replyPlaceholder": "Escribe tu respuesta a {name}..."
+  },
+  "merchantUpdates": {
+    "title": "Actualizaciones",
+    "subtitle": "Mantente informado sobre el rendimiento de tu negocio.",
+    "older": "Notificaciones antiguas",
+    "viewReport": "Ver informe completo",
+    "noUpdates": "Aún no hay actualizaciones",
+    "noUpdatesDesc": "La nueva actividad aparecerá aquí."
   }
 }

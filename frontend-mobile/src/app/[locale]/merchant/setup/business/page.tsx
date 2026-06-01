@@ -1,37 +1,98 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import MerchantBottomNav from "@/components/MerchantBottomNav";
-import { readMerchantSetupStep1, writeMerchantSetupStep1 } from "@/lib/merchantSetup";
+import Link from 'next/link';
+import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import MerchantBottomNav from '@/components/MerchantBottomNav';
+import { readMerchantSetupStep1, writeMerchantSetupStep1 } from '@/lib/merchantSetup';
+import { API_BASE_URL, api, type Category } from '@/lib/api';
 
-const categories = ["traditionalPottery", "luxuryAccommodation", "restaurant", "handmadeSoukShop"] as const;
+const cities = ['Casablanca', 'Marrakech', 'Fès', 'Rabat', 'Tanger', 'Agadir', 'Other'] as const;
 
 export default function MerchantBusinessSetupPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("merchantSetup");
+  const params = use(paramsPromise);
+  const t = useTranslations('merchantSetup');
   const router = useRouter();
-  const [categoryIndex, setCategoryIndex] = useState(0);
-  const [businessName, setBusinessName] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [businessName, setBusinessName] = useState('');
+  const [category, setCategory] = useState<string>('');
+  const [city, setCity] = useState<string>('');
+  const [address, setAddress] = useState('');
+  const [phone, setPhone] = useState('');
+  const [suggestions, setSuggestions] = useState<Category[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
-    const saved = readMerchantSetupStep1();
-    if (!saved) return;
-    setBusinessName(saved.businessName ?? "");
-    const index = categories.findIndex((c) => c === saved.category);
-    if (index >= 0) setCategoryIndex(index);
+    api
+      .getCategories()
+      .then(setCategories)
+      .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (categories.length === 0) return;
+    const saved = readMerchantSetupStep1();
+    if (saved) {
+      setBusinessName(saved.businessName ?? '');
+      setCategory(saved.category ?? categories[0].name_en ?? '');
+      setCity(saved.city ?? '');
+      setAddress(saved.address ?? '');
+      setPhone(saved.phone ?? '');
+    } else {
+      setCategory(categories[0].name_en ?? '');
+    }
+  }, [categories]);
+
+  useEffect(() => {
+    if (businessName.trim().length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/categories/suggest`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(typeof window !== 'undefined' && window.localStorage.getItem('lb:authToken')
+              ? { Authorization: `Bearer ${window.localStorage.getItem('lb:authToken')}` }
+              : {}),
+          },
+          body: JSON.stringify({ name: businessName }),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const scored = (Array.isArray(data) ? data : (data.suggestions ?? [])).filter(
+          (c: any) => c.score > 0 && c.name_en !== category
+        );
+        setSuggestions(scored);
+        setShowSuggestions(scored.length > 0);
+      } catch {
+        // silently fail
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [businessName, category]);
+
   function handleNext() {
-    const category = categories[categoryIndex];
+    if (!businessName.trim() || !category || !city.trim()) {
+      setFormError('Business name, category, and city are required.');
+      return;
+    }
+    setFormError('');
     writeMerchantSetupStep1({
       businessName: businessName.trim(),
       category,
+      city: city.trim() || undefined,
+      address: address.trim() || undefined,
+      phone: phone.trim() || undefined,
     });
     router.push(`/${params.locale}/merchant/setup/photos`);
   }
@@ -39,70 +100,166 @@ export default function MerchantBusinessSetupPage({
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
-        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#fbfaf6]">
-          <div className="px-5 pb-3 pt-5 mobile-fade-up">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#9e9281]">{t("step", { current: 1, total: 3 })}</p>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#c08a12]">{t("progress", { percent: 33 })}</p>
+        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#f9f9f7]">
+          <div className="px-6 pb-4 pt-8">
+            <div className="flex items-center justify-between mb-3">
+              <p className="font-label text-[10px] font-bold uppercase tracking-widest text-[#524534]">
+                {t('step', { current: 1, total: 3 })}
+              </p>
+              <p className="font-label text-[10px] font-bold uppercase tracking-widest text-[#825500]">
+                {t('progress', { percent: 33 })}
+              </p>
             </div>
-            <div className="mt-3 h-1.5 rounded-full bg-[#ebe5da]">
-              <div className="h-full w-1/3 rounded-full bg-[#eba521]" />
+            <div className="h-1.5 w-full bg-[#e8e8e6] rounded-full overflow-hidden">
+              <div className="h-full bg-[#eba020] w-1/3 rounded-full" />
             </div>
           </div>
 
-          <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-5 pb-5">
-            <div className="mobile-fade-up mt-14" style={{ animationDelay: "80ms" }}>
-              <h1 className="text-[3rem] font-extrabold leading-[0.92] tracking-[-0.08em] text-[#8a5700]">
-                {t("titleLine1")}
-                <br />
-                {t("titleLine2")}
+          <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-8 pt-6 pb-32">
+            <div className="mb-10">
+              <h1 className="font-headline text-[2rem] font-extrabold leading-tight tracking-tight text-[#825500] mb-2">
+                {t('titleLine1')}
               </h1>
-              <p className="mt-5 max-w-[305px] text-[18px] leading-8 text-[#7d7468]">
-                {t("description")}
-              </p>
+              <p className="text-[#524534] text-base leading-relaxed">{t('description')}</p>
             </div>
 
-            <form className="mobile-fade-up mt-14 space-y-8" style={{ animationDelay: "160ms" }}>
-              <div>
-                <label className="mobile-label">{t("businessNameLabel")}</label>
+            <form className="space-y-8">
+              <div className="relative">
+                <label className="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-[#847562] mb-1">
+                  {t('businessNameLabel')}
+                </label>
                 <input
-                  className="mobile-input rounded-none border-x-0 border-t-0 bg-transparent px-0 pb-3 pt-1 text-[18px] placeholder:text-[#d3c8b8]"
-                  placeholder={t("businessNamePlaceholder")}
+                  className="w-full bg-transparent border-b-2 border-[#d7c3ae] focus:border-[#825500] focus:ring-0 transition-colors py-2 text-lg font-medium placeholder:text-[#dadad8]"
+                  placeholder={t('businessNamePlaceholder')}
                   value={businessName}
                   onChange={(event) => setBusinessName(event.target.value)}
                 />
               </div>
-              <div>
-                <label className="mobile-label">{t("categoryLabel")}</label>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCategoryIndex((current) => (current + 1) % categories.length)
-                  }
-                  className="flex w-full items-center justify-between border-b border-[#eadcc8] pb-4 text-left text-[18px] text-[#3c3731]"
-                >
-                  <span>{t(`categories.${categories[categoryIndex]}`)}</span>
-                  <span className="material-symbols-outlined text-[#8b806f]">expand_more</span>
-                </button>
+
+              <div className="relative">
+                <label className="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-[#847562] mb-1">
+                  {t('categoryLabel')}
+                </label>
+                <div className="relative">
+                  <select
+                    className="w-full bg-transparent border-b-2 border-[#d7c3ae] focus:border-[#825500] focus:ring-0 transition-colors py-2 text-lg font-medium appearance-none text-[#1a1c1b]"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.name_en ?? ''}>
+                        {cat.name_en ?? cat.name_fr ?? ''}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-0 top-2 text-[#847562] pointer-events-none">
+                    expand_more
+                  </span>
+                </div>
+                {showSuggestions && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {suggestions.map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => {
+                          setCategory(s.name_en ?? '');
+                          setShowSuggestions(false);
+                        }}
+                        className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-[#eba020] text-[#825500] bg-[#eba020]/10 hover:bg-[#eba020]/20 transition-colors"
+                      >
+                        {s.name_en ?? s.name_fr ?? ''}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <label className="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-[#847562] mb-1">
+                  {t('cityLabel')}
+                </label>
+                <div className="relative">
+                  <select
+                    className="w-full bg-transparent border-b-2 border-[#d7c3ae] focus:border-[#825500] focus:ring-0 transition-colors py-2 text-lg font-medium appearance-none text-[#1a1c1b]"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      {t('selectCity')}
+                    </option>
+                    {cities.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="material-symbols-outlined absolute right-0 top-2 text-[#847562] pointer-events-none">
+                    location_on
+                  </span>
+                </div>
+              </div>
+
+              <div className="relative">
+                <label className="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-[#847562] mb-1">
+                  {t('addressLabel')}
+                </label>
+                <input
+                  className="w-full bg-transparent border-b-2 border-[#d7c3ae] focus:border-[#825500] focus:ring-0 transition-colors py-2 text-lg font-medium placeholder:text-[#dadad8]"
+                  placeholder={t('addressPlaceholder')}
+                  value={address}
+                  onChange={(event) => setAddress(event.target.value)}
+                />
+              </div>
+
+              <div className="relative">
+                <label className="block font-label text-[0.75rem] font-bold uppercase tracking-wider text-[#847562] mb-1">
+                  {t('phoneLabel')}
+                </label>
+                <div className="flex items-center">
+                  <span className="text-[#524534] font-medium mr-2">+212</span>
+                  <input
+                    className="w-full bg-transparent border-b-2 border-[#d7c3ae] focus:border-[#825500] focus:ring-0 transition-colors py-2 text-lg font-medium placeholder:text-[#dadad8]"
+                    placeholder={t('phonePlaceholder')}
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    type="tel"
+                  />
+                </div>
               </div>
             </form>
+            {formError ? (
+              <p className="mt-5 rounded-lg bg-error-container px-4 py-3 text-sm font-bold text-on-error-container">
+                {formError}
+              </p>
+            ) : null}
 
-            <div className="mobile-fade-up mt-14 space-y-5" style={{ animationDelay: "240ms" }}>
-              <button
-                type="button"
-                onClick={handleNext}
-                className="mobile-pill mobile-button-gold h-16 w-full text-[1.45rem] font-extrabold"
-              >
-                {t("next")}
-                <span className="material-symbols-outlined ml-3 text-[22px]">arrow_forward</span>
-              </button>
-              <Link href={`/${params.locale}/merchant/dashboard`} className="block w-full text-center text-[13px] font-extrabold uppercase tracking-[0.18em] text-[#9e9383]">
-                {t("saveForLater")}
-              </Link>
+            <div className="mt-12 rounded-xl overflow-hidden aspect-[4/3] relative shadow-xl">
+              <img
+                alt="Moroccan marketplace"
+                className="w-full h-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCp3mQ2IuBtGmI7I_LN9cYhJ8b0Z-hQ4Rhl3Zaey5RJZY9eIefo7tXka8fPmAENUlFFbQfxpNvR1oTXuwp9jSegWt4V3dOlrXtv4WdCrHa05Yre94Qyp6fkjq2qWflOdRXugBWifIJl0Lh8sJoV7yFXPSjAiIJY8jym3qrxG-oEN1aZkwd_6dPMwGNftQkxK0xmk7rL7XUqhDUKOXx9mxbjc8QOoYbycOf4v8E3TSuZsgwVeTxGnykj1GxxgfBt1nyAiDRcgCQTzzE"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#825500]/40 to-transparent" />
             </div>
           </div>
 
-          <MerchantBottomNav activeIndex={1} locale={params.locale} />
+          <footer className="absolute bottom-0 left-0 w-full p-6 bg-[#f9f9f7]/80 backdrop-blur-xl flex flex-col items-center">
+            <button
+              type="button"
+              onClick={handleNext}
+              className="w-full py-4 bg-[#eba020] text-[#5d3b00] font-headline font-bold text-lg rounded-full flex items-center justify-center gap-2 shadow-lg shadow-[#eba020]/20 active:scale-95 transition-transform"
+            >
+              {t('next')}
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+            <Link
+              href={`/${params.locale}/merchant/dashboard`}
+              className="mt-4 text-[#847562] font-label text-xs uppercase tracking-widest font-bold hover:text-[#825500] transition-colors"
+            >
+              {t('saveForLater')}
+            </Link>
+          </footer>
         </div>
       </section>
     </main>
