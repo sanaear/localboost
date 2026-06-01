@@ -11,6 +11,7 @@
     "openNow": "مفتوح الآن",
     "closesAt": "يغلق عند {time}",
     "explore": "استكشاف",
+    "signIn": "تسجيل الدخول",
     "logout": "تسجيل الخروج"
   },
   "nav": {
@@ -132,7 +133,14 @@
     "shareOpened": "تم فتح الرابط",
     "shareOpenFailed": "تعذر فتح الرابط",
     "shareWhatsappOpened": "تم فتح واتساب",
-    "shareWhatsappFailed": "تعذر المشاركة عبر واتساب"
+    "shareWhatsappFailed": "تعذر المشاركة عبر واتساب",
+    "writeReview": "اكتب تقييما",
+    "yourRating": "تقييمك",
+    "stars": "نجوم",
+    "reviewPlaceholder": "شارك ما يجب أن يعرفه الزوار القادمون...",
+    "submitReview": "إرسال التقييم",
+    "reviewPending": "شكرا لك. تقييمك بانتظار المراجعة.",
+    "reviewSignInRequired": "سجل الدخول كسائح لكتابة تقييم."
   },
   "aiChat": {
     "title": "LocalBoost AI",
@@ -210,6 +218,7 @@
     "progress": "التقدم",
     "identity": "الهوية",
     "atmosphere": "الصور",
+    "storefront": "واجهة المتجر",
     "submit": "إرسال"
   },
   "merchantDashboard": {
@@ -220,12 +229,15 @@
     "photoManager": "إدارة الصور",
     "generateAiDescription": "إنشاء وصف بالذكاء",
     "viewReviews": "عرض المراجعات",
+    "editProfile": "تعديل الملف",
     "recentReviews": "أحدث المراجعات",
     "viewAll": "عرض الكل",
     "reply": "رد",
+    "noReviews": "لا توجد مراجعات بعد",
     "stats": {
       "viewsThisWeek": "مشاهدات هذا الأسبوع",
       "profileClicks": "نقرات الملف",
+      "totalReviews": "إجمالي المراجعات",
       "totalSaves": "إجمالي الحفظ",
       "savedByTourists": "محفوظ من السياح"
     }
@@ -241,12 +253,28 @@
     "businessNameLabel": "اسم النشاط",
     "businessNamePlaceholder": "مثال: Cafe de la Poste",
     "categoryLabel": "الفئة",
+    "cityLabel": "المدينة",
+    "selectCity": "اختر مدينة",
+    "addressLabel": "العنوان",
+    "addressPlaceholder": "اسم الشارع والرقم",
+    "phoneLabel": "رقم الهاتف",
+    "phonePlaceholder": "600-000000",
+    "whatsappLabel": "رقم WhatsApp",
+    "whatsappDescription": "ستتم مشاركة هذا الرقم مع السياح لتسهيل الحجوزات والاستفسارات المباشرة.",
+    "websiteLabel": "رابط الموقع الإلكتروني",
+    "websitePlaceholder": "https://متجرك.com",
     "categories": {
+      "restaurants": "المطاعم",
+      "artisans": "الحرفيون",
+      "cafes": "المقاهي",
+      "boutiques": "البوتيكات",
+      "other": "أخرى",
       "traditionalPottery": "ورشة فخار تقليدي",
       "luxuryAccommodation": "إقامة فاخرة",
       "restaurant": "مطعم",
       "handmadeSoukShop": "متجر حرفي في السوق"
     },
+    "cities": ["الدار البيضاء", "مراكش", "فاس", "الرباط", "طنجة", "أكادير", "أخرى"],
     "next": "التالي",
     "saveForLater": "حفظ لوقت لاحق",
     "photosTitleLine1": "أضف أفضل",
@@ -276,14 +304,48 @@
     "to": "إلى",
     "contactChannels": "قنوات التواصل",
     "previousStep": "الخطوة السابقة",
-    "finish": "إنهاء"
+    "contactQuote": "الرياض الترحيبي يبدأ بتواصل واضح. تأكد من أن ساعات عملك تعكس أوقات استعدادك للاستضافة.",
+    "finish": "إنهاء",
+    "profileSubmitted": "تم تقديم الملف الشخصي!",
+    "profileSubmittedDescription": "فريقنا يراجع ملفك الشخصي. سنخبرك بمجرد أن يصبح مباشراً.",
+    "goToDashboard": "انتقل إلى لوحة التحكم",
+    "reviewTypically": "المراجعة عادة تستغرق 24-48 ساعة"
+  },
+  "merchantEditProfile": {
+    "subtitle": "حدّث حضورك التجاري للمجتمع المحلي.",
+    "businessInfo": "معلومات النشاط",
+    "name": "اسم النشاط",
+    "category": "الفئة",
+    "description": "الوصف",
+    "location": "الموقع والخريطة",
+    "streetAddress": "العنوان",
+    "city": "المدينة",
+    "postalCode": "الرمز البريدي",
+    "contactChannels": "قنوات التواصل",
+    "phone": "الهاتف",
+    "whatsapp": "واتساب الأعمال",
+    "website": "رابط الموقع",
+    "weeklyHours": "ساعات العمل الأسبوعية",
+    "closed": "مغلق",
+    "photosAtmosphere": "الصور والأجواء",
+    "imagesCount": "{current} / {max} صورة",
+    "addPhoto": "إضافة",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جارٍ الحفظ...",
+    "savedConfirmation": "تم حفظ تغييرات الملف الشخصي.",
+    "noBusinessFound": "لم يتم العثور على نشاط",
+    "noBusinessDescription": "أنشئ ملفاً تجارياً أولاً لتعديله هنا.",
+    "pinRefreshed": "تم تحديث موقع متجرك الحالي."
   },
   "merchantAi": {
     "title": "إنشاء بواسطة الذكاء",
     "subtitle": "اصنع القصة المثالية لمتجرك خلال ثوانٍ بلمسة محلية.",
     "businessTypeLabel": "نوع النشاط",
+    "businessTypePlaceholder": "مثال: ورشة فخار تقليدي",
     "defaultBusinessType": "ورشة فخار تقليدي",
     "highlightsLabel": "أبرز المزايا",
+    "defaultTag1": "فخار يدوي",
+    "defaultTag2": "ورشة في المدينة",
     "addTag": "+ إضافة وسم",
     "highlightN": "ميزة {n}",
     "uniqueSellingPointsLabel": "نقاط التميز",
@@ -323,5 +385,51 @@
     "storiesTitle": "قصص السياح",
     "seeAll": "عرض الكل",
     "getDirections": "احصل على الاتجاهات"
+  },
+  "merchantStats": {
+    "title": "إحصائيات الظهور",
+    "subtitle": "أداء متجرك في الوقت الفعلي.",
+    "totalViews": "إجمالي المشاهدات",
+    "ctr": "نسبة النقر (%)",
+    "avgLabel": "المتوسط",
+    "peakDay": "يوم الذروة",
+    "viewsCount": "{count} مشاهدة",
+    "viewsActivity": "نشاط المشاهدات",
+    "liveUpdates": "تحديثات مباشرة",
+    "clicksByDay": "النقرات حسب اليوم",
+    "conversion": "تحويل",
+    "howFound": "كيف وجدك السياح",
+    "viewFullReport": "عرض تقرير الكلمات المفتاحية الكامل"
+  },
+  "merchantPhotoManager": {
+    "title": "مدير الصور",
+    "subtitle": "نظّم القصة البصرية لمتجرك. اسحب لإعادة ترتيب الصور في ملفك الشخصي.",
+    "mainPhoto": "الصورة الرئيسية",
+    "addPhotos": "إضافة صور",
+    "maxFileSize": "الحد الأقصى 10 ميجابايت لكل ملف",
+    "photoOptimized": "تم تحسين الصور تلقائياً للتحميل السريع ✓"
+  },
+  "merchantReviews": {
+    "averageRating": "متوسط التقييم",
+    "basedOn": "بناءً على {count} مراجعة هذا الموسم",
+    "responseRate": "معدل الاستجابة",
+    "avgTime": "متوسط الوقت",
+    "all": "الكل",
+    "replied": "تم الرد",
+    "pendingReply": "بانتظار الرد",
+    "flagged": "مُبلّغ عنه",
+    "publicReply": "رد عام",
+    "sendReply": "إرسال الرد",
+    "respondTo": "الرد على {name}",
+    "youReplied": "لقد قمت بالرد",
+    "replyPlaceholder": "اكتب ردك إلى {name}..."
+  },
+  "merchantUpdates": {
+    "title": "التحديثات",
+    "subtitle": "ابقَ على اطلاع بأداء نشاطك التجاري.",
+    "older": "الإشعارات الأقدم",
+    "viewReport": "عرض التقرير الكامل",
+    "noUpdates": "لا توجد تحديثات بعد",
+    "noUpdatesDesc": "النشاط الجديد سيظهر هنا."
   }
 }

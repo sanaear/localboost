@@ -1,34 +1,117 @@
-"use client";
+'use client';
 
-export default function UserProfileSidePanel() {
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminFetchJson } from '@/lib/adminApi';
+import { resolveMediaUrl } from '@/lib/api';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string;
+  profile_image?: string;
+  first_name?: string;
+  last_name?: string;
+  role: string;
+  joinDate?: string;
+  created_at?: string;
+  status: string;
+}
+
+interface UserProfileSidePanelProps {
+  user: User;
+  onClose: () => void;
+}
+
+export default function UserProfileSidePanel({ user, onClose }: UserProfileSidePanelProps) {
+  const queryClient = useQueryClient();
+  const imgSrc = resolveMediaUrl(user.avatar || user.profile_image);
+  const displayName =
+    user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown';
+  const joinDate =
+    user.joinDate ||
+    (user.created_at
+      ? new Date(user.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+      : 'Unknown');
+
+  const suspendMutation = useMutation({
+    mutationFn: async () => {
+      const newStatus = user.status?.toLowerCase() === 'suspended' ? 'active' : 'suspended';
+      return adminFetchJson<User>(`/users/${user.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: newStatus }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+    },
+  });
+
+  const promoteMutation = useMutation({
+    mutationFn: async () => {
+      return adminFetchJson<User>(`/users/${user.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: 'admin' }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      onClose();
+    },
+  });
+
   return (
     <aside className="w-96 bg-surface-container-lowest rounded-lg shadow-xl flex flex-col overflow-hidden border border-outline-variant/10">
       <div className="p-6 bg-primary-container/10 border-b border-outline-variant/10">
         <div className="flex justify-between items-start mb-4">
           <span className="bg-primary text-on-primary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">
-            Member Since 2023
+            {user.role}
           </span>
-          <button className="p-1 hover:bg-primary/10 rounded-full">
+          <button className="p-1 hover:bg-primary/10 rounded-full" onClick={onClose}>
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <div className="text-center">
-          <img
-            className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-white shadow-md"
-            data-alt="Detailed portrait of Amine Alami, a middle-aged Moroccan male business owner with a sophisticated look"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5h2jwTdKvlv7rwV-QKptkAuYJywZEFY2OlYE8VapPNzwZUzbQpanMbaXOmgQe6MSDQIpfVeR-1oGgrnE-rIVg4dIQFgzFs3vUAj86glcweYp8EeSVexciJW322pwQVhZG5sV29peo6JMujMuW-K78ACJv2XGOY9h3vlreiCwEv6Nik0nGH2vtoWfDdSg7_TF-l3IOoSFV6vf6H0YSfoL4sL-LdcOLpyItlyrcOin2HtWtfiX0WV_iU5RE8Z0GZMgZmJjUR90-ah8"
-          />
+          <div className="w-24 h-24 rounded-full mx-auto overflow-hidden border-4 border-white shadow-md bg-surface-container-high">
+            {imgSrc ? (
+              <img className="w-full h-full object-cover" src={imgSrc} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-on-surface-variant">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
           <h3 className="mt-4 text-xl font-headline font-extrabold text-on-surface">
-            Amine Alami
+            {displayName}
           </h3>
-          <p className="text-on-surface-variant text-sm">amine.alami@example.ma</p>
+          <p className="text-on-surface-variant text-sm">{user.email}</p>
           <div className="mt-4 flex justify-center gap-2">
-            <button className="px-4 py-2 bg-inverse-surface text-inverse-on-surface rounded-full text-xs font-bold hover:opacity-90 transition-opacity">
-              Suspend User
+            <button
+              className="px-4 py-2 bg-inverse-surface text-inverse-on-surface rounded-full text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+              onClick={() => suspendMutation.mutate()}
+              disabled={suspendMutation.isPending}
+            >
+              {suspendMutation.isPending
+                ? '...'
+                : user.status?.toLowerCase() === 'suspended'
+                  ? 'Unsuspend User'
+                  : 'Suspend User'}
             </button>
-            <button className="px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold hover:shadow-lg transition-all">
-              Promote Admin
+            <button
+              className="px-4 py-2 bg-primary text-on-primary rounded-full text-xs font-bold hover:shadow-lg transition-all disabled:opacity-50"
+              onClick={() => promoteMutation.mutate()}
+              disabled={user.role === 'admin' || promoteMutation.isPending}
+            >
+              {promoteMutation.isPending
+                ? '...'
+                : user.role === 'admin'
+                  ? 'Already Admin'
+                  : 'Promote Admin'}
             </button>
           </div>
         </div>
@@ -40,49 +123,37 @@ export default function UserProfileSidePanel() {
             <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">
               Reviews
             </p>
-            <p className="text-2xl font-black text-primary">124</p>
+            <p className="text-2xl font-black text-primary">--</p>
           </div>
           <div className="p-4 bg-surface-container rounded-lg text-center">
             <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold mb-1">
               Businesses
             </p>
-            <p className="text-2xl font-black text-secondary">3</p>
+            <p className="text-2xl font-black text-secondary">--</p>
           </div>
         </div>
 
         <div>
           <h4 className="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">storefront</span>
-            Business Ownership
+            <span className="material-symbols-outlined text-sm">info</span>
+            Account Details
           </h4>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-surface rounded-lg border border-outline-variant/10">
-              <div className="w-10 h-10 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                <span className="material-symbols-outlined">restaurant</span>
-              </div>
-              <div>
-                <p className="text-sm font-bold">Le Palais d'Amine</p>
-                <p className="text-[10px] text-on-surface-variant">
-                  Restaurant • Marrakech Medina
-                </p>
-              </div>
-              <span className="ml-auto text-[10px] font-bold text-secondary">
-                Active
+          <div className="space-y-3 p-4 bg-surface rounded-lg border border-outline-variant/10">
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-variant">Role</span>
+              <span className="font-bold">{user.role}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-variant">Status</span>
+              <span
+                className={`font-bold ${user.status?.toLowerCase() === 'active' ? 'text-secondary' : 'text-tertiary'}`}
+              >
+                {user.status}
               </span>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-surface rounded-lg border border-outline-variant/10">
-              <div className="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
-                <span className="material-symbols-outlined">local_mall</span>
-              </div>
-              <div>
-                <p className="text-sm font-bold">Alami Carpets</p>
-                <p className="text-[10px] text-on-surface-variant">
-                  Handicrafts • Souq Quarter
-                </p>
-              </div>
-              <span className="ml-auto text-[10px] font-bold text-on-surface-variant">
-                Sold
-              </span>
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-variant">Joined</span>
+              <span className="font-bold">{joinDate}</span>
             </div>
           </div>
         </div>
@@ -92,23 +163,8 @@ export default function UserProfileSidePanel() {
             <span className="material-symbols-outlined text-sm">rate_review</span>
             Recent Activity
           </h4>
-          <div className="space-y-4">
-            <div className="relative pl-4 border-l-2 border-primary/20">
-              <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-primary"></div>
-              <p className="text-xs font-bold">Left a 5-star review</p>
-              <p className="text-[10px] text-on-surface-variant italic">
-                "Best tour of the Medina I've ever had. Very professional!"
-              </p>
-              <p className="text-[9px] text-on-surface-variant mt-1">2 hours ago</p>
-            </div>
-            <div className="relative pl-4 border-l-2 border-primary/20">
-              <div className="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-primary/40"></div>
-              <p className="text-xs font-bold">Updated business details</p>
-              <p className="text-[10px] text-on-surface-variant">
-                Le Palais d'Amine - Opening Hours
-              </p>
-              <p className="text-[9px] text-on-surface-variant mt-1">Yesterday</p>
-            </div>
+          <div className="text-center text-sm text-on-surface-variant py-8">
+            Activity data will appear once the analytics integration is complete.
           </div>
         </div>
       </div>

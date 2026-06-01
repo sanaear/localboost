@@ -1,19 +1,40 @@
-"use client";
+'use client';
 
-export default function Header() {
+import { ReactNode } from 'react';
+import AdminUserBadge from './AdminUserBadge';
+
+interface HeaderProps {
+  searchPlaceholder?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  children?: ReactNode;
+}
+
+export default function Header({
+  searchPlaceholder = 'Search...',
+  searchValue = '',
+  onSearchChange,
+  children,
+}: HeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-[#F9F9F7] flex justify-between items-center px-10 py-4 w-full shadow-sm">
       <div className="flex items-center gap-4">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-            search
-          </span>
-          <input
-            className="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full w-64 focus:ring-2 focus:ring-primary/20 text-sm"
-            placeholder="Search analytics..."
-            type="text"
-          />
-        </div>
+        {onSearchChange ? (
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              search
+            </span>
+            <input
+              className="pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full w-64 focus:ring-2 focus:ring-primary/20 text-sm"
+              placeholder={searchPlaceholder}
+              type="text"
+              value={searchValue}
+              onChange={(e) => onSearchChange(e.target.value)}
+            />
+          </div>
+        ) : (
+          children
+        )}
       </div>
 
       <div className="flex items-center gap-6">
@@ -29,18 +50,7 @@ export default function Header() {
 
         <div className="h-8 w-[1px] bg-slate-200"></div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-xs font-bold text-on-surface">Admin User</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-tighter">System Overseer</p>
-          </div>
-          <img
-            alt="Admin Profile Avatar"
-            className="w-10 h-10 rounded-full bg-primary-container"
-            data-alt="close-up portrait of a professional male administrator with glasses and a warm smile in a high-tech office setting"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpg8vgPB6fx0tfD7BgexaFnC3L0LStwP1CArDW6IJ6mGgfsYk77s45A6Yv6VUZCX16P-6lKBq0KAKH-wiQxwbX2MMpqCmJVQELgzPyMJNFjJqv5n-IhCJIKlnCJVBG04-RT10eqZMOf2TwZ5rER-3-G8c96MNFOSI6Jod4cDeKbCRK7AaGwLGhA-RT7Zebht3zKSI-dGzchqhGxAgTfIpK2myIKl_LawRifr_ITvmYwgAq3aZBkBO5vmkG8Md0EB6U82pnE5bcO0E"
-          />
-        </div>
+        <AdminUserBadge />
       </div>
     </header>
   );

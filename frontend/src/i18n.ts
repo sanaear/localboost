@@ -1,14 +1,14 @@
-import { notFound } from "next/navigation";
-import { getRequestConfig } from "next-intl/server";
+import { notFound } from 'next/navigation';
+import { getRequestConfig } from 'next-intl/server';
 
-const locales = ["en", "fr", "es", "ar"];
+const locales = ['en', 'fr', 'es', 'ar'];
 
 export default getRequestConfig(async ({ locale }) => {
   if (!locales.includes(locale as any)) notFound();
 
   return {
     messages: (await import(`../messages/${locale}.json`)).default,
-    timeZone: "UTC",
+    timeZone: 'UTC',
     now: new Date(),
   } as any;
 });

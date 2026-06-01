@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { api, type SearchFilters } from "@/lib/api";
+import { useQuery } from '@tanstack/react-query';
+import { api, type SearchFilters } from '@/lib/api';
 
 export const queryKeys = {
-  businesses: (filters: SearchFilters) => ["businesses", "search", filters] as const,
-  business: (id: number) => ["businesses", id] as const,
-  categories: () => ["categories"] as const,
-  regions: () => ["regions"] as const,
-  reviews: (businessId: number) => ["reviews", "business", businessId] as const,
-  averageRating: (businessId: number) => ["reviews", "average", businessId] as const,
+  businesses: (filters: SearchFilters) => ['businesses', 'search', filters] as const,
+  business: (id: number) => ['businesses', id] as const,
+  categories: () => ['categories'] as const,
+  regions: () => ['regions'] as const,
+  reviews: (businessId: number) => ['reviews', 'business', businessId] as const,
+  averageRating: (businessId: number) => ['reviews', 'average', businessId] as const,
 };
 
 export function useBusinessesSearch(filters: SearchFilters) {
@@ -15,7 +15,7 @@ export function useBusinessesSearch(filters: SearchFilters) {
     queryKey: queryKeys.businesses(filters),
     queryFn: () => api.searchBusinesses(filters),
     staleTime: 0,
-    refetchOnMount: "always",
+    refetchOnMount: 'always',
   });
 }
 
@@ -32,7 +32,7 @@ export function useCategories() {
     queryKey: queryKeys.categories(),
     queryFn: () => api.getCategories(),
     staleTime: 0,
-    refetchOnMount: "always",
+    refetchOnMount: 'always',
   });
 }
 
@@ -41,7 +41,7 @@ export function useRegions() {
     queryKey: queryKeys.regions(),
     queryFn: () => api.getRegions(),
     staleTime: 0,
-    refetchOnMount: "always",
+    refetchOnMount: 'always',
   });
 }
 

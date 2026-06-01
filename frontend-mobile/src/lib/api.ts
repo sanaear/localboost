@@ -1,6 +1,13 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+export const API_MEDIA_ORIGIN = (() => {
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch {
+    return 'http://localhost:5000';
+  }
+})();
 
-export type Locale = "en" | "fr" | "es" | "ar";
+export type Locale = 'en' | 'fr' | 'es' | 'ar';
 
 export interface User {
   id: number;
@@ -82,6 +89,39 @@ export interface SearchFilters {
   available?: boolean;
 }
 
+export function resolveMediaUrl(value?: string | null): string | undefined {
+  const src = typeof value === 'string' ? value.trim() : '';
+  if (!src) return undefined;
+  if (/^(https?:|data:|blob:)/i.test(src)) return src;
+  if (src.startsWith('/uploads/')) return `${API_MEDIA_ORIGIN}${src}`;
+  return src;
+}
+
+export function normalizeUser(user: User): User {
+  return {
+    ...user,
+    profile_image: resolveMediaUrl(user.profile_image) ?? user.profile_image,
+  };
+}
+
+export function normalizeReview(review: Review): Review {
+  return {
+    ...review,
+    user: review.user ? normalizeUser(review.user) : review.user,
+  };
+}
+
+export function normalizeBusiness(business: Business): Business {
+  return {
+    ...business,
+    images: (business.images ?? [])
+      .map((image) => resolveMediaUrl(image))
+      .filter((image): image is string => Boolean(image)),
+    user: business.user ? normalizeUser(business.user) : business.user,
+    reviews: business.reviews?.map(normalizeReview),
+  };
+}
+
 async function httpJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init);
   if (!response.ok) {
@@ -91,15 +131,20 @@ async function httpJson<T>(input: RequestInfo | URL, init?: RequestInit): Promis
 }
 
 function applyLocalFilters(businesses: Business[], filters: SearchFilters) {
-  const q = (filters.q ?? "").trim().toLowerCase();
+  const q = (filters.q ?? '').trim().toLowerCase();
 
   return businesses.filter((business) => {
     if (q) {
-      const haystack = `${business.name ?? ""} ${business.description ?? ""} ${business.city ?? ""}`.toLowerCase();
+      const haystack =
+        `${business.name ?? ''} ${business.description ?? ''} ${business.city ?? ''}`.toLowerCase();
       if (!haystack.includes(q)) return false;
     }
 
-    if (filters.categoryId && business.category_id !== filters.categoryId && business.category?.id !== filters.categoryId) {
+    if (
+      filters.categoryId &&
+      business.category_id !== filters.categoryId &&
+      business.category?.id !== filters.categoryId
+    ) {
       return false;
     }
 
@@ -107,7 +152,11 @@ function applyLocalFilters(businesses: Business[], filters: SearchFilters) {
       return false;
     }
 
-    if (filters.regionId && business.region_id !== filters.regionId && business.regionRel?.id !== filters.regionId) {
+    if (
+      filters.regionId &&
+      business.region_id !== filters.regionId &&
+      business.regionRel?.id !== filters.regionId
+    ) {
       return false;
     }
 
@@ -117,36 +166,40 @@ function applyLocalFilters(businesses: Business[], filters: SearchFilters) {
 
 export const api = {
   async getBusinesses(): Promise<Business[]> {
-    return httpJson<Business[]>(`${API_BASE_URL}/businesses`);
+    const businesses = await httpJson<Business[]>(`${API_BASE_URL}/businesses`);
+    return businesses.map(normalizeBusiness);
   },
 
   async searchBusinesses(filters: SearchFilters): Promise<Business[]> {
-    const q = (filters.q ?? "").trim();
+    const q = (filters.q ?? '').trim();
 
     const remoteBusinesses = q
       ? await httpJson<Business[]>(`${API_BASE_URL}/businesses/search?q=${encodeURIComponent(q)}`)
       : await httpJson<Business[]>(`${API_BASE_URL}/businesses`);
 
-    const filtered = applyLocalFilters(remoteBusinesses, filters);
+    const filtered = applyLocalFilters(remoteBusinesses.map(normalizeBusiness), filters);
     if (!filters.rating) return filtered;
 
     const minimum = filters.rating;
     const ratings = await Promise.all(
       filtered.map(async (business) => {
         try {
-          const payload = await httpJson<{ average: number; count?: number }>(`${API_BASE_URL}/reviews/average/${business.id}`);
+          const payload = await httpJson<{ average: number; count?: number }>(
+            `${API_BASE_URL}/reviews/average/${business.id}`
+          );
           return Number(payload.average) || 0;
         } catch {
           return 0;
         }
-      }),
+      })
     );
 
     return filtered.filter((business, index) => ratings[index] >= minimum);
   },
 
   async getBusinessById(id: number): Promise<Business> {
-    return httpJson<Business>(`${API_BASE_URL}/businesses/${id}`);
+    const business = await httpJson<Business>(`${API_BASE_URL}/businesses/${id}`);
+    return normalizeBusiness(business);
   },
 
   async getCategories(): Promise<Category[]> {
@@ -158,10 +211,13 @@ export const api = {
   },
 
   async getReviewsByBusiness(businessId: number): Promise<Review[]> {
-    return httpJson<Review[]>(`${API_BASE_URL}/reviews/business/${businessId}`);
+    const reviews = await httpJson<Review[]>(`${API_BASE_URL}/reviews/business/${businessId}`);
+    return reviews.map(normalizeReview);
   },
 
   async getAverageRating(businessId: number): Promise<{ average: number; count: number }> {
-    return httpJson<{ average: number; count: number }>(`${API_BASE_URL}/reviews/average/${businessId}`);
+    return httpJson<{ average: number; count: number }>(
+      `${API_BASE_URL}/reviews/average/${businessId}`
+    );
   },
 };

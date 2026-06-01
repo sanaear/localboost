@@ -1,7 +1,11 @@
-import type { ImgHTMLAttributes } from "react";
-import { getCloudinaryOptimizedSrc, getCloudinaryOptimizedSrcSet } from "@/lib/cloudinary";
+import type { ImgHTMLAttributes } from 'react';
+import { getCloudinaryOptimizedSrc, getCloudinaryOptimizedSrcSet } from '@/lib/cloudinary';
+import { resolveMediaUrl } from '@/lib/api';
 
-type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src" | "width" | "height" | "loading" | "decoding"> & {
+type Props = Omit<
+  ImgHTMLAttributes<HTMLImageElement>,
+  'src' | 'width' | 'height' | 'loading' | 'decoding'
+> & {
   src: string;
   width: number;
   height: number;
@@ -19,9 +23,10 @@ export default function OptimizedImage({
   sizes,
   ...rest
 }: Props) {
+  const resolvedSrc = resolveMediaUrl(src) ?? src;
   const defaultWidths = widths ?? [width, width * 2];
-  const optimizedSrc = getCloudinaryOptimizedSrc(src, width) ?? src;
-  const optimizedSrcSet = getCloudinaryOptimizedSrcSet(src, defaultWidths);
+  const optimizedSrc = getCloudinaryOptimizedSrc(resolvedSrc, width) ?? resolvedSrc;
+  const optimizedSrcSet = getCloudinaryOptimizedSrcSet(resolvedSrc, defaultWidths);
 
   return (
     <img
@@ -31,10 +36,9 @@ export default function OptimizedImage({
       alt={alt}
       width={width}
       height={height}
-      loading={priority ? "eager" : "lazy"}
+      loading={priority ? 'eager' : 'lazy'}
       decoding="async"
       {...rest}
     />
   );
 }
-

@@ -1,805 +1,946 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LocalBoost Chatbot - Guide Touristique</title>
-  <style>
-    :root {
-      --primary: #e8a127;
-      --primary-hover: #d08c1a;
-      --bg: #f5f6f8;
-      --card-bg: #ffffff;
-      --text-dark: #171717;
-      --text-gray: #6b7280;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      color: var(--text-dark);
-      padding: 10px;
-    }
-
-    .chat-container {
-      width: 100%;
-      max-width: 500px;
-      height: 80vh;
-      background: white;
-      border-radius: 24px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      border: 1px solid #f0f0f2;
-    }
-
-    /* Top Header */
-    .header {
-      padding: 15px 20px;
-      background: white;
-      border-bottom: 1px solid #f3f4f6;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .header-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #e2e8f0;
-      overflow: hidden;
-    }
-
-    .avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .title-area {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-dark);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .badge {
-      font-size: 8px;
-      background: rgba(44, 219, 140, 0.15);
-      color: #00b05b;
-      padding: 2px 6px;
-      border-radius: 99px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-    }
-
-    .subtitle {
-      font-size: 10px;
-      color: var(--text-gray);
-      margin-top: 1px;
-    }
-
-    .lang-picker {
-      font-size: 11px;
-      font-weight: 600;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      padding: 4px 8px;
-      border-radius: 6px;
-      color: #4b5563;
-    }
-
-    /* Chat Area */
-    #chat {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-      background: #fbfbfc;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    /* Messages */
-    .msg-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-width: 90%;
-    }
-
-    .msg-group.user-group {
-      align-self: flex-end;
-    }
-
-    .msg-group.bot-group {
-      align-self: flex-start;
-      width: 95%;
-    }
-
-    .user-bubble {
-      background: var(--primary);
-      color: white;
-      padding: 12px 18px;
-      border-radius: 18px 18px 0 18px;
-      font-size: 13.5px;
-      line-height: 1.5;
-      box-shadow: 0 4px 10px rgba(232, 161, 39, 0.15);
-    }
-
-    .bot-card {
-      background: white;
-      border-left: 4px solid var(--primary);
-      border-radius: 16px;
-      padding: 14px 16px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-      border-top: 1px solid #f3f4f6;
-      border-right: 1px solid #f3f4f6;
-      border-bottom: 1px solid #f3f4f6;
-      display: flex;
-      gap: 10px;
-    }
-
-    .bot-card .spark {
-      font-size: 16px;
-      color: #b45309;
-    }
-
-    .bot-card .content {
-      flex: 1;
-    }
-
-    .bot-card h4 {
-      font-size: 10px;
-      font-weight: 700;
-      color: #b45309;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .bot-card p {
-      font-size: 13px;
-      line-height: 1.5;
-      color: #374151;
-      white-space: pre-wrap;
-    }
-
-    /* Carousel */
-    .carousel {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding: 4px 2px;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-    }
-
-    .carousel::-webkit-scrollbar {
-      display: none;
-    }
-
-    .biz-card {
-      flex-shrink: 0;
-      width: 220px;
-      background: white;
-      border-radius: 16px;
-      border: 1px solid #f0f0f2;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      scroll-snap-align: start;
-    }
-
-    .biz-image {
-      width: 100%;
-      height: 110px;
-      background: #e2e8f0;
-      position: relative;
-    }
-
-    .biz-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .card-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      font-size: 8px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 99px;
-    }
-
-    .badge-green {
-      background: #dcfce7;
-      color: #15803d;
-    }
-
-    .badge-purple {
-      background: #f3e8ff;
-      color: #6b21a8;
-    }
-
-    .biz-details {
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      justify-content: space-between;
-    }
-
-    .biz-details h5 {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .biz-details p {
-      font-size: 11px;
-      color: var(--text-gray);
-      line-clamp: 2;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.4;
-      margin-bottom: 8px;
-    }
-
-    .biz-footer {
-      border-top: 1px solid #f9fafb;
-      padding-top: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .biz-rating {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .rating-row {
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .star {
-      color: #fbbf24;
-    }
-
-    .biz-meta {
-      font-size: 9px;
-      color: #9ca3af;
-    }
-
-    .biz-price {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-
-    .price-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    .go-btn {
-      margin-top: 3px;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #f9fafb;
-      border: 1px solid #f3f4f6;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: var(--text-gray);
-      cursor: pointer;
-    }
-
-    /* Timelines for itineraries */
-    .timeline {
-      background: white;
-      border: 1px solid #f0f0f2;
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .timeline-step {
-      display: flex;
-      gap: 10px;
-      position: relative;
-    }
-
-    .timeline-step::after {
-      content: "";
-      position: absolute;
-      left: 14px;
-      top: 30px;
-      bottom: -15px;
-      width: 2px;
-      background: #e5e7eb;
-    }
-
-    .timeline-step:last-child::after {
-      display: none;
-    }
-
-    .step-number {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #fef3c7;
-      border: 2px solid var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: 700;
-      color: #b45309;
-      z-index: 2;
-      flex-shrink: 0;
-    }
-
-    .step-box {
-      flex: 1;
-      background: #f9fafb;
-      border-radius: 12px;
-      padding: 8px 12px;
-      border: 1px solid #f3f4f6;
-    }
-
-    .step-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2px;
-    }
-
-    .step-title {
-      font-size: 11.5px;
-      font-weight: 700;
-    }
-
-    .step-time {
-      font-size: 9px;
-      color: var(--text-gray);
-      font-weight: 600;
-    }
-
-    .step-desc {
-      font-size: 9.5px;
-      color: var(--text-gray);
-      margin-bottom: 4px;
-    }
-
-    .step-tip {
-      font-size: 9px;
-      background: rgba(232, 161, 39, 0.1);
-      color: #b45309;
-      padding: 2px 6px;
-      border-radius: 4px;
-      display: inline-block;
-      font-weight: 500;
-    }
-
-    /* Quick options buttons */
-    .options-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .opt-btn {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 99px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s;
-    }
-
-    .opt-btn.primary {
-      background: #8b6508;
-      color: white;
-    }
-
-    .opt-btn.primary:hover {
-      background: #725206;
-    }
-
-    .opt-btn.secondary {
-      background: #f3f4f6;
-      color: #374151;
-    }
-
-    .opt-btn.secondary:hover {
-      background: #e5e7eb;
-    }
-
-    /* Loading bubble */
-    .loading-bubble {
-      align-self: flex-start;
-      background: #f3f4f6;
-      color: #9ca3af;
-      padding: 10px 16px;
-      border-radius: 16px;
-      font-size: 12px;
-      display: flex;
-      gap: 4px;
-      align-items: center;
-      width: 70px;
-      justify-content: center;
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      background: #9ca3af;
-      border-radius: 50%;
-      animation: pulse 1s infinite alternate;
-    }
-
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes pulse {
-      from { transform: scale(0.8); opacity: 0.5; }
-      to { transform: scale(1.2); opacity: 1; }
-    }
-
-    /* Input Bar */
-    .input-box {
-      display: flex;
-      padding: 12px;
-      border-top: 1px solid #f3f4f6;
-      background: white;
-      gap: 8px;
-    }
-
-    input {
-      flex: 1;
-      padding: 12px 16px;
-      border-radius: 16px;
-      border: 1px solid #e5e7eb;
-      outline: none;
-      font-size: 13.5px;
-      background: #f9fafb;
-      transition: border 0.2s, background 0.2s;
-    }
-
-    input:focus {
-      border-color: var(--primary);
-      background: white;
-    }
-
-    .send-btn {
-      width: 42px;
-      height: 42px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(232, 161, 39, 0.2);
-      transition: background 0.2s;
-    }
-
-    .send-btn:hover {
-      background: var(--primary-hover);
-    }
-
-    .send-btn svg {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-      transform: rotate(45deg) translate(-1px, 1px);
-    }
-  </style>
-</head>
-<body>
-
-<div class="chat-container">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-info">
-      <div class="avatar">
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Guide Avatar" />
-      </div>
-      <div class="title-area">
-        <span class="title">LocalBoost AI <span class="badge">POWERED BY AI</span></span>
-        <span class="subtitle">Assistant Personnel</span>
-      </div>
-    </div>
-    <div class="lang-picker" id="lang-picker" onclick="toggleLangMenu()" style="cursor:pointer;position:relative;">🇫🇷 FR
-      <div id="lang-menu" style="display:none;position:absolute;right:0;top:110%;background:white;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.08);z-index:99;overflow:hidden;min-width:80px;">
-        <div onclick="setLang('FR','🇫🇷')" style="padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background='#fef9ec'" onmouseout="this.style.background=''">🇫🇷 FR</div>
-        <div onclick="setLang('EN','🇬🇧')" style="padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background='#fef9ec'" onmouseout="this.style.background=''">🇬🇧 EN</div>
-        <div onclick="setLang('AR','🇲🇦')" style="padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background='#fef9ec'" onmouseout="this.style.background=''">🇲🇦 AR</div>
-        <div onclick="setLang('ES','🇪🇸')" style="padding:8px 14px;cursor:pointer;font-size:12px;font-weight:600;display:flex;gap:8px;align-items:center;" onmouseover="this.style.background='#fef9ec'" onmouseout="this.style.background=''">🇪🇸 ES</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Messages Box -->
-  <div id="chat">
-    <div class="msg-group bot-group">
-      <div class="bot-card">
-        <span class="spark">✨</span>
-        <div class="content">
-          <h4 id="welcome-title">LocalBoost Guide</h4>
-          <p id="welcome-text">Bonjour ! Je suis LocalBoost AI, votre guide local intelligent au Maroc. Que puis-je chercher pour vous aujourd'hui ? (Exemple : 'Je cherche un restaurant végétarien à Fès')</p>
-          <div class="options-row" id="welcome-options" style="margin-top: 8px;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Input Area -->
-  <div class="input-box">
-    <input id="messageInput" placeholder="Ask about Fès, World Cup events, or transport..." />
-    <button class="send-btn" onclick="sendMessage()">
-      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-    </button>
-  </div>
-</div>
-
-<script>
-  const chatBox = document.getElementById("chat");
-  const input = document.getElementById("messageInput");
-
-  // ─── Language state ───────────────────────────────────────────────────────
-  let currentLang = 'FR';
-  let currentFlag = '🇫🇷';
-
-  const T = {
-    fr: {
-      welcome: "Bonjour ! Je suis LocalBoost AI, votre guide local intelligent au Maroc. Que puis-je chercher pour vous aujourd'hui ? (Exemple : 'Je cherche un restaurant végétarien à Fès')",
-      placeholder: "Posez une question sur Fès, Marrakech, les restaurants...",
-      guideTitle: "LocalBoost Guide",
-      itineraryIntro: (city, cost) => `Voici l'itinéraire personnalisé que j'ai concocté pour votre soirée à ${city} (coût estimé : ~ ${cost} MAD) :`,
-      reviews: "avis", away: "de distance",
-    },
-    en: {
-      welcome: "Hello! I am LocalBoost AI, your intelligent local guide in Morocco. What can I look up for you today? (e.g. 'Looking for a veggie restaurant in Fès')",
-      placeholder: "Ask about Fès, Marrakech, restaurants or events...",
-      guideTitle: "LocalBoost Guide",
-      itineraryIntro: (city, cost) => `Here is your personalized evening itinerary for ${city} (estimated cost: ~ ${cost} MAD):`,
-      reviews: "reviews", away: "away",
-    },
-    ar: {
-      welcome: "مرحباً! أنا LocalBoost AI، دليلك المحلي الذكي في المغرب. ما الذي يمكنني البحث عنه لك اليوم؟ (مثال: 'أبحث عن مطعم نباتي في فاس')",
-      placeholder: "اسأل عن فاس أو مراكش أو المطاعم...",
-      guideTitle: "دليل LocalBoost",
-      itineraryIntro: (city, cost) => `إليك مسار رحلتك المخصص لأمسيتك في ${city} (التكلفة التقديرية: ~ ${cost} درهم):`,
-      reviews: "تقييم", away: "بُعداً",
-    },
-    es: {
-      welcome: "¡Hola! Soy LocalBoost AI, tu guía local inteligente en Marruecos. ¿Qué puedo buscar para ti hoy? (ej. 'Busco un restaurante vegetariano en Fès')",
-      placeholder: "Pregunta sobre Fès, restaurantes o eventos...",
-      guideTitle: "Guía LocalBoost",
-      itineraryIntro: (city, cost) => `Aquí está tu itinerario nocturno personalizado para ${city} (costo estimado: ~ ${cost} MAD):`,
-      reviews: "reseñas", away: "de distancia",
-    }
-  };
-
-  function getLangTexts() { return T[currentLang.toLowerCase()] || T.fr; }
-
-  function toggleLangMenu() {
-    const menu = document.getElementById('lang-menu');
-    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-  }
-
-  function updateWelcomeMessage() {
-    const texts = getLangTexts();
-    document.getElementById("welcome-title").textContent = texts.guideTitle;
-    document.getElementById("welcome-text").textContent = texts.welcome;
-    
-    const buttons = {
-      fr: [
-        { label: '🍽️ Restaurants à Fès', query: 'restaurant fes' },
-        { label: '🍽️ Restaurants à Marrakech', query: 'restaurant marrakech' },
-        { label: '🏺 Artisans à Fès', query: 'artisan fes' },
-        { label: '☕ Cafés à Casablanca', query: 'cafe casablanca' }
-      ],
-      en: [
-        { label: '🍽️ Fès Restaurants', query: 'restaurant fes' },
-        { label: '🍽️ Marrakech Restaurants', query: 'restaurant marrakech' },
-        { label: '🏺 Fès Artisans', query: 'artisan fes' },
-        { label: '☕ Casablanca Cafés', query: 'cafe casablanca' }
-      ],
-      ar: [
-        { label: '🍽️ مطاعم فاس', query: 'restaurant fes' },
-        { label: '🍽️ مطاعم مراكش', query: 'restaurant marrakech' },
-        { label: '🏺 حرفيين فاس', query: 'artisan fes' },
-        { label: '☕ مقاهي الدار البيضاء', query: 'cafe casablanca' }
-      ],
-      es: [
-        { label: '🍽️ Restaurantes en Fès', query: 'restaurant fes' },
-        { label: '🍽️ Restaurantes en Marrakech', query: 'restaurant marrakech' },
-        { label: '🏺 Artesanos en Fès', query: 'artisan fes' },
-        { label: '☕ Cafés en Casablanca', query: 'cafe casablanca' }
-      ]
-    };
-    
-    const activeButtons = buttons[currentLang.toLowerCase()] || buttons.fr;
-    const container = document.getElementById("welcome-options");
-    container.innerHTML = "";
-    activeButtons.forEach(btn => {
-      const button = document.createElement("button");
-      button.className = "opt-btn secondary";
-      button.textContent = btn.label;
-      button.onclick = () => {
-        input.value = btn.query;
-        sendMessage();
-      };
-      container.appendChild(button);
-    });
-  }
-
-  function setLang(code, flag) {
-    currentLang = code;
-    currentFlag = flag;
-    const picker = document.getElementById('lang-picker');
-    picker.childNodes[0].textContent = flag + ' ' + code + '\n';
-    document.getElementById('lang-menu').style.display = 'none';
-    input.placeholder = getLangTexts().placeholder;
-    updateWelcomeMessage();
-  }
-
-  // Set initial welcome options
-  updateWelcomeMessage();
-
-  // Close lang menu on outside click
-  document.addEventListener('click', function(e) {
-    const picker = document.getElementById('lang-picker');
-    if (!picker.contains(e.target)) {
-      document.getElementById('lang-menu').style.display = 'none';
-    }
-  });
-
-  function openMap(lat, lng, name, city) {
-    if (lat && lng) {
-      window.open(`https://www.google.com/maps?q=${lat},${lng}&z=16`, '_blank');
-    } else {
-      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + city + ' Morocco')}`, '_blank');
-    }
-  }
-
-  const BUSINESS_IMAGES = {
-    'Café Clock': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&auto=format&fit=crop&q=80',
-    'The Ruined Garden': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=80',
-    'Nur Restaurant': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80',
-    'Dar Hatim': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=80',
-    'Atelier Tissage Fassi': 'https://images.unsplash.com/photo-1590736969955-71cc94801759?w=500&auto=format&fit=crop&q=80',
-    'Riad Laaroussa': 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop&q=80',
-    'Hammam Sidi Azzouz': 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop&q=80',
-    'Café Boulangerie Fassia': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80',
-    'Nomad Restaurant': 'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=500&auto=format&fit=crop&q=80',
-    'Earth Café Marrakech': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=80',
-    'Souk Artisanat Marrakchi': 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80',
-    'Atelier Berbère': 'https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=500&auto=format&fit=crop&q=80',
-    'Riad Yasmine': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&auto=format&fit=crop&q=80',
-    'Les Bains de Marrakech': 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=500&auto=format&fit=crop&q=80',
-    'Blend Specialty Coffee': 'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=500&auto=format&fit=crop&q=80',
-    'La Sqala': 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80',
-    "Rick's Café Casablanca": 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=500&auto=format&fit=crop&q=80',
-    'Ain Diab Beach Club': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80',
-    'Dinarjat Restaurant': 'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80',
-    'Café Maure Oudaya': 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=500&auto=format&fit=crop&q=80',
-    'El Morocco Club': 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&auto=format&fit=crop&q=80',
-    'Saveur de Poisson': 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=500&auto=format&fit=crop&q=80',
-    'Pure Passion Restaurant': 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=500&auto=format&fit=crop&q=80'
-  };
-
-  const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=80";
-
-  function scrollToBottom() {
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  function addLoader() {
-    const div = document.createElement("div");
-    div.id = "loader";
-    div.className = "loading-bubble";
-    div.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
-    chatBox.appendChild(div);
-    scrollToBottom();
-  }
-
-  function removeLoader() {
-    const loader = document.getElementById("loader");
-    if (loader) loader.remove();
-  }
-
-  async function sendMessage() {
-    const message = input.value.trim();
-    if (!message) return;
-
-    // Add User Bubble
-    const userGroup = document.createElement("div");
-    userGroup.className = "msg-group user-group";
-    userGroup.innerHTML = `<div class="user-bubble">${message}</div>`;
-    chatBox.appendChild(userGroup);
-    input.value = "";
-    scrollToBottom();
-
-    addLoader();
-
-    try {
-      const res = await fetch("http://localhost:5000/api/v1/ai/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-
-      const data = await res.json();
-      removeLoader();
-
-      if (!data.success) {
-        addSystemMessage("❌ Erreur de traitement API");
-        return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LocalBoost Chatbot - Guide Touristique</title>
+    <style>
+      :root {
+        --primary: #e8a127;
+        --primary-hover: #d08c1a;
+        --bg: #f5f6f8;
+        --card-bg: #ffffff;
+        --text-dark: #171717;
+        --text-gray: #6b7280;
       }
 
-      const bot = data.data;
-      const botMsgId = Date.now().toString();
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-      // Create main bot message group
-      const botGroup = document.createElement("div");
-      botGroup.className = "msg-group bot-group";
-      botGroup.id = `msg-group-${botMsgId}`;
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: var(--text-dark);
+        padding: 10px;
+      }
 
-      let contentHtml = `
+      .chat-container {
+        width: 100%;
+        max-width: 500px;
+        height: 80vh;
+        background: white;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        border: 1px solid #f0f0f2;
+      }
+
+      /* Top Header */
+      .header {
+        padding: 15px 20px;
+        background: white;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        overflow: hidden;
+      }
+
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .title-area {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .badge {
+        font-size: 8px;
+        background: rgba(44, 219, 140, 0.15);
+        color: #00b05b;
+        padding: 2px 6px;
+        border-radius: 99px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+
+      .subtitle {
+        font-size: 10px;
+        color: var(--text-gray);
+        margin-top: 1px;
+      }
+
+      .lang-picker {
+        font-size: 11px;
+        font-weight: 600;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        padding: 4px 8px;
+        border-radius: 6px;
+        color: #4b5563;
+      }
+
+      /* Chat Area */
+      #chat {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #fbfbfc;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      /* Messages */
+      .msg-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 90%;
+      }
+
+      .msg-group.user-group {
+        align-self: flex-end;
+      }
+
+      .msg-group.bot-group {
+        align-self: flex-start;
+        width: 95%;
+      }
+
+      .user-bubble {
+        background: var(--primary);
+        color: white;
+        padding: 12px 18px;
+        border-radius: 18px 18px 0 18px;
+        font-size: 13.5px;
+        line-height: 1.5;
+        box-shadow: 0 4px 10px rgba(232, 161, 39, 0.15);
+      }
+
+      .bot-card {
+        background: white;
+        border-left: 4px solid var(--primary);
+        border-radius: 16px;
+        padding: 14px 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        border-top: 1px solid #f3f4f6;
+        border-right: 1px solid #f3f4f6;
+        border-bottom: 1px solid #f3f4f6;
+        display: flex;
+        gap: 10px;
+      }
+
+      .bot-card .spark {
+        font-size: 16px;
+        color: #b45309;
+      }
+
+      .bot-card .content {
+        flex: 1;
+      }
+
+      .bot-card h4 {
+        font-size: 10px;
+        font-weight: 700;
+        color: #b45309;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+
+      .bot-card p {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #374151;
+        white-space: pre-wrap;
+      }
+
+      /* Carousel */
+      .carousel {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 4px 2px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+      }
+
+      .carousel::-webkit-scrollbar {
+        display: none;
+      }
+
+      .biz-card {
+        flex-shrink: 0;
+        width: 220px;
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #f0f0f2;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        scroll-snap-align: start;
+      }
+
+      .biz-image {
+        width: 100%;
+        height: 110px;
+        background: #e2e8f0;
+        position: relative;
+      }
+
+      .biz-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .card-badge {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        font-size: 8px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 99px;
+      }
+
+      .badge-green {
+        background: #dcfce7;
+        color: #15803d;
+      }
+
+      .badge-purple {
+        background: #f3e8ff;
+        color: #6b21a8;
+      }
+
+      .biz-details {
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        justify-content: space-between;
+      }
+
+      .biz-details h5 {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .biz-details p {
+        font-size: 11px;
+        color: var(--text-gray);
+        line-clamp: 2;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+        margin-bottom: 8px;
+      }
+
+      .biz-footer {
+        border-top: 1px solid #f9fafb;
+        padding-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .biz-rating {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .rating-row {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .star {
+        color: #fbbf24;
+      }
+
+      .biz-meta {
+        font-size: 9px;
+        color: #9ca3af;
+      }
+
+      .biz-price {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .price-text {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .go-btn {
+        margin-top: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #f9fafb;
+        border: 1px solid #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: var(--text-gray);
+        cursor: pointer;
+      }
+
+      /* Timelines for itineraries */
+      .timeline {
+        background: white;
+        border: 1px solid #f0f0f2;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .timeline-step {
+        display: flex;
+        gap: 10px;
+        position: relative;
+      }
+
+      .timeline-step::after {
+        content: '';
+        position: absolute;
+        left: 14px;
+        top: 30px;
+        bottom: -15px;
+        width: 2px;
+        background: #e5e7eb;
+      }
+
+      .timeline-step:last-child::after {
+        display: none;
+      }
+
+      .step-number {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #fef3c7;
+        border: 2px solid var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #b45309;
+        z-index: 2;
+        flex-shrink: 0;
+      }
+
+      .step-box {
+        flex: 1;
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 8px 12px;
+        border: 1px solid #f3f4f6;
+      }
+
+      .step-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2px;
+      }
+
+      .step-title {
+        font-size: 11.5px;
+        font-weight: 700;
+      }
+
+      .step-time {
+        font-size: 9px;
+        color: var(--text-gray);
+        font-weight: 600;
+      }
+
+      .step-desc {
+        font-size: 9.5px;
+        color: var(--text-gray);
+        margin-bottom: 4px;
+      }
+
+      .step-tip {
+        font-size: 9px;
+        background: rgba(232, 161, 39, 0.1);
+        color: #b45309;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: inline-block;
+        font-weight: 500;
+      }
+
+      /* Quick options buttons */
+      .options-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .opt-btn {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 99px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        transition: all 0.2s;
+      }
+
+      .opt-btn.primary {
+        background: #8b6508;
+        color: white;
+      }
+
+      .opt-btn.primary:hover {
+        background: #725206;
+      }
+
+      .opt-btn.secondary {
+        background: #f3f4f6;
+        color: #374151;
+      }
+
+      .opt-btn.secondary:hover {
+        background: #e5e7eb;
+      }
+
+      /* Loading bubble */
+      .loading-bubble {
+        align-self: flex-start;
+        background: #f3f4f6;
+        color: #9ca3af;
+        padding: 10px 16px;
+        border-radius: 16px;
+        font-size: 12px;
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        width: 70px;
+        justify-content: center;
+      }
+
+      .dot {
+        width: 6px;
+        height: 6px;
+        background: #9ca3af;
+        border-radius: 50%;
+        animation: pulse 1s infinite alternate;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes pulse {
+        from {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        to {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+      }
+
+      /* Input Bar */
+      .input-box {
+        display: flex;
+        padding: 12px;
+        border-top: 1px solid #f3f4f6;
+        background: white;
+        gap: 8px;
+      }
+
+      input {
+        flex: 1;
+        padding: 12px 16px;
+        border-radius: 16px;
+        border: 1px solid #e5e7eb;
+        outline: none;
+        font-size: 13.5px;
+        background: #f9fafb;
+        transition:
+          border 0.2s,
+          background 0.2s;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+        background: white;
+      }
+
+      .send-btn {
+        width: 42px;
+        height: 42px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(232, 161, 39, 0.2);
+        transition: background 0.2s;
+      }
+
+      .send-btn:hover {
+        background: var(--primary-hover);
+      }
+
+      .send-btn svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transform: rotate(45deg) translate(-1px, 1px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-info">
+          <div class="avatar">
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+              alt="Guide Avatar"
+            />
+          </div>
+          <div class="title-area">
+            <span class="title">LocalBoost AI <span class="badge">POWERED BY AI</span></span>
+            <span class="subtitle">Assistant Personnel</span>
+          </div>
+        </div>
+        <div
+          class="lang-picker"
+          id="lang-picker"
+          onclick="toggleLangMenu()"
+          style="cursor: pointer; position: relative"
+        >
+          🇫🇷 FR
+          <div
+            id="lang-menu"
+            style="
+              display: none;
+              position: absolute;
+              right: 0;
+              top: 110%;
+              background: white;
+              border: 1px solid #e5e7eb;
+              border-radius: 12px;
+              box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+              z-index: 99;
+              overflow: hidden;
+              min-width: 80px;
+            "
+          >
+            <div
+              onclick="setLang('FR', '🇫🇷')"
+              style="
+                padding: 8px 14px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+              onmouseover="this.style.background = '#fef9ec'"
+              onmouseout="this.style.background = ''"
+            >
+              🇫🇷 FR
+            </div>
+            <div
+              onclick="setLang('EN', '🇬🇧')"
+              style="
+                padding: 8px 14px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+              onmouseover="this.style.background = '#fef9ec'"
+              onmouseout="this.style.background = ''"
+            >
+              🇬🇧 EN
+            </div>
+            <div
+              onclick="setLang('AR', '🇲🇦')"
+              style="
+                padding: 8px 14px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+              onmouseover="this.style.background = '#fef9ec'"
+              onmouseout="this.style.background = ''"
+            >
+              🇲🇦 AR
+            </div>
+            <div
+              onclick="setLang('ES', '🇪🇸')"
+              style="
+                padding: 8px 14px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+              onmouseover="this.style.background = '#fef9ec'"
+              onmouseout="this.style.background = ''"
+            >
+              🇪🇸 ES
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Box -->
+      <div id="chat">
+        <div class="msg-group bot-group">
+          <div class="bot-card">
+            <span class="spark">✨</span>
+            <div class="content">
+              <h4 id="welcome-title">LocalBoost Guide</h4>
+              <p id="welcome-text">
+                Bonjour ! Je suis LocalBoost AI, votre guide local intelligent au Maroc. Que puis-je
+                chercher pour vous aujourd'hui ? (Exemple : 'Je cherche un restaurant végétarien à
+                Fès')
+              </p>
+              <div class="options-row" id="welcome-options" style="margin-top: 8px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-box">
+        <input id="messageInput" placeholder="Ask about Fès, World Cup events, or transport..." />
+        <button class="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const chatBox = document.getElementById('chat');
+      const input = document.getElementById('messageInput');
+
+      // ─── Language state ───────────────────────────────────────────────────────
+      let currentLang = 'FR';
+      let currentFlag = '🇫🇷';
+
+      const T = {
+        fr: {
+          welcome:
+            "Bonjour ! Je suis LocalBoost AI, votre guide local intelligent au Maroc. Que puis-je chercher pour vous aujourd'hui ? (Exemple : 'Je cherche un restaurant végétarien à Fès')",
+          placeholder: 'Posez une question sur Fès, Marrakech, les restaurants...',
+          guideTitle: 'LocalBoost Guide',
+          itineraryIntro: (city, cost) =>
+            `Voici l'itinéraire personnalisé que j'ai concocté pour votre soirée à ${city} (coût estimé : ~ ${cost} MAD) :`,
+          reviews: 'avis',
+          away: 'de distance',
+        },
+        en: {
+          welcome:
+            "Hello! I am LocalBoost AI, your intelligent local guide in Morocco. What can I look up for you today? (e.g. 'Looking for a veggie restaurant in Fès')",
+          placeholder: 'Ask about Fès, Marrakech, restaurants or events...',
+          guideTitle: 'LocalBoost Guide',
+          itineraryIntro: (city, cost) =>
+            `Here is your personalized evening itinerary for ${city} (estimated cost: ~ ${cost} MAD):`,
+          reviews: 'reviews',
+          away: 'away',
+        },
+        ar: {
+          welcome:
+            "مرحباً! أنا LocalBoost AI، دليلك المحلي الذكي في المغرب. ما الذي يمكنني البحث عنه لك اليوم؟ (مثال: 'أبحث عن مطعم نباتي في فاس')",
+          placeholder: 'اسأل عن فاس أو مراكش أو المطاعم...',
+          guideTitle: 'دليل LocalBoost',
+          itineraryIntro: (city, cost) =>
+            `إليك مسار رحلتك المخصص لأمسيتك في ${city} (التكلفة التقديرية: ~ ${cost} درهم):`,
+          reviews: 'تقييم',
+          away: 'بُعداً',
+        },
+        es: {
+          welcome:
+            "¡Hola! Soy LocalBoost AI, tu guía local inteligente en Marruecos. ¿Qué puedo buscar para ti hoy? (ej. 'Busco un restaurante vegetariano en Fès')",
+          placeholder: 'Pregunta sobre Fès, restaurantes o eventos...',
+          guideTitle: 'Guía LocalBoost',
+          itineraryIntro: (city, cost) =>
+            `Aquí está tu itinerario nocturno personalizado para ${city} (costo estimado: ~ ${cost} MAD):`,
+          reviews: 'reseñas',
+          away: 'de distancia',
+        },
+      };
+
+      function getLangTexts() {
+        return T[currentLang.toLowerCase()] || T.fr;
+      }
+
+      function toggleLangMenu() {
+        const menu = document.getElementById('lang-menu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      }
+
+      function updateWelcomeMessage() {
+        const texts = getLangTexts();
+        document.getElementById('welcome-title').textContent = texts.guideTitle;
+        document.getElementById('welcome-text').textContent = texts.welcome;
+
+        const buttons = {
+          fr: [
+            { label: '🍽️ Restaurants à Fès', query: 'restaurant fes' },
+            { label: '🍽️ Restaurants à Marrakech', query: 'restaurant marrakech' },
+            { label: '🏺 Artisans à Fès', query: 'artisan fes' },
+            { label: '☕ Cafés à Casablanca', query: 'cafe casablanca' },
+          ],
+          en: [
+            { label: '🍽️ Fès Restaurants', query: 'restaurant fes' },
+            { label: '🍽️ Marrakech Restaurants', query: 'restaurant marrakech' },
+            { label: '🏺 Fès Artisans', query: 'artisan fes' },
+            { label: '☕ Casablanca Cafés', query: 'cafe casablanca' },
+          ],
+          ar: [
+            { label: '🍽️ مطاعم فاس', query: 'restaurant fes' },
+            { label: '🍽️ مطاعم مراكش', query: 'restaurant marrakech' },
+            { label: '🏺 حرفيين فاس', query: 'artisan fes' },
+            { label: '☕ مقاهي الدار البيضاء', query: 'cafe casablanca' },
+          ],
+          es: [
+            { label: '🍽️ Restaurantes en Fès', query: 'restaurant fes' },
+            { label: '🍽️ Restaurantes en Marrakech', query: 'restaurant marrakech' },
+            { label: '🏺 Artesanos en Fès', query: 'artisan fes' },
+            { label: '☕ Cafés en Casablanca', query: 'cafe casablanca' },
+          ],
+        };
+
+        const activeButtons = buttons[currentLang.toLowerCase()] || buttons.fr;
+        const container = document.getElementById('welcome-options');
+        container.innerHTML = '';
+        activeButtons.forEach((btn) => {
+          const button = document.createElement('button');
+          button.className = 'opt-btn secondary';
+          button.textContent = btn.label;
+          button.onclick = () => {
+            input.value = btn.query;
+            sendMessage();
+          };
+          container.appendChild(button);
+        });
+      }
+
+      function setLang(code, flag) {
+        currentLang = code;
+        currentFlag = flag;
+        const picker = document.getElementById('lang-picker');
+        picker.childNodes[0].textContent = flag + ' ' + code + '\n';
+        document.getElementById('lang-menu').style.display = 'none';
+        input.placeholder = getLangTexts().placeholder;
+        updateWelcomeMessage();
+      }
+
+      // Set initial welcome options
+      updateWelcomeMessage();
+
+      // Close lang menu on outside click
+      document.addEventListener('click', function (e) {
+        const picker = document.getElementById('lang-picker');
+        if (!picker.contains(e.target)) {
+          document.getElementById('lang-menu').style.display = 'none';
+        }
+      });
+
+      function openMap(lat, lng, name, city) {
+        if (lat && lng) {
+          window.open(`https://www.google.com/maps?q=${lat},${lng}&z=16`, '_blank');
+        } else {
+          window.open(
+            `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + city + ' Morocco')}`,
+            '_blank'
+          );
+        }
+      }
+
+      const BUSINESS_IMAGES = {
+        'Café Clock':
+          'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=500&auto=format&fit=crop&q=80',
+        'The Ruined Garden':
+          'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=80',
+        'Nur Restaurant':
+          'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80',
+        'Dar Hatim':
+          'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=80',
+        'Atelier Tissage Fassi':
+          'https://images.unsplash.com/photo-1590736969955-71cc94801759?w=500&auto=format&fit=crop&q=80',
+        'Riad Laaroussa':
+          'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=500&auto=format&fit=crop&q=80',
+        'Hammam Sidi Azzouz':
+          'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=500&auto=format&fit=crop&q=80',
+        'Café Boulangerie Fassia':
+          'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&auto=format&fit=crop&q=80',
+        'Nomad Restaurant':
+          'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=500&auto=format&fit=crop&q=80',
+        'Earth Café Marrakech':
+          'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&auto=format&fit=crop&q=80',
+        'Souk Artisanat Marrakchi':
+          'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=80',
+        'Atelier Berbère':
+          'https://images.unsplash.com/photo-1600121848594-d8644e57abab?w=500&auto=format&fit=crop&q=80',
+        'Riad Yasmine':
+          'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500&auto=format&fit=crop&q=80',
+        'Les Bains de Marrakech':
+          'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=500&auto=format&fit=crop&q=80',
+        'Blend Specialty Coffee':
+          'https://images.unsplash.com/photo-1498804103079-a6351b050096?w=500&auto=format&fit=crop&q=80',
+        'La Sqala':
+          'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=80',
+        "Rick's Café Casablanca":
+          'https://images.unsplash.com/photo-1470337458703-46ad1756a187?w=500&auto=format&fit=crop&q=80',
+        'Ain Diab Beach Club':
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80',
+        'Dinarjat Restaurant':
+          'https://images.unsplash.com/photo-1544025162-d76694265947?w=500&auto=format&fit=crop&q=80',
+        'Café Maure Oudaya':
+          'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=500&auto=format&fit=crop&q=80',
+        'El Morocco Club':
+          'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&auto=format&fit=crop&q=80',
+        'Saveur de Poisson':
+          'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=500&auto=format&fit=crop&q=80',
+        'Pure Passion Restaurant':
+          'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=500&auto=format&fit=crop&q=80',
+      };
+
+      const DEFAULT_IMAGE =
+        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&auto=format&fit=crop&q=80';
+
+      function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function addLoader() {
+        const div = document.createElement('div');
+        div.id = 'loader';
+        div.className = 'loading-bubble';
+        div.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+        chatBox.appendChild(div);
+        scrollToBottom();
+      }
+
+      function removeLoader() {
+        const loader = document.getElementById('loader');
+        if (loader) loader.remove();
+      }
+
+      async function sendMessage() {
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Add User Bubble
+        const userGroup = document.createElement('div');
+        userGroup.className = 'msg-group user-group';
+        userGroup.innerHTML = `<div class="user-bubble">${message}</div>`;
+        chatBox.appendChild(userGroup);
+        input.value = '';
+        scrollToBottom();
+
+        addLoader();
+
+        try {
+          const res = await fetch('http://localhost:5000/api/v1/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message }),
+          });
+
+          const data = await res.json();
+          removeLoader();
+
+          if (!data.success) {
+            addSystemMessage('❌ Erreur de traitement API');
+            return;
+          }
+
+          const bot = data.data;
+          const botMsgId = Date.now().toString();
+
+          // Create main bot message group
+          const botGroup = document.createElement('div');
+          botGroup.className = 'msg-group bot-group';
+          botGroup.id = `msg-group-${botMsgId}`;
+
+          let contentHtml = `
         <div class="bot-card">
           <span class="spark">✨</span>
           <div class="content">
@@ -809,31 +950,46 @@
         </div>
       `;
 
-      // Render suggestions if available
-      if (bot.suggestions && bot.suggestions.length > 0) {
-        let carouselHtml = `<div class="carousel">`;
+          // Render suggestions if available
+          if (bot.suggestions && bot.suggestions.length > 0) {
+            let carouselHtml = `<div class="carousel">`;
 
-        bot.suggestions.forEach(biz => {
-          const imgUrl = BUSINESS_IMAGES[biz.name] || DEFAULT_IMAGE;
-          const lts = getLangTexts();
-          const descLower = (biz.description || '').toLowerCase();
-          const isVeg = descLower.includes('vege') || descLower.includes('نباتي') || descLower.includes('vegetariano');
-          const isArtisan = biz.category.toLowerCase().includes('artisan');
-          const badgeClass = isArtisan ? 'badge-purple' : 'badge-green';
-          const badgeText = isArtisan 
-            ? (currentLang==='AR' ? 'حرفي' : currentLang==='ES' ? 'ARTESANAL' : 'ARTISANAL')
-            : isVeg 
-            ? (currentLang==='AR' ? 'نباتي' : currentLang==='ES' ? 'VEG FRIENDLY' : 'VEGGIE FRIENDLY')
-            : (currentLang==='AR' ? 'إطلالة' : currentLang==='ES' ? 'TERRAZA' : 'OUTDOOR');
+            bot.suggestions.forEach((biz) => {
+              const imgUrl = BUSINESS_IMAGES[biz.name] || DEFAULT_IMAGE;
+              const lts = getLangTexts();
+              const descLower = (biz.description || '').toLowerCase();
+              const isVeg =
+                descLower.includes('vege') ||
+                descLower.includes('نباتي') ||
+                descLower.includes('vegetariano');
+              const isArtisan = biz.category.toLowerCase().includes('artisan');
+              const badgeClass = isArtisan ? 'badge-purple' : 'badge-green';
+              const badgeText = isArtisan
+                ? currentLang === 'AR'
+                  ? 'حرفي'
+                  : currentLang === 'ES'
+                    ? 'ARTESANAL'
+                    : 'ARTISANAL'
+                : isVeg
+                  ? currentLang === 'AR'
+                    ? 'نباتي'
+                    : currentLang === 'ES'
+                      ? 'VEG FRIENDLY'
+                      : 'VEGGIE FRIENDLY'
+                  : currentLang === 'AR'
+                    ? 'إطلالة'
+                    : currentLang === 'ES'
+                      ? 'TERRAZA'
+                      : 'OUTDOOR';
 
-          // Fix rating: prefer avgRating, fallback to rating, show — if both are 0 or null
-          const rawRating = biz.avgRating || biz.rating;
-          const displayRating = (rawRating && rawRating > 0) ? rawRating.toFixed(1) : '—';
+              // Fix rating: prefer avgRating, fallback to rating, show — if both are 0 or null
+              const rawRating = biz.avgRating || biz.rating;
+              const displayRating = rawRating && rawRating > 0 ? rawRating.toFixed(1) : '—';
 
-          const lat = biz.lat || '';
-          const lng = biz.lng || '';
+              const lat = biz.lat || '';
+              const lng = biz.lng || '';
 
-          carouselHtml += `
+              carouselHtml += `
             <div class="biz-card">
               <div class="biz-image">
                 <img src="${imgUrl}" alt="${biz.name}" onerror="this.src='${DEFAULT_IMAGE}'" />
@@ -850,61 +1006,69 @@
                       <span class="star">★</span>
                       <span>${displayRating}</span>
                     </div>
-                    <span class="biz-meta">${biz.reviewCount} ${lts.reviews} · ${(biz.id * 150 + 100)}m ${lts.away}</span>
+                    <span class="biz-meta">${biz.reviewCount} ${lts.reviews} · ${biz.id * 150 + 100}m ${lts.away}</span>
                   </div>
                   <div class="biz-price">
                     <span class="price-text">~ ${biz.estimatedPrice} MAD</span>
-                    <div class="go-btn" onclick="openMap('${lat}','${lng}','${biz.name.replace(/'/g,'\\&apos;')}','${biz.city}')" title="Ouvrir sur Google Maps" style="cursor:pointer;">📍</div>
+                    <div class="go-btn" onclick="openMap('${lat}','${lng}','${biz.name.replace(/'/g, '\\&apos;')}','${biz.city}')" title="Ouvrir sur Google Maps" style="cursor:pointer;">📍</div>
                   </div>
                 </div>
               </div>
             </div>
           `;
-        });
+            });
 
-        carouselHtml += `</div>`;
-        contentHtml += carouselHtml;
-      }
+            carouselHtml += `</div>`;
+            contentHtml += carouselHtml;
+          }
 
-      // Render options if available
-      if (bot.followUp && bot.followUp.options && bot.followUp.options.length > 0) {
-        let optionsHtml = `<div class="options-row">`;
-        const firstBiz = bot.suggestions && bot.suggestions.length > 0 ? bot.suggestions[0] : null;
-        const city = firstBiz ? firstBiz.city : 'Fès';
-        const bizLat = firstBiz ? (firstBiz.lat || '') : '';
-        const bizLng = firstBiz ? (firstBiz.lng || '') : '';
-        const bizName = firstBiz ? firstBiz.name : '';
-        bot.followUp.options.forEach(opt => {
-          const optLower = opt.toLowerCase();
-          const isPrimary = optLower.includes('oui') || optLower.includes('yes') || optLower.includes('sí') || optLower.includes('نعم');
-          const isMapOpt = optLower.includes('carte') || optLower.includes('map') || optLower.includes('mapa') || optLower.includes('خريطة');
-          const btnClass = isPrimary ? 'primary' : 'secondary';
-          const icon = isMapOpt ? '📍 ' : '';
-          optionsHtml += `
+          // Render options if available
+          if (bot.followUp && bot.followUp.options && bot.followUp.options.length > 0) {
+            let optionsHtml = `<div class="options-row">`;
+            const firstBiz =
+              bot.suggestions && bot.suggestions.length > 0 ? bot.suggestions[0] : null;
+            const city = firstBiz ? firstBiz.city : 'Fès';
+            const bizLat = firstBiz ? firstBiz.lat || '' : '';
+            const bizLng = firstBiz ? firstBiz.lng || '' : '';
+            const bizName = firstBiz ? firstBiz.name : '';
+            bot.followUp.options.forEach((opt) => {
+              const optLower = opt.toLowerCase();
+              const isPrimary =
+                optLower.includes('oui') ||
+                optLower.includes('yes') ||
+                optLower.includes('sí') ||
+                optLower.includes('نعم');
+              const isMapOpt =
+                optLower.includes('carte') ||
+                optLower.includes('map') ||
+                optLower.includes('mapa') ||
+                optLower.includes('خريطة');
+              const btnClass = isPrimary ? 'primary' : 'secondary';
+              const icon = isMapOpt ? '📍 ' : '';
+              optionsHtml += `
             <button class="opt-btn ${btnClass}" onclick="handleOption('${opt.replace(/'/g, '\\&apos;')}', '${city}', '${botMsgId}', '${bizLat}', '${bizLng}', '${bizName}')">
               ${icon}${opt}
             </button>
           `;
-        });
-        optionsHtml += `</div>`;
-        contentHtml += optionsHtml;
+            });
+            optionsHtml += `</div>`;
+            contentHtml += optionsHtml;
+          }
+
+          botGroup.innerHTML = contentHtml;
+          chatBox.appendChild(botGroup);
+          scrollToBottom();
+        } catch (err) {
+          removeLoader();
+          console.error(err);
+          addSystemMessage('❌ Erreur : Impossible de contacter le serveur backend (port 5000).');
+        }
       }
 
-      botGroup.innerHTML = contentHtml;
-      chatBox.appendChild(botGroup);
-      scrollToBottom();
-
-    } catch (err) {
-      removeLoader();
-      console.error(err);
-      addSystemMessage("❌ Erreur : Impossible de contacter le serveur backend (port 5000).");
-    }
-  }
-
-  function addSystemMessage(text) {
-    const group = document.createElement("div");
-    group.className = "msg-group bot-group";
-    group.innerHTML = `
+      function addSystemMessage(text) {
+        const group = document.createElement('div');
+        group.className = 'msg-group bot-group';
+        group.innerHTML = `
       <div class="bot-card" style="border-left-color: #ef4444;">
         <span class="spark">⚠️</span>
         <div class="content">
@@ -912,54 +1076,56 @@
         </div>
       </div>
     `;
-    chatBox.appendChild(group);
-    scrollToBottom();
-  }
+        chatBox.appendChild(group);
+        scrollToBottom();
+      }
 
-  async function handleOption(opt, city, msgId, bizLat, bizLng, bizName) {
-    // Hide the options row once selected
-    const parentGroup = document.getElementById(`msg-group-${msgId}`);
-    if (parentGroup) {
-      const optionsRow = parentGroup.querySelector(".options-row");
-      if (optionsRow) optionsRow.remove();
-    }
+      async function handleOption(opt, city, msgId, bizLat, bizLng, bizName) {
+        // Hide the options row once selected
+        const parentGroup = document.getElementById(`msg-group-${msgId}`);
+        if (parentGroup) {
+          const optionsRow = parentGroup.querySelector('.options-row');
+          if (optionsRow) optionsRow.remove();
+        }
 
-    const optLower = opt.toLowerCase();
-    const isMap = optLower.includes("carte") || 
-                  optLower.includes("map") || 
-                  optLower.includes("mapa") || 
-                  optLower.includes("خريطة");
+        const optLower = opt.toLowerCase();
+        const isMap =
+          optLower.includes('carte') ||
+          optLower.includes('map') ||
+          optLower.includes('mapa') ||
+          optLower.includes('خريطة');
 
-    if (isMap) {
-      openMap(bizLat, bizLng, bizName, city);
-      return;
-    }
+        if (isMap) {
+          openMap(bizLat, bizLng, bizName, city);
+          return;
+        }
 
-    const isItinerary = optLower.includes("itinéraire") || 
-                        optLower.includes("itinerary") || 
-                        optLower.includes("itinerario") || 
-                        optLower.includes("بناء") || 
-                        optLower.includes("السير");
+        const isItinerary =
+          optLower.includes('itinéraire') ||
+          optLower.includes('itinerary') ||
+          optLower.includes('itinerario') ||
+          optLower.includes('بناء') ||
+          optLower.includes('السير');
 
-    if (isItinerary) {
-      addLoader();
-      try {
-        const res = await fetch("http://localhost:5000/api/v1/ai/itinerary", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ city, lang: currentLang.toLowerCase() })
-        });
-        const data = await res.json();
-        removeLoader();
+        if (isItinerary) {
+          addLoader();
+          try {
+            const res = await fetch('http://localhost:5000/api/v1/ai/itinerary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ city, lang: currentLang.toLowerCase() }),
+            });
+            const data = await res.json();
+            removeLoader();
 
-        if (data.success && data.data) {
-          const itinerary = data.data;
-          
-          const botGroup = document.createElement("div");
-          botGroup.className = "msg-group bot-group";
-          
-          const lts = getLangTexts();
-          let itineraryHtml = `
+            if (data.success && data.data) {
+              const itinerary = data.data;
+
+              const botGroup = document.createElement('div');
+              botGroup.className = 'msg-group bot-group';
+
+              const lts = getLangTexts();
+              let itineraryHtml = `
             <div class="bot-card">
               <span class="spark">✨</span>
               <div class="content">
@@ -970,9 +1136,9 @@
             <div class="timeline">
           `;
 
-          itinerary.steps.forEach(step => {
-            const imgUrl = BUSINESS_IMAGES[step.business.name] || DEFAULT_IMAGE;
-            itineraryHtml += `
+              itinerary.steps.forEach((step) => {
+                const imgUrl = BUSINESS_IMAGES[step.business.name] || DEFAULT_IMAGE;
+                itineraryHtml += `
               <div class="timeline-step">
                 <div class="step-number">${step.order}</div>
                 <div class="step-box">
@@ -985,30 +1151,29 @@
                 </div>
               </div>
             `;
-          });
+              });
 
-          itineraryHtml += `</div>`;
-          botGroup.innerHTML = itineraryHtml;
-          chatBox.appendChild(botGroup);
-          scrollToBottom();
+              itineraryHtml += `</div>`;
+              botGroup.innerHTML = itineraryHtml;
+              chatBox.appendChild(botGroup);
+              scrollToBottom();
+            } else {
+              addSystemMessage("Impossible de générer l'itinéraire.");
+            }
+          } catch (err) {
+            removeLoader();
+            console.error(err);
+            addSystemMessage("Erreur lors de la génération de l'itinéraire.");
+          }
         } else {
-          addSystemMessage("Impossible de générer l'itinéraire.");
+          input.value = opt;
+          sendMessage();
         }
-      } catch (err) {
-        removeLoader();
-        console.error(err);
-        addSystemMessage("Erreur lors de la génération de l'itinéraire.");
       }
-    } else {
-      input.value = opt;
-      sendMessage();
-    }
-  }
 
-  input.addEventListener("keypress", function(e) {
-    if (e.key === "Enter") sendMessage();
-  });
-</script>
-
-</body>
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+      });
+    </script>
+  </body>
 </html>

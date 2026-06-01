@@ -14,15 +14,13 @@ function initDB() {
         return reject(err);
       }
       console.log('Connected to SQLite database at:', DB_PATH);
-      
+
       // Enable foreign keys
       db.run('PRAGMA foreign_keys = ON;', (err) => {
         if (err) return reject(err);
-        
+
         // Create tables synchronously or as promise chain
-        createTables()
-          .then(resolve)
-          .catch(reject);
+        createTables().then(resolve).catch(reject);
       });
     });
   });
@@ -32,7 +30,8 @@ function createTables() {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       // 1. ai_chat table
-      db.run(`
+      db.run(
+        `
         CREATE TABLE IF NOT EXISTS ai_chat (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           message TEXT NOT NULL,
@@ -42,10 +41,15 @@ function createTables() {
           tags TEXT, -- JSON array of tags
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `, (err) => { if (err) return reject(err); });
+      `,
+        (err) => {
+          if (err) return reject(err);
+        }
+      );
 
       // 2. ai1_descriptions table
-      db.run(`
+      db.run(
+        `
         CREATE TABLE IF NOT EXISTS ai1_descriptions (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           business_name TEXT NOT NULL,
@@ -60,10 +64,15 @@ function createTables() {
           image_url TEXT DEFAULT NULL,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `, (err) => { if (err) return reject(err); });
+      `,
+        (err) => {
+          if (err) return reject(err);
+        }
+      );
 
       // 3. ai2_profiles table
-      db.run(`
+      db.run(
+        `
         CREATE TABLE IF NOT EXISTS ai2_profiles (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,
@@ -84,15 +93,17 @@ function createTables() {
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `, (err) => {
-        if (err) return reject(err);
-        
-        // Add generated_descriptions column if upgrading existing DB
-        db.run(`ALTER TABLE ai2_profiles ADD COLUMN generated_descriptions TEXT`, (alterErr) => {
-          // Ignore error if column already exists
-          resolve();
-        });
-      });
+      `,
+        (err) => {
+          if (err) return reject(err);
+
+          // Add generated_descriptions column if upgrading existing DB
+          db.run(`ALTER TABLE ai2_profiles ADD COLUMN generated_descriptions TEXT`, (alterErr) => {
+            // Ignore error if column already exists
+            resolve();
+          });
+        }
+      );
     });
   });
 }
@@ -130,5 +141,5 @@ module.exports = {
   run,
   get,
   all,
-  getDbInstance: () => db
+  getDbInstance: () => db,
 };

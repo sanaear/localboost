@@ -1,16 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import Link from 'next/link';
+import { use, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import MobileBottomNav from '@/components/MobileBottomNav';
 
 export default function RatePage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const t = useTranslations("rate");
+  const params = use(paramsPromise);
+  const t = useTranslations('rate');
   const [rating, setRating] = useState(5);
   const [submitted, setSubmitted] = useState(false);
 
@@ -27,7 +28,7 @@ export default function RatePage({
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               </Link>
               <h1 className="text-[1.6rem] font-extrabold tracking-[-0.05em] text-[#a36e00]">
-                {t("title")}
+                {t('title')}
               </h1>
               <span className="h-9 w-9" />
             </div>
@@ -36,7 +37,7 @@ export default function RatePage({
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-5 pb-5">
             <div className="mobile-card mobile-fade-up mt-6 rounded-[30px] px-5 py-6 text-center">
               <h2 className="text-[2rem] font-extrabold tracking-[-0.06em] text-[#23212c]">
-                {t("question")}
+                {t('question')}
               </h2>
               <div className="mt-6 flex items-center justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -50,7 +51,7 @@ export default function RatePage({
                     className="text-[#e0a11f]"
                   >
                     <span className="material-symbols-outlined text-[30px]">
-                      {star <= rating ? "star" : "star_outline"}
+                      {star <= rating ? 'star' : 'star_outline'}
                     </span>
                   </button>
                 ))}
@@ -60,12 +61,10 @@ export default function RatePage({
                 onClick={() => setSubmitted(true)}
                 className="mobile-pill mobile-button-gold mt-8 h-12 w-full text-[14px] font-extrabold"
               >
-                {t("submit")}
+                {t('submit')}
               </button>
               {submitted ? (
-                <p className="mt-4 text-[13px] font-semibold text-[#5f8e70]">
-                  {t("thanks")}
-                </p>
+                <p className="mt-4 text-[13px] font-semibold text-[#5f8e70]">{t('thanks')}</p>
               ) : null}
             </div>
           </div>

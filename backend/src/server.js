@@ -1,17 +1,17 @@
 /* eslint-disable no-console */
-require("dotenv").config();
-const app = require("./app.js");
+require('dotenv').config();
+const app = require('./app.js');
 
 const PORT = process.env.PORT || 5000;
 
-const { initDB } = require("./database/sqlite.js");
+const { initDB } = require('./database/sqlite.js');
 
 let server;
 (async () => {
   try {
     // Initialize SQLite DB
     await initDB();
-    
+
     server = app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
     });
@@ -29,8 +29,10 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   if (server) {
-    server.close(() => { process.exit(1); });
-  } else { 
+    server.close(() => {
+      process.exit(1);
+    });
+  } else {
     process.exit(1);
   }
 });

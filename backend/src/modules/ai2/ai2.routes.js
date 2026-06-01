@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { createProfile, getCategories, getCities, getProfiles, generateDescription } = require('./ai2.controller.js');
+const {
+  createProfile,
+  getCategories,
+  getCities,
+  getProfiles,
+  generateDescription,
+} = require('./ai2.controller.js');
 
 /**
  * @route  GET /api/v1/ai2/categories

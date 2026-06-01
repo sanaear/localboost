@@ -20,6 +20,7 @@ model User {
   phone          String?
   address        String?
   profile_image  String?
+  status         String     @default("active")
   created_at     DateTime   @default(now())
   updated_at     DateTime   @updatedAt
 
@@ -100,6 +101,16 @@ model AnalyticsEvent {
   metadata    Json?
   created_at  DateTime @default(now())
   business    Business @relation(fields: [business_id], references: [id])
+}
+
+model AiChatMessage {
+  id         Int      @id @default(autoincrement())
+  message    String
+  response   String
+  lang       String?
+  tone       String?
+  tags       Json?
+  created_at DateTime @default(now())
 }
 
 model TranslationCache {

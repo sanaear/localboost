@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { SearchFilters as SearchFiltersType } from "@/lib/api";
+import { useState } from 'react';
+import { SearchFilters as SearchFiltersType } from '@/lib/api';
 
 interface SearchFiltersProps {
   onSearch: (filters: SearchFiltersType) => void;
@@ -26,8 +26,8 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
             type="text"
             placeholder="Search by name or description"
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            value={filters.q || ""}
-            onChange={(e) => handleChange("q", e.target.value)}
+            value={filters.q || ''}
+            onChange={(e) => handleChange('q', e.target.value)}
           />
         </div>
 
@@ -37,8 +37,8 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
             type="text"
             placeholder="City"
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            value={filters.city || ""}
-            onChange={(e) => handleChange("city", e.target.value)}
+            value={filters.city || ''}
+            onChange={(e) => handleChange('city', e.target.value)}
           />
         </div>
 
@@ -46,8 +46,10 @@ export default function SearchFilters({ onSearch }: SearchFiltersProps) {
           <label className="block text-sm font-medium text-gray-700 mb-1">Minimum Rating</label>
           <select
             className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            value={filters.rating || ""}
-            onChange={(e) => handleChange("rating", e.target.value ? Number(e.target.value) : undefined)}
+            value={filters.rating || ''}
+            onChange={(e) =>
+              handleChange('rating', e.target.value ? Number(e.target.value) : undefined)
+            }
           >
             <option value="">Any</option>
             <option value="5">5 Stars</option>

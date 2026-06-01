@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 interface City {
   name: string;
@@ -6,20 +6,20 @@ interface City {
   percentage: number;
 }
 
-const cities: City[] = [
-  { name: "Casablanca", count: 452, percentage: 85 },
-  { name: "Marrakech", count: 312, percentage: 65 },
-  { name: "Fès", count: 218, percentage: 45 },
-  { name: "Rabat", count: 156, percentage: 32 },
-  { name: "Tanger", count: 89, percentage: 18 },
-];
+interface BusinessesByCityProps {
+  cities?: City[] | null;
+}
 
-export default function BusinessesByCity() {
+const fallbackCities: City[] = [{ name: 'No city data yet', count: 0, percentage: 0 }];
+
+export default function BusinessesByCity({ cities }: BusinessesByCityProps) {
+  const rows = cities && cities.length > 0 ? cities : fallbackCities;
+
   return (
     <div className="bg-surface-container-low p-8 rounded-xl border border-outline-variant/5">
       <h3 className="text-xl font-bold font-headline mb-8">Businesses by City</h3>
       <div className="space-y-6">
-        {cities.map((city) => (
+        {rows.map((city) => (
           <div key={city.name} className="space-y-2">
             <div className="flex justify-between text-sm font-bold">
               <span>{city.name}</span>

@@ -3,6 +3,7 @@ type Step1 = {
   category: string;
   city?: string;
   address?: string;
+  phone?: string;
 };
 
 type Step2 = {
@@ -18,12 +19,12 @@ type Step3 = {
   website?: string;
 };
 
-const STEP1_KEY = "lb:merchantSetup:step1:v1";
-const STEP2_KEY = "lb:merchantSetup:step2:v1";
-const STEP3_KEY = "lb:merchantSetup:step3:v1";
+const STEP1_KEY = 'lb:merchantSetup:step1:v1';
+const STEP2_KEY = 'lb:merchantSetup:step2:v1';
+const STEP3_KEY = 'lb:merchantSetup:step3:v1';
 
 function isBrowser() {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
 function safeParseJson(value: string | null) {
@@ -38,14 +39,16 @@ function safeParseJson(value: string | null) {
 export function readMerchantSetupStep1(): Step1 | null {
   if (!isBrowser()) return null;
   const parsed = safeParseJson(window.localStorage.getItem(STEP1_KEY));
-  if (!parsed || typeof parsed !== "object") return null;
+  if (!parsed || typeof parsed !== 'object') return null;
   const anyValue = parsed as any;
-  if (typeof anyValue.businessName !== "string" || typeof anyValue.category !== "string") return null;
+  if (typeof anyValue.businessName !== 'string' || typeof anyValue.category !== 'string')
+    return null;
   return {
     businessName: anyValue.businessName,
     category: anyValue.category,
-    city: typeof anyValue.city === "string" ? anyValue.city : undefined,
-    address: typeof anyValue.address === "string" ? anyValue.address : undefined,
+    city: typeof anyValue.city === 'string' ? anyValue.city : undefined,
+    address: typeof anyValue.address === 'string' ? anyValue.address : undefined,
+    phone: typeof anyValue.phone === 'string' ? anyValue.phone : undefined,
   };
 }
 
@@ -57,11 +60,13 @@ export function writeMerchantSetupStep1(value: Step1) {
 export function readMerchantSetupStep2(): Step2 | null {
   if (!isBrowser()) return null;
   const parsed = safeParseJson(window.localStorage.getItem(STEP2_KEY));
-  if (!parsed || typeof parsed !== "object") return null;
+  if (!parsed || typeof parsed !== 'object') return null;
   const anyValue = parsed as any;
-  const photos = Array.isArray(anyValue.photos) ? anyValue.photos.filter((p: unknown) => typeof p === "string") : [];
+  const photos = Array.isArray(anyValue.photos)
+    ? anyValue.photos.filter((p: unknown) => typeof p === 'string')
+    : [];
   return {
-    logo: typeof anyValue.logo === "string" ? anyValue.logo : null,
+    logo: typeof anyValue.logo === 'string' ? anyValue.logo : null,
     photos,
   };
 }
@@ -74,15 +79,16 @@ export function writeMerchantSetupStep2(value: Step2) {
 export function readMerchantSetupStep3(): Step3 | null {
   if (!isBrowser()) return null;
   const parsed = safeParseJson(window.localStorage.getItem(STEP3_KEY));
-  if (!parsed || typeof parsed !== "object") return null;
+  if (!parsed || typeof parsed !== 'object') return null;
   const anyValue = parsed as any;
-  const openingHours = anyValue.openingHours && typeof anyValue.openingHours === "object" ? anyValue.openingHours : {};
+  const openingHours =
+    anyValue.openingHours && typeof anyValue.openingHours === 'object' ? anyValue.openingHours : {};
   return {
     openingHours,
-    whatsapp: typeof anyValue.whatsapp === "string" ? anyValue.whatsapp : undefined,
-    phone: typeof anyValue.phone === "string" ? anyValue.phone : undefined,
-    email: typeof anyValue.email === "string" ? anyValue.email : undefined,
-    website: typeof anyValue.website === "string" ? anyValue.website : undefined,
+    whatsapp: typeof anyValue.whatsapp === 'string' ? anyValue.whatsapp : undefined,
+    phone: typeof anyValue.phone === 'string' ? anyValue.phone : undefined,
+    email: typeof anyValue.email === 'string' ? anyValue.email : undefined,
+    website: typeof anyValue.website === 'string' ? anyValue.website : undefined,
   };
 }
 
@@ -97,4 +103,3 @@ export function clearMerchantSetupDraft() {
   window.localStorage.removeItem(STEP2_KEY);
   window.localStorage.removeItem(STEP3_KEY);
 }
-

@@ -1,334 +1,373 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import MerchantAppBottomNav from "@/components/MerchantAppBottomNav";
-import { ErrorState, SkeletonLine } from "@/components/UiState";
-import { API_BASE_URL, type Review } from "@/lib/api";
-import { getMerchantIdentity, fetchMyBusinesses, fetchApprovedReviewsForBusiness } from "@/lib/merchant";
+import Link from 'next/link';
+import { use, useMemo, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import MerchantAppBottomNav from '@/components/MerchantAppBottomNav';
+import { ErrorState, SkeletonLine } from '@/components/UiState';
+import { API_BASE_URL, resolveMediaUrl } from '@/lib/api';
+import { getMerchantIdentity, fetchMerchantReviews } from '@/lib/merchant';
 
-const filters = ["All", "Replied", "Pending Reply"] as const;
+const filters = ['all', 'replied', 'pendingReply', 'flagged'] as const;
 
 type MerchantReviewItem = {
   id: number;
   name: string;
   avatar?: string;
+  flag?: string;
   date: string;
   rating: number;
-  status: "REPLIED" | "PENDING REPLY";
-  statusTone: "green" | "amber" | "gray";
+  status: 'REPLIED' | 'PENDING REPLY' | 'FLAGGED';
+  statusTone: 'green' | 'amber' | 'gray' | 'red';
   text: string;
-  replyPlaceholder: string;
   replyMessage?: string | null;
+  replyDate?: string | null;
 };
 
+const accentStyles: Record<string, string> = {
+  green: 'bg-secondary-container text-on-secondary-container',
+  amber: 'bg-tertiary-container text-on-tertiary-container',
+  gray: 'bg-surface-container-high text-outline',
+  red: 'bg-error-container text-on-error-container',
+};
+
+function statusLabel(status: string, t: (_key: string) => string): string {
+  if (status === 'REPLIED') return t('replied');
+  if (status === 'FLAGGED') return t('flagged');
+  return t('pendingReply');
+}
+
+function formatAverageResponseTime(hours: number | null) {
+  if (hours === null) return '--';
+  if (hours < 1) return `${Math.max(1, Math.round(hours * 60))}m`;
+  if (hours < 24) return `${hours.toFixed(hours < 10 ? 1 : 0)}h`;
+  return `${Math.round(hours / 24)}d`;
+}
+
 export default function MerchantReviewsPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const tCommon = useTranslations("common");
-  const [selectedFilter, setSelectedFilter] =
-    useState<(typeof filters)[number]>("All");
+  const params = use(paramsPromise);
+  const t = useTranslations('merchantReviews');
+  const tCommon = useTranslations('common');
+  const queryClient = useQueryClient();
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [replyState, setReplyState] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [reviews, setReviews] = useState<MerchantReviewItem[]>([]);
-  const [average, setAverage] = useState<{ average: number; count: number } | null>(null);
 
   const identity = useMemo(() => getMerchantIdentity(), []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setHasError(false);
-    setReviews([]);
-    setAverage(null);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['merchant-reviews', identity?.token],
+    queryFn: async () => {
+      if (!identity?.token) throw new Error('No token');
+      return fetchMerchantReviews();
+    },
+    enabled: !!identity?.token,
+  });
 
-    void (async () => {
-      if (!identity?.token) {
-        setHasError(true);
-        setIsLoading(false);
-        return;
-      }
+  const items: MerchantReviewItem[] = useMemo(() => {
+    if (!data) return [];
+    return data
+      .slice()
+      .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))
+      .map((review) => {
+        const name =
+          [review.user?.first_name, review.user?.last_name].filter(Boolean).join(' ') ||
+          tCommon('anonymous');
+        const isReplied = Boolean(review.reply?.message);
+        return {
+          id: review.id,
+          name,
+          avatar: resolveMediaUrl(review.user?.profile_image),
+          flag: undefined,
+          date: new Date(review.created_at).toLocaleDateString(),
+          rating: review.rating,
+          status: isReplied ? 'REPLIED' : 'PENDING REPLY',
+          statusTone: isReplied ? 'gray' : 'amber',
+          text: review.content ? `"${review.content}"` : '',
+          replyMessage: review.reply?.message ?? null,
+          replyDate: review.reply?.created_at
+            ? new Date(review.reply.created_at).toLocaleDateString()
+            : null,
+        } satisfies MerchantReviewItem;
+      });
+  }, [data, tCommon]);
 
-      try {
-        const businesses = await fetchMyBusinesses();
-        const allReviews = (
-          await Promise.all(
-            businesses.map(async (business) => {
-              try {
-                return await fetchApprovedReviewsForBusiness(business.id);
-              } catch {
-                return [] as Review[];
-              }
-            }),
-          )
-        ).flat();
+  const average = useMemo(() => {
+    if (!data || data.length === 0) return { average: 0, count: 0 };
+    const sum = data.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
+    return { average: sum / data.length, count: data.length };
+  }, [data]);
 
-        if (cancelled) return;
-
-        const items = allReviews
-          .slice()
-          .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""))
-          .map((review) => {
-            const name = [review.user?.first_name, review.user?.last_name].filter(Boolean).join(" ") || tCommon("anonymous");
-            const isReplied = Boolean(review.reply?.message);
-            return {
-              id: review.id,
-              name,
-              avatar: review.user?.profile_image ?? undefined,
-              date: new Date(review.created_at).toLocaleDateString(),
-              rating: review.rating,
-              status: isReplied ? "REPLIED" : "PENDING REPLY",
-              statusTone: isReplied ? "gray" : "amber",
-              text: review.content ? `"${review.content}"` : "",
-              replyPlaceholder: isReplied ? "Reply already sent" : "Write a public reply…",
-              replyMessage: review.reply?.message ?? null,
-            } satisfies MerchantReviewItem;
-          });
-
-        const sum = allReviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0);
-        const count = allReviews.length;
-        setAverage({ average: count > 0 ? sum / count : 0, count });
-        setReviews(items);
-        setIsLoading(false);
-      } catch {
-        if (cancelled) return;
-        setHasError(true);
-        setIsLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [identity, tCommon]);
+  const averageResponseLabel = useMemo(() => {
+    if (!data) return '--';
+    const responseTimes = data
+      .filter((review) => review.reply?.created_at && review.created_at)
+      .map((review) => {
+        const createdAt = new Date(review.created_at).getTime();
+        const repliedAt = new Date(review.reply!.created_at).getTime();
+        return repliedAt > createdAt ? (repliedAt - createdAt) / 36e5 : null;
+      })
+      .filter((value): value is number => typeof value === 'number');
+    if (responseTimes.length === 0) return formatAverageResponseTime(null);
+    const averageHours =
+      responseTimes.reduce((sum, value) => sum + value, 0) / responseTimes.length;
+    return formatAverageResponseTime(averageHours);
+  }, [data]);
 
   const visibleReviews = useMemo(() => {
-    if (selectedFilter === "Replied") {
-      return reviews.filter((review) => review.status === "REPLIED");
-    }
+    if (selectedFilter === 'replied') return items.filter((r) => r.status === 'REPLIED');
+    if (selectedFilter === 'pendingReply') return items.filter((r) => r.status === 'PENDING REPLY');
+    if (selectedFilter === 'flagged') return items.filter((r) => r.status === 'FLAGGED');
+    return items;
+  }, [items, selectedFilter]);
 
-    if (selectedFilter === "Pending Reply") {
-      return reviews.filter((review) => review.status !== "REPLIED");
-    }
-
-    return reviews;
-  }, [reviews, selectedFilter]);
-
-  async function handleSendReply(reviewId: number) {
-    if (!identity?.token) return;
-    const draft = (drafts[String(reviewId)] ?? "").trim();
-    if (!draft) return;
-    setReplyState((current) => ({ ...current, [String(reviewId)]: "" }));
-
-    try {
+  const replyMutation = useMutation({
+    mutationFn: async ({ reviewId, message }: { reviewId: number; message: string }) => {
+      if (!identity?.token) throw new Error('No token');
       const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/reply`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${identity.token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: draft }),
+        body: JSON.stringify({ message }),
       });
-      if (!response.ok) throw new Error("Request failed");
+      if (!response.ok) throw new Error('Request failed');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['merchant-reviews'] });
+    },
+  });
 
-      setReviews((current) =>
-        current.map((review) =>
-          review.id === reviewId
-            ? { ...review, status: "REPLIED", statusTone: "gray", replyMessage: draft, replyPlaceholder: "Reply already sent" }
-            : review,
-        ),
-      );
-      setReplyState((current) => ({ ...current, [String(reviewId)]: "Reply sent" }));
-    } catch {
-      setReplyState((current) => ({ ...current, [String(reviewId)]: tCommon("errorDescription") }));
-    }
+  async function handleSendReply(reviewId: number) {
+    const draft = (drafts[String(reviewId)] ?? '').trim();
+    if (!draft) return;
+    setDrafts((current) => ({ ...current, [String(reviewId)]: '' }));
+    replyMutation.mutate(
+      { reviewId, message: draft },
+      {
+        onSuccess: () =>
+          setReplyState((current) => ({ ...current, [String(reviewId)]: 'Reply sent' })),
+        onError: () =>
+          setReplyState((current) => ({
+            ...current,
+            [String(reviewId)]: tCommon('errorDescription'),
+          })),
+      }
+    );
   }
 
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
-        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#fbfaf6]">
+        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col overflow-hidden bg-[#f9f9f7]">
           <div className="px-4 pb-2 pt-5">
             <div className="mobile-fade-up flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#2b2a2a] text-white shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">person</span>
-                </span>
-                <h1 className="text-[1.4rem] font-extrabold tracking-[-0.05em] text-[#a36e00]">
+                <div className="w-8 h-8 rounded-full bg-primary-fixed overflow-hidden">
+                  <span className="material-symbols-outlined text-[16px] text-primary">person</span>
+                </div>
+                <h1 className="text-[1.4rem] font-extrabold tracking-[-0.05em] text-primary">
                   LocalBoost
                 </h1>
               </div>
-              <Link href={`/${params.locale}/merchant/updates`} className="text-[#c49730]">
+              <Link href={`/${params.locale}/merchant/updates`} className="text-primary-container">
                 <span className="material-symbols-outlined text-[18px]">notifications</span>
               </Link>
             </div>
           </div>
 
           <div className="mobile-scrollbar-hidden flex-1 overflow-y-auto px-4 pb-5">
-            {hasError ? (
+            {isError ? (
               <div className="mt-6">
                 <ErrorState
-                  title={tCommon("errorTitle")}
-                  description={tCommon("errorDescription")}
-                  onRetry={() => window.location.reload()}
-                  retryLabel={tCommon("retry")}
+                  title={tCommon('errorTitle')}
+                  description={tCommon('errorDescription')}
+                  onRetry={() => refetch()}
+                  retryLabel={tCommon('retry')}
                 />
               </div>
             ) : null}
+
             <div
-              className="mobile-card mobile-fade-up mt-4 rounded-[34px] px-5 py-5 text-center"
-              style={{ animationDelay: "60ms" }}
+              className="mobile-fade-up mt-4 relative overflow-hidden rounded-xl bg-surface-container-lowest p-6 shadow-[0_12px_48px_rgba(26,28,27,0.04)]"
+              style={{ animationDelay: '60ms' }}
             >
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#b8ad9c]">
-                Average Rating
-              </div>
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <span className="text-[3.2rem] font-extrabold leading-none tracking-[-0.08em] text-[#b27a00]">
-                  {isLoading ? "—" : (average?.average ?? 0).toFixed(1)}
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary-container/10 rounded-full blur-3xl"></div>
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-label text-xs uppercase tracking-[0.15em] text-outline mb-2">
+                  {t('averageRating')}
                 </span>
-                <span className="material-symbols-outlined text-[32px] text-[#e0a11f]">
-                  star
-                </span>
-              </div>
-              <p className="mx-auto mt-2 max-w-[200px] text-[13px] leading-6 text-[#7f7467]">
-                {isLoading ? "—" : `Based on ${average?.count ?? 0} reviews`}
-              </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 text-left">
-                {[
-                  {
-                    label: "Response rate",
-                    value:
-                      reviews.length === 0
-                        ? "—"
-                        : `${Math.round((reviews.filter((r) => r.status === "REPLIED").length / reviews.length) * 100)}%`,
-                    tone: "green" as const,
-                  },
-                  {
-                    label: "Pending replies",
-                    value: String(reviews.filter((r) => r.status !== "REPLIED").length),
-                    tone: "amber" as const,
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={item.label}
-                    className="rounded-[22px] bg-[#f6f2eb] px-4 py-3"
-                    style={{ animationDelay: `${120 + index * 50}ms` }}
+                <div className="flex items-end gap-2">
+                  <span className="text-6xl font-headline font-extrabold text-primary leading-none">
+                    {isLoading ? '—' : average.average.toFixed(1)}
+                  </span>
+                  <span
+                    className="material-symbols-outlined text-primary-container text-4xl mb-1"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
                   >
-                    <div className="text-[9px] font-extrabold uppercase tracking-[0.15em] text-[#c3b7a8]">
-                      {item.label}
-                    </div>
-                    <div
-                      className={`mt-1 text-[1.75rem] font-extrabold tracking-[-0.05em] ${
-                        item.tone === "green" ? "text-[#0a9157]" : "text-[#c26f38]"
-                      }`}
-                    >
-                      {item.value}
-                    </div>
+                    star
+                  </span>
+                </div>
+                <p className="mt-3 text-sm text-on-surface-variant font-medium">
+                  {t('basedOn', { count: average.count })}
+                </p>
+                <div className="w-full mt-6 grid grid-cols-2 gap-4">
+                  <div className="bg-surface-container-low rounded-lg p-3 text-left">
+                    <span className="block text-[10px] uppercase font-bold text-outline tracking-wider">
+                      {t('responseRate')}
+                    </span>
+                    <span className="text-lg font-headline font-bold text-secondary">
+                      {isLoading
+                        ? '—'
+                        : items.length === 0
+                          ? '—'
+                          : `${Math.round((items.filter((r) => r.status === 'REPLIED').length / items.length) * 100)}%`}
+                    </span>
                   </div>
-                ))}
+                  <div className="bg-surface-container-low rounded-lg p-3 text-left">
+                    <span className="block text-[10px] uppercase font-bold text-outline tracking-wider">
+                      {t('avgTime')}
+                    </span>
+                    <span className="text-lg font-headline font-bold text-tertiary">
+                      {isLoading ? '--' : averageResponseLabel}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="mt-5 flex gap-3 overflow-x-auto pb-1">
-              {filters.map((filter, index) => {
+            <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+              {filters.map((filter) => {
                 const active = selectedFilter === filter;
-
                 return (
                   <button
                     key={filter}
                     type="button"
                     onClick={() => setSelectedFilter(filter)}
-                    className={`mobile-pill mobile-fade-up h-10 shrink-0 px-4 text-[12px] font-extrabold ${
+                    className={`whitespace-nowrap px-5 py-2.5 rounded-full font-bold text-sm ${
                       active
-                        ? "bg-[#a36e00] text-white shadow-[0_12px_24px_rgba(163,110,0,0.18)]"
-                        : "bg-[#efebe4] text-[#8d8377]"
+                        ? 'bg-primary text-on-primary shadow-md'
+                        : 'bg-surface-container-high text-on-surface-variant font-semibold'
                     }`}
-                    style={{ animationDelay: `${180 + index * 40}ms` }}
                   >
-                    {filter}
+                    {t(filter)}
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-6 space-y-4 pb-2">
+            <div className="mt-6 space-y-6 pb-2">
               {isLoading ? (
                 Array.from({ length: 2 }).map((_, index) => (
-                  <div key={index} className="mobile-card rounded-[28px] px-4 py-4">
+                  <div
+                    key={index}
+                    className="bg-surface-container-lowest rounded-lg p-5 shadow-[0_8px_24px_rgba(26,28,27,0.03)]"
+                  >
                     <SkeletonLine className="h-4 w-[45%]" />
                     <SkeletonLine className="mt-3 h-4 w-[85%]" />
                     <SkeletonLine className="mt-2 h-4 w-[70%]" />
                   </div>
                 ))
+              ) : visibleReviews.length === 0 ? (
+                <div className="text-center py-10 text-on-surface-variant">
+                  No reviews match this filter.
+                </div>
               ) : (
-              visibleReviews.map((review, index) => {
-                const draft = drafts[review.id] ?? "";
-                const statusTone =
-                  review.statusTone === "green"
-                    ? "mobile-badge-green"
-                    : review.statusTone === "amber"
-                      ? "mobile-badge-amber"
-                      : "mobile-badge-gray";
+                visibleReviews.map((review) => {
+                  const draft = drafts[review.id] ?? '';
+                  const replied = review.status === 'REPLIED';
 
-                return (
-                  <div
-                    key={review.id}
-                    className="mobile-card mobile-fade-up rounded-[28px] px-4 py-4"
-                    style={{ animationDelay: `${240 + index * 70}ms` }}
-                  >
-                    <div className="flex items-start gap-3">
-                      {review.avatar ? (
-                        <img
-                          src={review.avatar}
-                          alt={review.name}
-                          className="h-11 w-11 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="grid h-11 w-11 place-items-center rounded-full bg-[#2b2a2a] text-white">
-                          <span className="material-symbols-outlined text-[16px]">person</span>
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-[1rem] font-extrabold tracking-[-0.04em] text-[#2d2a27]">
-                              {review.name}
-                            </div>
-                            <div className="mt-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b0a394]">
-                              <span className="material-symbols-outlined text-[13px]">schedule</span>
-                              {review.date}
-                            </div>
+                  return (
+                    <div
+                      key={review.id}
+                      className={`bg-surface-container-lowest rounded-lg p-5 shadow-[0_8px_24px_rgba(26,28,27,0.03)] ${replied ? 'opacity-80' : ''}`}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex gap-3">
+                          <div className="relative">
+                            {review.avatar ? (
+                              <img
+                                src={resolveMediaUrl(review.avatar)}
+                                alt={review.name}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center">
+                                <span className="material-symbols-outlined text-on-surface-variant">
+                                  person
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          <div className="text-right">
-                            <div className="text-[13px] font-extrabold text-[#e0a11f]">
-                              {"★".repeat(review.rating)}
-                            </div>
-                            <span
-                              className={`mt-2 inline-flex rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-[0.14em] ${statusTone}`}
-                            >
-                              {review.status}
+                          <div>
+                            <h3 className="font-headline font-bold text-on-surface">
+                              {review.name}
+                            </h3>
+                            <span className="font-label text-[10px] text-outline uppercase tracking-wider">
+                              {review.date}
                             </span>
                           </div>
                         </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="flex text-primary-container">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <span
+                                key={i}
+                                className="material-symbols-outlined text-[18px]"
+                                style={
+                                  i < review.rating ? { fontVariationSettings: "'FILL' 1" } : {}
+                                }
+                              >
+                                star
+                              </span>
+                            ))}
+                          </div>
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${accentStyles[review.statusTone]}`}
+                          >
+                            {statusLabel(review.status, t)}
+                          </span>
+                        </div>
+                      </div>
 
-                        <p className="mt-4 text-[14px] italic leading-6 text-[#72685c]">
-                          {review.text}
-                        </p>
+                      <p className="text-on-surface-variant text-sm leading-relaxed mb-5 italic">
+                        {review.text}
+                      </p>
 
-                        <div className="mt-5">
-                          <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-[#b28a37]">
-                            Public Reply
+                      {replied && review.replyMessage ? (
+                        <div className="bg-surface-container-lowest rounded-lg p-4 border-l-4 border-primary mt-2">
+                          <div className="flex justify-between mb-1">
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                              {t('youReplied')}
+                            </span>
+                            <span className="text-[9px] text-outline">{review.replyDate}</span>
+                          </div>
+                          <p className="text-xs text-on-surface-variant">{review.replyMessage}</p>
+                        </div>
+                      ) : (
+                        <div className="mt-4 pt-4 border-t border-surface-container-high">
+                          <div className="flex justify-between items-center mb-3">
+                            <span className="text-[11px] font-bold text-primary uppercase tracking-widest">
+                              {t('publicReply')}
+                            </span>
+                            <button
+                              type="button"
+                              className="text-outline hover:text-error transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[20px]">flag</span>
+                            </button>
                           </div>
                           <textarea
-                            className="mobile-input mt-3 min-h-[86px] resize-none"
-                            placeholder={review.replyPlaceholder}
-                            value={review.status === "REPLIED" ? review.replyMessage ?? "" : draft}
-                            disabled={review.status === "REPLIED"}
+                            className="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-1 focus:ring-primary min-h-[80px] placeholder:text-outline-variant resize-none"
+                            placeholder={t('replyPlaceholder', { name: review.name })}
+                            value={draft}
                             onChange={(event) =>
                               setDrafts((current) => ({
                                 ...current,
@@ -336,27 +375,26 @@ export default function MerchantReviewsPage({
                               }))
                             }
                           />
-                          <div className="mt-4 flex justify-end">
+                          <div className="flex justify-end mt-3">
                             <button
                               type="button"
-                              disabled={review.status === "REPLIED"}
                               onClick={() => void handleSendReply(review.id)}
-                              className="mobile-pill h-10 min-w-[118px] bg-[#b27a00] px-4 text-[12px] font-extrabold text-white disabled:opacity-60"
+                              disabled={!draft.trim()}
+                              className="px-6 py-2 bg-primary text-on-primary rounded-full font-bold text-xs shadow-sm active:scale-95 transition-transform disabled:opacity-50"
                             >
-                              Send Reply
+                              {t('sendReply')}
                             </button>
                           </div>
                           {replyState[review.id] ? (
-                            <p className="mt-3 text-right text-[12px] font-semibold text-[#5f8e70]">
+                            <p className="mt-3 text-right text-[12px] font-semibold text-secondary">
                               {replyState[review.id]}
                             </p>
                           ) : null}
                         </div>
-                      </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { Business } from "@/lib/api";
-import { useFavorites } from "@/hooks/useFavorites";
+import Link from 'next/link';
+import { Business, resolveMediaUrl } from '@/lib/api';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface BusinessCardProps {
   business: Business;
@@ -9,15 +9,16 @@ interface BusinessCardProps {
 
 export default function BusinessCard({ business, locale }: BusinessCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const imageSrc = resolveMediaUrl(business.images[0]);
 
   const getCategoryName = () => {
-    if (!business.category) return "";
+    if (!business.category) return '';
     switch (locale) {
-      case "ar":
+      case 'ar':
         return business.category.name_ar;
-      case "fr":
+      case 'fr':
         return business.category.name_fr;
-      case "es":
+      case 'es':
         return business.category.name_es;
       default:
         return business.category.name_en;
@@ -37,14 +38,16 @@ export default function BusinessCard({ business, locale }: BusinessCardProps) {
           onClick={handleFavoriteClick}
           className="absolute top-3 right-3 z-10 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors"
         >
-          <span className={`material-symbols-outlined text-2xl ${isFavorite(business.id) ? "text-red-500 fill-red-500" : "text-gray-400"}`}>
-            {isFavorite(business.id) ? "favorite" : "favorite_border"}
+          <span
+            className={`material-symbols-outlined text-2xl ${isFavorite(business.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}`}
+          >
+            {isFavorite(business.id) ? 'favorite' : 'favorite_border'}
           </span>
         </button>
-        {business.images.length > 0 ? (
+        {imageSrc ? (
           <div className="h-48 bg-gray-200">
             <img
-              src={business.images[0]}
+              src={imageSrc}
               alt={business.name}
               className="w-full h-full object-cover"
             />
@@ -56,12 +59,8 @@ export default function BusinessCard({ business, locale }: BusinessCardProps) {
         )}
         <div className="p-4">
           <h3 className="text-lg font-semibold mb-2">{business.name}</h3>
-          {getCategoryName() && (
-            <p className="text-sm text-gray-500 mb-1">{getCategoryName()}</p>
-          )}
-          {business.city && (
-            <p className="text-sm text-gray-600 mb-2">{business.city}</p>
-          )}
+          {getCategoryName() && <p className="text-sm text-gray-500 mb-1">{getCategoryName()}</p>}
+          {business.city && <p className="text-sm text-gray-600 mb-2">{business.city}</p>}
           {business.description && (
             <p className="text-sm text-gray-700 line-clamp-2">{business.description}</p>
           )}

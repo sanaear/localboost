@@ -1,6 +1,6 @@
-require("dotenv").config();
-const bcrypt = require("bcrypt");
-const { PrismaClient } = require("@prisma/client");
+require('dotenv').config();
+const bcrypt = require('bcrypt');
+const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
@@ -16,10 +16,46 @@ async function ensureRegion({ name }) {
   return prisma.region.create({ data: { name } });
 }
 
+async function ensureReview({ business_id, user_id, rating, content, moderation_status }) {
+  const existing = await prisma.review.findFirst({
+    where: {
+      business_id,
+      user_id,
+      content,
+    },
+  });
+  if (existing) {
+    return prisma.review.update({
+      where: { id: existing.id },
+      data: { rating, moderation_status },
+    });
+  }
+  return prisma.review.create({
+    data: {
+      business_id,
+      user_id,
+      rating,
+      content,
+      moderation_status,
+    },
+  });
+}
+
 async function ensureUser({ email, password, role, first_name, last_name }) {
   const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return existing;
   const password_hash = await bcrypt.hash(password, 10);
+  if (existing) {
+    return prisma.user.update({
+      where: { email },
+      data: {
+        password_hash,
+        role,
+        status: 'active',
+        first_name: first_name ?? existing.first_name,
+        last_name: last_name ?? existing.last_name,
+      },
+    });
+  }
   return prisma.user.create({
     data: {
       email,
@@ -27,41 +63,49 @@ async function ensureUser({ email, password, role, first_name, last_name }) {
       role,
       first_name,
       last_name,
-      preferred_lang: "en",
+      preferred_lang: 'en',
     },
   });
 }
 
 async function main() {
   const categoryPottery = await ensureCategory({
-    name_en: "Traditional Pottery Studio",
-    icon: "ceramics",
+    name_en: 'Traditional Pottery Studio',
+    icon: 'ceramics',
   });
   const categoryDining = await ensureCategory({
-    name_en: "Fine Dining",
-    icon: "restaurant",
+    name_en: 'Fine Dining',
+    icon: 'restaurant',
   });
 
-  const regionFes = await ensureRegion({ name: "Fès-Meknès" });
+  const regionFes = await ensureRegion({ name: 'Fès-Meknès' });
 
   const merchant = await ensureUser({
-    email: "merchant@localboost.dev",
-    password: "merchant123",
-    role: "merchant",
-    first_name: "Yahya",
-    last_name: "Merchant",
+    email: 'merchant@localboost.dev',
+    password: 'merchant123',
+    role: 'merchant',
+    first_name: 'Yahya',
+    last_name: 'Merchant',
   });
 
   const tourist = await ensureUser({
-    email: "tourist@localboost.dev",
-    password: "tourist123",
-    role: "tourist",
-    first_name: "Emma",
-    last_name: "Tourist",
+    email: 'tourist@localboost.dev',
+    password: 'tourist123',
+    role: 'tourist',
+    first_name: 'Emma',
+    last_name: 'Tourist',
+  });
+
+  const admin = await ensureUser({
+    email: 'admin@localboost.dev',
+    password: 'admin123',
+    role: 'admin',
+    first_name: 'Karim',
+    last_name: 'Al-Fassi',
   });
 
   let business = await prisma.business.findFirst({
-    where: { user_id: merchant.id, name: "Atelier Poterie Fès" },
+    where: { user_id: merchant.id, name: 'Atelier Poterie Fès' },
   });
 
   if (!business) {
@@ -70,27 +114,27 @@ async function main() {
         user_id: merchant.id,
         category_id: categoryPottery.id,
         region_id: regionFes.id,
-        name: "Atelier Poterie Fès",
-        city: "Fès",
+        name: 'Atelier Poterie Fès',
+        city: 'Fès',
         lat: 34.03313,
         lng: -5.00028,
-        address: "Medina, Fès",
-        postal_code: "30000",
-        phone: "+212 600 000 000",
-        whatsapp: "+212 600 000 000",
-        website: "https://example.com",
+        address: 'Medina, Fès',
+        postal_code: '30000',
+        phone: '+212 600 000 000',
+        whatsapp: '+212 600 000 000',
+        website: 'https://example.com',
         description:
-          "Traditional pottery workshop in the heart of Fès. Handmade ceramics, guided tours, and live demonstrations.",
+          'Traditional pottery workshop in the heart of Fès. Handmade ceramics, guided tours, and live demonstrations.',
         images: [],
-        status: "approved",
+        status: 'approved',
         opening_hours: {
-          Monday: { open: true, hours: "09:00 - 18:00" },
-          Tuesday: { open: true, hours: "09:00 - 18:00" },
-          Wednesday: { open: true, hours: "09:00 - 18:00" },
-          Thursday: { open: true, hours: "09:00 - 18:00" },
-          Friday: { open: true, hours: "09:00 - 18:00" },
-          Saturday: { open: true, hours: "10:00 - 16:00" },
-          Sunday: { open: false, hours: "" },
+          Monday: { open: true, hours: '09:00 - 18:00' },
+          Tuesday: { open: true, hours: '09:00 - 18:00' },
+          Wednesday: { open: true, hours: '09:00 - 18:00' },
+          Thursday: { open: true, hours: '09:00 - 18:00' },
+          Friday: { open: true, hours: '09:00 - 18:00' },
+          Saturday: { open: true, hours: '10:00 - 16:00' },
+          Sunday: { open: false, hours: '' },
         },
       },
     });
@@ -107,10 +151,26 @@ async function main() {
         business_id: business.id,
         user_id: tourist.id,
         rating: 5,
-        content: "Absolutely loved the pottery demonstration. Beautiful pieces and friendly staff.",
-        moderation_status: "approved",
+        content: 'Absolutely loved the pottery demonstration. Beautiful pieces and friendly staff.',
+        moderation_status: 'approved',
       },
     }));
+
+  await ensureReview({
+    business_id: business.id,
+    user_id: tourist.id,
+    rating: 2,
+    content: 'Not sure about the pricing. The items felt a bit expensive for what you get.',
+    moderation_status: 'pending',
+  });
+
+  await ensureReview({
+    business_id: business.id,
+    user_id: tourist.id,
+    rating: 5,
+    content: 'Amazing craftsmanship and very welcoming staff. Would definitely come back.',
+    moderation_status: 'pending',
+  });
 
   await prisma.favorite.upsert({
     where: { user_id_business_id: { user_id: tourist.id, business_id: business.id } },
@@ -120,19 +180,20 @@ async function main() {
 
   await prisma.analyticsEvent.createMany({
     data: [
-      { business_id: business.id, event_type: "view" },
-      { business_id: business.id, event_type: "view" },
-      { business_id: business.id, event_type: "click" },
+      { business_id: business.id, event_type: 'view' },
+      { business_id: business.id, event_type: 'view' },
+      { business_id: business.id, event_type: 'click' },
     ],
     skipDuplicates: true,
   });
 
-  console.log("Seeded:");
-  console.log("- merchant login:", { email: merchant.email, password: "merchant123" });
-  console.log("- tourist login:", { email: tourist.email, password: "tourist123" });
-  console.log("- business:", { id: business.id, name: business.name });
-  console.log("- review:", { id: review.id, rating: review.rating });
-  console.log("- categories:", [categoryPottery.name_en, categoryDining.name_en]);
+  console.log('Seeded:');
+  console.log('- merchant login:', { email: merchant.email, password: 'merchant123' });
+  console.log('- tourist login:', { email: tourist.email, password: 'tourist123' });
+  console.log('- admin login:', { email: admin.email, password: 'admin123' });
+  console.log('- business:', { id: business.id, name: business.name });
+  console.log('- review:', { id: review.id, rating: review.rating });
+  console.log('- categories:', [categoryPottery.name_en, categoryDining.name_en]);
 }
 
 main()
@@ -143,4 +204,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

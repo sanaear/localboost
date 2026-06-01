@@ -1,523 +1,987 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Generate with AI - LocalBoost</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background-color: #0f172a; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; color: #f8fafc; }
-
-    /* Mobile container */
-    .phone { background: #1e293b; width: 100%; max-width: 420px; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 8px solid #334155; min-height: 880px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-
-    /* Header */
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px 8px; border-bottom: 1px solid #334155; }
-    .header .logo { display: flex; align-items: center; gap: 10px; }
-    .header .logo-icon { width: 32px; height: 32px; border-radius: 50%; background: #d97706; display: flex; justify-content: center; align-items: center; color: #fff; font-weight: 800; font-size: 13px; }
-    .header .logo-text { font-weight: 800; font-size: 18px; color: #f59e0b; }
-    .header .bell { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; }
-
-    /* Scrollable content */
-    .content { flex: 1; overflow-y: auto; padding: 16px 24px 100px; }
-    .content::-webkit-scrollbar { width: 4px; }
-    .content::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-
-    /* Title */
-    .title { font-size: 28px; font-weight: 800; color: #f8fafc; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-    .subtitle { color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
-    @keyframes pulse-glow { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-    .sparkle { animation: pulse-glow 2s infinite ease-in-out; display: inline-block; }
-
-    /* Presets */
-    .section-label { display: block; font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-    .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-    .preset-chip { background: #334155; border: 1.5px solid #475569; border-radius: 12px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; color: #cbd5e1; }
-    .preset-chip:hover { border-color: #d97706; background: #451a03; color: #f59e0b; }
-    .preset-chip.active { border-color: #d97706; background: #78350f; color: #fef3c7; }
-
-    /* Form */
-    .form-group { margin-bottom: 20px; }
-    .glass-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid #475569; padding: 10px 0; font-size: 16px; font-weight: 500; color: #f8fafc; outline: none; transition: border-color 0.2s; font-family: inherit; }
-    .glass-input:focus { border-bottom-color: #d97706; }
-    .glass-input::placeholder { color: #64748b; }
-
-    .flex-row { display: flex; gap: 12px; }
-    .flex-row .form-group { flex: 1; }
-    
-    select.glass-input {
-      background-color: #1e293b;
-      cursor: pointer;
-      border-radius: 8px;
-      padding: 8px;
-      border: 1.5px solid #475569;
-    }
-
-    /* Tags */
-    .tags-wrap { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
-    .tag { background-color: #065f46; color: #a7f3d0; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-    .tag .remove { background: none; border: none; cursor: pointer; color: #a7f3d0; opacity: 0.6; font-size: 14px; font-weight: 700; padding: 0; }
-    .tag .remove:hover { opacity: 1; }
-    .tag-input { border: 1px dashed #475569; color: #94a3b8; border-radius: 999px; padding: 6px 14px; font-size: 12px; background: transparent; outline: none; width: 110px; font-family: inherit; }
-    .tag-input:focus { border-color: #94a3b8; background: #334155; }
-
-    /* Textarea */
-    .textarea-wrap { background: #334155; border-radius: 16px; padding: 14px; border: 1px solid #475569; }
-    .textarea-wrap textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; line-height: 1.6; color: #e2e8f0; font-family: inherit; background: transparent; }
-    .textarea-wrap textarea::placeholder { color: #64748b; }
-
-    /* Generate button */
-    .btn-generate { width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; font-weight: 700; font-size: 17px; border: none; border-radius: 16px; padding: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(245,158,11,0.3); transition: all 0.2s; margin-top: 10px; font-family: inherit; }
-    .btn-generate:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.4); }
-
-    /* Divider */
-    .divider { border: none; border-top: 1px solid #334155; margin: 24px 0; }
-
-    /* Results */
-    .results { display: none; opacity: 0; transition: opacity 0.4s; }
-    .results.show { display: block; opacity: 1; }
-    .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .results-title { font-size: 18px; font-weight: 800; color: #f8fafc; }
-    .lang-switch { background: #334155; border-radius: 999px; padding: 3px; border: 1px solid #475569; display: flex; gap: 3px; }
-    .lang-btn { border: none; border-radius: 999px; padding: 5px 12px; font-size: 11px; font-weight: 700; cursor: pointer; background: transparent; color: #94a3b8; font-family: inherit; }
-    .lang-btn.active { background: #f59e0b; color: #fff; }
-
-    /* Output card */
-    .output-card { background: #334155; border-radius: 20px; padding: 20px; border: 1px solid #475569; position: relative; margin-bottom: 16px; }
-    .generated-text { font-size: 14px; font-style: italic; line-height: 1.6; color: #cbd5e1; font-weight: 500; margin-bottom: 18px; min-height: 60px; }
-    .output-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 1px solid #475569; }
-    .char-count { font-size: 10px; font-weight: 700; color: #64748b; }
-    .copy-btn { background: none; border: none; color: #38bdf8; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; font-family: inherit; }
-
-    /* Rating stars */
-    .rating-wrap { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
-    .rating-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-    .stars { display: flex; gap: 4px; }
-    .star { cursor: pointer; font-size: 20px; color: #475569; transition: color 0.2s; }
-    .star.selected { color: #f59e0b; }
-
-    /* Shimmer loading */
-    .shimmer { display: none; }
-    .shimmer.show { display: block; }
-    .shimmer-line { height: 14px; border-radius: 6px; margin-bottom: 12px; background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 400% 100%; animation: shimmer 1.2s infinite; }
-    @keyframes shimmer { 0%{background-position:100% 0} 100%{background-position:-100% 0} }
-
-    /* Tone chips */
-    .tone-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .tone-chip { background: #334155; border: 1.5px solid #475569; border-radius: 999px; padding: 6px 14px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: #94a3b8; font-family: inherit; }
-    .tone-chip:hover { border-color: #f59e0b; color: #f59e0b; }
-    .tone-chip.active { border-color: #f59e0b; background: #f59e0b; color: #fff; }
-
-    /* History section */
-    .history-section { margin-top: 32px; }
-    .history-title { font-size: 16px; font-weight: 800; color: #cbd5e1; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-    .history-list { display: flex; flex-direction: column; gap: 10px; }
-    .history-card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 12px 14px; }
-    .history-meta { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-bottom: 6px; }
-    .history-text { font-size: 13px; color: #94a3b8; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
-
-    .toast {
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: #059669; color: #fff; font-size: 13px; font-weight: 600;
-      padding: 10px 20px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      display: none; z-index: 999;
-    }
-    .toast.show { display: block; }
-  </style>
-</head>
-<body>
-
-  <div class="phone">
-    <!-- Header -->
-    <div class="header">
-      <div class="logo">
-        <div class="logo-icon">Lb</div>
-        <div class="logo-text">LocalBoost</div>
-      </div>
-      <button class="bell">🔔</button>
-    </div>
-
-    <!-- Content -->
-    <div class="content">
-      <h1 class="title">Generate with AI <span class="sparkle">✨</span></h1>
-      <p class="subtitle">Craft the perfect story for your shop in seconds with local flair.</p>
-
-      <!-- Presets -->
-      <span class="section-label">Quick Start Presets</span>
-      <div class="presets" id="presets">
-        <button class="preset-chip" onclick="applyPreset(this,'pottery')">🏺 Pottery Studio</button>
-        <button class="preset-chip" onclick="applyPreset(this,'bakery')">🥐 Bakery</button>
-        <button class="preset-chip" onclick="applyPreset(this,'restaurant')">🍽️ Restaurant</button>
-        <button class="preset-chip" onclick="applyPreset(this,'riad')">🏨 Riad / Hotel</button>
-        <button class="preset-chip" onclick="applyPreset(this,'tailor')">🧵 Tailor / Couture</button>
-        <button class="preset-chip" onclick="applyPreset(this,'spices')">🌶️ Spice Shop</button>
-      </div>
-
-      <!-- Business Type -->
-      <div class="form-group">
-        <span class="section-label">Business Type</span>
-        <input type="text" id="businessType" class="glass-input" placeholder="e.g. Traditional Pottery Studio" />
-      </div>
-
-      <div class="flex-row">
-        <!-- Target Audience -->
-        <div class="form-group">
-          <span class="section-label">Target Audience</span>
-          <select id="audience" class="glass-input w-full">
-            <option value="">Choose Audience (Optional)</option>
-            <option value="tourists">International Tourists</option>
-            <option value="locals">Local Residents</option>
-            <option value="families">Families with kids</option>
-            <option value="foodies">Foodies & Gastronomy lovers</option>
-            <option value="backpackers">Backpackers & Budget travelers</option>
-          </select>
-        </div>
-
-        <!-- Word Length -->
-        <div class="form-group">
-          <span class="section-label">Max Word Length</span>
-          <select id="wordLength" class="glass-input w-full">
-            <option value="">Length (Optional)</option>
-            <option value="50">Short (~50 words)</option>
-            <option value="120">Medium (~120 words)</option>
-            <option value="250">Detailed (~250 words)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Specialties -->
-      <div class="form-group">
-        <span class="section-label">Specialties</span>
-        <div class="tags-wrap" id="tagsWrap">
-          <input type="text" id="tagInput" class="tag-input" placeholder="+ Add Tag" />
-        </div>
-      </div>
-
-      <!-- USPs -->
-      <div class="form-group">
-        <span class="section-label">Unique Selling Points</span>
-        <div class="textarea-wrap">
-          <textarea id="usps" rows="3" placeholder="What makes your shop special? (e.g. Family-owned since 1950, located in the heart of the Medina)"></textarea>
-        </div>
-      </div>
-
-      <!-- Generate Button -->
-      <button class="btn-generate" id="btnGenerate" onclick="generate()">⚡ Generate Description</button>
-
-      <hr class="divider" />
-
-      <!-- Results -->
-      <div class="results" id="results">
-        <div class="results-header">
-          <span class="results-title">AI Suggestions</span>
-          <div class="lang-switch">
-            <button class="lang-btn active" data-lang="EN" onclick="switchLang(this,'EN')">EN</button>
-            <button class="lang-btn" data-lang="FR" onclick="switchLang(this,'FR')">FR</button>
-            <button class="lang-btn" data-lang="AR" onclick="switchLang(this,'AR')">AR</button>
-          </div>
-        </div>
-
-        <div class="output-card" id="outputCard">
-          <div class="shimmer" id="shimmer">
-            <div class="shimmer-line" style="width:75%"></div>
-            <div class="shimmer-line" style="width:100%"></div>
-            <div class="shimmer-line" style="width:85%"></div>
-            <div class="shimmer-line" style="width:50%"></div>
-          </div>
-          <p class="generated-text" id="generatedText"></p>
-          
-          <div class="output-footer">
-            <span class="char-count" id="charCount">0 CHARACTERS</span>
-            <button class="copy-btn" onclick="copyText()">📋 Copy Text</button>
-          </div>
-        </div>
-
-        <!-- Rating Form -->
-        <div class="rating-wrap" id="ratingWrap" style="display:none;">
-          <span class="rating-label">Rate this description:</span>
-          <div class="stars">
-            <span class="star" onclick="rateStory(1)">★</span>
-            <span class="star" onclick="rateStory(2)">★</span>
-            <span class="star" onclick="rateStory(3)">★</span>
-            <span class="star" onclick="rateStory(4)">★</span>
-            <span class="star" onclick="rateStory(5)">★</span>
-          </div>
-        </div>
-
-        <!-- Tone Adjust -->
-        <div class="form-group" style="margin-top: 20px;">
-          <span class="section-label">Adjust Tone</span>
-          <div class="tone-row">
-            <button class="tone-chip active" onclick="setTone(this,'storytelling')">📖 Storytelling</button>
-            <button class="tone-chip" onclick="setTone(this,'professional')">💼 Professional</button>
-            <button class="tone-chip" onclick="setTone(this,'friendly')">😊 Friendly</button>
-            <button class="tone-chip" onclick="setTone(this,'luxurious')">✨ Luxurious</button>
-            <button class="tone-chip" onclick="setTone(this,'short')">⚡ Short & Punchy</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Saved Descriptions History -->
-      <div class="history-section">
-        <span class="history-title">📚 Saved Descriptions Database</span>
-        <div class="history-list" id="historyList">
-          <div style="color: #64748b; font-size: 13px;">No saved descriptions yet.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-
-<script>
-  let currentLang = 'EN';
-  let currentTone = 'storytelling';
-  let currentStory = '';
-  let currentId = null;
-
-  const PRESETS = {
-    pottery: { type: 'Traditional Pottery Studio', tags: ['Hand-thrown', 'Cobalt Blue'], usps: 'Family-owned since 1950, located in the heart of the Medina.' },
-    bakery: { type: 'Pâtisserie Traditionnelle', tags: ['Cornes de gazelle', 'Makrout', 'Thé à la menthe'], usps: 'Recettes familiales transmises depuis 3 générations, ingrédients 100% naturels.' },
-    restaurant: { type: 'Restaurant Marocain', tags: ['Tajine', 'Couscous', 'Pastilla'], usps: 'Plats préparés quotidiennement avec des ingrédients frais du marché local.' },
-    riad: { type: 'Riad Traditionnel', tags: ['Patio', 'Terrasse', 'Hammam'], usps: 'Architecture du 18ème siècle restaurée avec soin, vue panoramique sur la Médina.' },
-    tailor: { type: 'Atelier de Couture', tags: ['Caftans', 'Broderie', 'Sur-mesure'], usps: "Maître artisan avec 30 ans d'expérience, tissus sélectionnés à la main." },
-    spices: { type: "Boutique d'Épices", tags: ['Safran', 'Ras el Hanout', 'Cumin'], usps: 'Épices fraîchement moulues, sourcing direct des producteurs locaux.' }
-  };
-
-  function applyPreset(el, name) {
-    const p = PRESETS[name];
-    if (!p) return;
-    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('businessType').value = p.type;
-    clearAllTags();
-    p.tags.forEach(t => addTagElement(t));
-    document.getElementById('usps').value = p.usps;
-  }
-
-  function addTagElement(text) {
-    const wrap = document.getElementById('tagsWrap');
-    const input = document.getElementById('tagInput');
-    const span = document.createElement('span');
-    span.className = 'tag';
-    span.innerHTML = text + ' <button class="remove" onclick="this.parentElement.remove()">&times;</button>';
-    wrap.insertBefore(span, input);
-  }
-
-  function clearAllTags() {
-    document.querySelectorAll('#tagsWrap .tag').forEach(t => t.remove());
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    loadHistory();
-
-    // Check for query parameters to pre-fill from Step 3
-    const params = new URLSearchParams(window.location.search);
-    const bType = params.get('businessType');
-    const usps = params.get('usps');
-    const tags = params.get('tags');
-    if (bType) {
-      document.getElementById('businessType').value = decodeURIComponent(bType);
-    }
-    if (usps) {
-      document.getElementById('usps').value = decodeURIComponent(usps);
-    }
-    if (tags) {
-      const tagList = decodeURIComponent(tags).split(',');
-      tagList.forEach(t => {
-        if (t.trim()) addTagElement(t.trim());
-      });
-    }
-
-    const tagInput = document.getElementById('tagInput');
-    tagInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const val = tagInput.value.trim();
-        if (val) { addTagElement(val); tagInput.value = ''; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generate with AI - LocalBoost</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-    });
-    tagInput.addEventListener('blur', () => {
-      const val = tagInput.value.trim();
-      if (val) { addTagElement(val); tagInput.value = ''; }
-    });
-  });
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #0f172a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 16px;
+        color: #f8fafc;
+      }
 
-  function getTagValues() {
-    return Array.from(document.querySelectorAll('#tagsWrap .tag')).map(el => {
-      return el.textContent.replace('×', '').replace('\u00d7', '').trim();
-    });
-  }
+      /* Mobile container */
+      .phone {
+        background: #1e293b;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 8px solid #334155;
+        min-height: 880px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
 
-  function switchLang(el, lang) {
-    currentLang = lang;
-    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    generate();
-  }
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px 8px;
+        border-bottom: 1px solid #334155;
+      }
+      .header .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .header .logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #d97706;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .header .logo-text {
+        font-weight: 800;
+        font-size: 18px;
+        color: #f59e0b;
+      }
+      .header .bell {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        font-size: 20px;
+      }
 
-  function setTone(el, tone) {
-    currentTone = tone;
-    document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    generate();
-  }
+      /* Scrollable content */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 24px 100px;
+      }
+      .content::-webkit-scrollbar {
+        width: 4px;
+      }
+      .content::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
 
-  async function generate() {
-    const results = document.getElementById('results');
-    const textEl = document.getElementById('generatedText');
-    const shimmer = document.getElementById('shimmer');
-    const countEl = document.getElementById('charCount');
-    const card = document.getElementById('outputCard');
-    const ratingWrap = document.getElementById('ratingWrap');
-
-    results.classList.add('show');
-    textEl.style.display = 'none';
-    shimmer.classList.add('show');
-    ratingWrap.style.display = 'none';
-    resetStars();
-
-    const businessType = document.getElementById('businessType').value.trim();
-    const specialties = getTagValues();
-    const usps = document.getElementById('usps').value.trim();
-    const audience = document.getElementById('audience').value;
-    const length = document.getElementById('wordLength').value;
-
-    if (!businessType) {
-      shimmer.classList.remove('show');
-      textEl.style.display = 'block';
-      textEl.textContent = '⚠️ Please enter a Business Type to start.';
-      return;
-    }
-
-    try {
-      const res = await fetch('http://localhost:5000/api/v1/ai1/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessType,
-          specialties,
-          usps,
-          language: currentLang,
-          tone: currentTone,
-          audience,
-          length: length ? parseInt(length) : null,
-          tags: specialties
-        })
-      });
-      const data = await res.json();
-
-      setTimeout(() => {
-        shimmer.classList.remove('show');
-        textEl.style.display = 'block';
-
-        if (data.success && data.data) {
-          currentStory = data.data.text;
-          currentId = data.data.id;
-          textEl.textContent = '"' + currentStory + '"';
-          countEl.textContent = currentStory.length + ' CHARACTERS';
-
-          if (currentLang === 'AR') {
-            card.setAttribute('dir', 'rtl');
-          } else {
-            card.removeAttribute('dir');
-          }
-
-          if (currentId) {
-            ratingWrap.style.display = 'flex';
-          }
-          loadHistory();
-        } else {
-          textEl.textContent = 'Error generating description.';
-          countEl.textContent = '0 CHARACTERS';
+      /* Title */
+      .title {
+        font-size: 28px;
+        font-weight: 800;
+        color: #f8fafc;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .subtitle {
+        color: #94a3b8;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 24px;
+      }
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          transform: scale(1);
         }
-      }, 500);
+        50% {
+          transform: scale(1.1);
+        }
+      }
+      .sparkle {
+        animation: pulse-glow 2s infinite ease-in-out;
+        display: inline-block;
+      }
 
-    } catch (err) {
-      console.error(err);
-      setTimeout(() => {
-        shimmer.classList.remove('show');
-        textEl.style.display = 'block';
-        textEl.textContent = '❌ Error connecting to server.';
-        countEl.textContent = '0 CHARACTERS';
-      }, 500);
-    }
-  }
+      /* Presets */
+      .section-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+      .preset-chip {
+        background: #334155;
+        border: 1.5px solid #475569;
+        border-radius: 12px;
+        padding: 8px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #cbd5e1;
+      }
+      .preset-chip:hover {
+        border-color: #d97706;
+        background: #451a03;
+        color: #f59e0b;
+      }
+      .preset-chip.active {
+        border-color: #d97706;
+        background: #78350f;
+        color: #fef3c7;
+      }
 
-  async function loadHistory() {
-    try {
-      const res = await fetch('http://localhost:5000/api/v1/ai1/descriptions');
-      const data = await res.json();
-      const list = document.getElementById('historyList');
-      if (data.success && data.data && data.data.length > 0) {
-        list.innerHTML = '';
-        data.data.slice(0, 5).forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'history-card';
-          const starsHtml = item.rating ? '⭐'.repeat(item.rating) : 'Unrated';
-          card.innerHTML = `
+      /* Form */
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .glass-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid #475569;
+        padding: 10px 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #f8fafc;
+        outline: none;
+        transition: border-color 0.2s;
+        font-family: inherit;
+      }
+      .glass-input:focus {
+        border-bottom-color: #d97706;
+      }
+      .glass-input::placeholder {
+        color: #64748b;
+      }
+
+      .flex-row {
+        display: flex;
+        gap: 12px;
+      }
+      .flex-row .form-group {
+        flex: 1;
+      }
+
+      select.glass-input {
+        background-color: #1e293b;
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 8px;
+        border: 1.5px solid #475569;
+      }
+
+      /* Tags */
+      .tags-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .tag {
+        background-color: #065f46;
+        color: #a7f3d0;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .tag .remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #a7f3d0;
+        opacity: 0.6;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 0;
+      }
+      .tag .remove:hover {
+        opacity: 1;
+      }
+      .tag-input {
+        border: 1px dashed #475569;
+        color: #94a3b8;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 12px;
+        background: transparent;
+        outline: none;
+        width: 110px;
+        font-family: inherit;
+      }
+      .tag-input:focus {
+        border-color: #94a3b8;
+        background: #334155;
+      }
+
+      /* Textarea */
+      .textarea-wrap {
+        background: #334155;
+        border-radius: 16px;
+        padding: 14px;
+        border: 1px solid #475569;
+      }
+      .textarea-wrap textarea {
+        width: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #e2e8f0;
+        font-family: inherit;
+        background: transparent;
+      }
+      .textarea-wrap textarea::placeholder {
+        color: #64748b;
+      }
+
+      /* Generate button */
+      .btn-generate {
+        width: 100%;
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #fff;
+        font-weight: 700;
+        font-size: 17px;
+        border: none;
+        border-radius: 16px;
+        padding: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        transition: all 0.2s;
+        margin-top: 10px;
+        font-family: inherit;
+      }
+      .btn-generate:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      }
+
+      /* Divider */
+      .divider {
+        border: none;
+        border-top: 1px solid #334155;
+        margin: 24px 0;
+      }
+
+      /* Results */
+      .results {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.4s;
+      }
+      .results.show {
+        display: block;
+        opacity: 1;
+      }
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .results-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #f8fafc;
+      }
+      .lang-switch {
+        background: #334155;
+        border-radius: 999px;
+        padding: 3px;
+        border: 1px solid #475569;
+        display: flex;
+        gap: 3px;
+      }
+      .lang-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: #94a3b8;
+        font-family: inherit;
+      }
+      .lang-btn.active {
+        background: #f59e0b;
+        color: #fff;
+      }
+
+      /* Output card */
+      .output-card {
+        background: #334155;
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid #475569;
+        position: relative;
+        margin-bottom: 16px;
+      }
+      .generated-text {
+        font-size: 14px;
+        font-style: italic;
+        line-height: 1.6;
+        color: #cbd5e1;
+        font-weight: 500;
+        margin-bottom: 18px;
+        min-height: 60px;
+      }
+      .output-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 14px;
+        border-top: 1px solid #475569;
+      }
+      .char-count {
+        font-size: 10px;
+        font-weight: 700;
+        color: #64748b;
+      }
+      .copy-btn {
+        background: none;
+        border: none;
+        color: #38bdf8;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-family: inherit;
+      }
+
+      /* Rating stars */
+      .rating-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .rating-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+      }
+      .stars {
+        display: flex;
+        gap: 4px;
+      }
+      .star {
+        cursor: pointer;
+        font-size: 20px;
+        color: #475569;
+        transition: color 0.2s;
+      }
+      .star.selected {
+        color: #f59e0b;
+      }
+
+      /* Shimmer loading */
+      .shimmer {
+        display: none;
+      }
+      .shimmer.show {
+        display: block;
+      }
+      .shimmer-line {
+        height: 14px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+        background-size: 400% 100%;
+        animation: shimmer 1.2s infinite;
+      }
+      @keyframes shimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: -100% 0;
+        }
+      }
+
+      /* Tone chips */
+      .tone-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .tone-chip {
+        background: #334155;
+        border: 1.5px solid #475569;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: #94a3b8;
+        font-family: inherit;
+      }
+      .tone-chip:hover {
+        border-color: #f59e0b;
+        color: #f59e0b;
+      }
+      .tone-chip.active {
+        border-color: #f59e0b;
+        background: #f59e0b;
+        color: #fff;
+      }
+
+      /* History section */
+      .history-section {
+        margin-top: 32px;
+      }
+      .history-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #cbd5e1;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .history-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 12px 14px;
+      }
+      .history-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: #64748b;
+        margin-bottom: 6px;
+      }
+      .history-text {
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #059669;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 999;
+      }
+      .toast.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <div class="logo-icon">Lb</div>
+          <div class="logo-text">LocalBoost</div>
+        </div>
+        <button class="bell">🔔</button>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <h1 class="title">Generate with AI <span class="sparkle">✨</span></h1>
+        <p class="subtitle">Craft the perfect story for your shop in seconds with local flair.</p>
+
+        <!-- Presets -->
+        <span class="section-label">Quick Start Presets</span>
+        <div class="presets" id="presets">
+          <button class="preset-chip" onclick="applyPreset(this, 'pottery')">
+            🏺 Pottery Studio
+          </button>
+          <button class="preset-chip" onclick="applyPreset(this, 'bakery')">🥐 Bakery</button>
+          <button class="preset-chip" onclick="applyPreset(this, 'restaurant')">
+            🍽️ Restaurant
+          </button>
+          <button class="preset-chip" onclick="applyPreset(this, 'riad')">🏨 Riad / Hotel</button>
+          <button class="preset-chip" onclick="applyPreset(this, 'tailor')">
+            🧵 Tailor / Couture
+          </button>
+          <button class="preset-chip" onclick="applyPreset(this, 'spices')">🌶️ Spice Shop</button>
+        </div>
+
+        <!-- Business Type -->
+        <div class="form-group">
+          <span class="section-label">Business Type</span>
+          <input
+            type="text"
+            id="businessType"
+            class="glass-input"
+            placeholder="e.g. Traditional Pottery Studio"
+          />
+        </div>
+
+        <div class="flex-row">
+          <!-- Target Audience -->
+          <div class="form-group">
+            <span class="section-label">Target Audience</span>
+            <select id="audience" class="glass-input w-full">
+              <option value="">Choose Audience (Optional)</option>
+              <option value="tourists">International Tourists</option>
+              <option value="locals">Local Residents</option>
+              <option value="families">Families with kids</option>
+              <option value="foodies">Foodies & Gastronomy lovers</option>
+              <option value="backpackers">Backpackers & Budget travelers</option>
+            </select>
+          </div>
+
+          <!-- Word Length -->
+          <div class="form-group">
+            <span class="section-label">Max Word Length</span>
+            <select id="wordLength" class="glass-input w-full">
+              <option value="">Length (Optional)</option>
+              <option value="50">Short (~50 words)</option>
+              <option value="120">Medium (~120 words)</option>
+              <option value="250">Detailed (~250 words)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Specialties -->
+        <div class="form-group">
+          <span class="section-label">Specialties</span>
+          <div class="tags-wrap" id="tagsWrap">
+            <input type="text" id="tagInput" class="tag-input" placeholder="+ Add Tag" />
+          </div>
+        </div>
+
+        <!-- USPs -->
+        <div class="form-group">
+          <span class="section-label">Unique Selling Points</span>
+          <div class="textarea-wrap">
+            <textarea
+              id="usps"
+              rows="3"
+              placeholder="What makes your shop special? (e.g. Family-owned since 1950, located in the heart of the Medina)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="btn-generate" id="btnGenerate" onclick="generate()">
+          ⚡ Generate Description
+        </button>
+
+        <hr class="divider" />
+
+        <!-- Results -->
+        <div class="results" id="results">
+          <div class="results-header">
+            <span class="results-title">AI Suggestions</span>
+            <div class="lang-switch">
+              <button class="lang-btn active" data-lang="EN" onclick="switchLang(this, 'EN')">
+                EN
+              </button>
+              <button class="lang-btn" data-lang="FR" onclick="switchLang(this, 'FR')">FR</button>
+              <button class="lang-btn" data-lang="AR" onclick="switchLang(this, 'AR')">AR</button>
+            </div>
+          </div>
+
+          <div class="output-card" id="outputCard">
+            <div class="shimmer" id="shimmer">
+              <div class="shimmer-line" style="width: 75%"></div>
+              <div class="shimmer-line" style="width: 100%"></div>
+              <div class="shimmer-line" style="width: 85%"></div>
+              <div class="shimmer-line" style="width: 50%"></div>
+            </div>
+            <p class="generated-text" id="generatedText"></p>
+
+            <div class="output-footer">
+              <span class="char-count" id="charCount">0 CHARACTERS</span>
+              <button class="copy-btn" onclick="copyText()">📋 Copy Text</button>
+            </div>
+          </div>
+
+          <!-- Rating Form -->
+          <div class="rating-wrap" id="ratingWrap" style="display: none">
+            <span class="rating-label">Rate this description:</span>
+            <div class="stars">
+              <span class="star" onclick="rateStory(1)">★</span>
+              <span class="star" onclick="rateStory(2)">★</span>
+              <span class="star" onclick="rateStory(3)">★</span>
+              <span class="star" onclick="rateStory(4)">★</span>
+              <span class="star" onclick="rateStory(5)">★</span>
+            </div>
+          </div>
+
+          <!-- Tone Adjust -->
+          <div class="form-group" style="margin-top: 20px">
+            <span class="section-label">Adjust Tone</span>
+            <div class="tone-row">
+              <button class="tone-chip active" onclick="setTone(this, 'storytelling')">
+                📖 Storytelling
+              </button>
+              <button class="tone-chip" onclick="setTone(this, 'professional')">
+                💼 Professional
+              </button>
+              <button class="tone-chip" onclick="setTone(this, 'friendly')">😊 Friendly</button>
+              <button class="tone-chip" onclick="setTone(this, 'luxurious')">✨ Luxurious</button>
+              <button class="tone-chip" onclick="setTone(this, 'short')">⚡ Short & Punchy</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Descriptions History -->
+        <div class="history-section">
+          <span class="history-title">📚 Saved Descriptions Database</span>
+          <div class="history-list" id="historyList">
+            <div style="color: #64748b; font-size: 13px">No saved descriptions yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      let currentLang = 'EN';
+      let currentTone = 'storytelling';
+      let currentStory = '';
+      let currentId = null;
+
+      const PRESETS = {
+        pottery: {
+          type: 'Traditional Pottery Studio',
+          tags: ['Hand-thrown', 'Cobalt Blue'],
+          usps: 'Family-owned since 1950, located in the heart of the Medina.',
+        },
+        bakery: {
+          type: 'Pâtisserie Traditionnelle',
+          tags: ['Cornes de gazelle', 'Makrout', 'Thé à la menthe'],
+          usps: 'Recettes familiales transmises depuis 3 générations, ingrédients 100% naturels.',
+        },
+        restaurant: {
+          type: 'Restaurant Marocain',
+          tags: ['Tajine', 'Couscous', 'Pastilla'],
+          usps: 'Plats préparés quotidiennement avec des ingrédients frais du marché local.',
+        },
+        riad: {
+          type: 'Riad Traditionnel',
+          tags: ['Patio', 'Terrasse', 'Hammam'],
+          usps: 'Architecture du 18ème siècle restaurée avec soin, vue panoramique sur la Médina.',
+        },
+        tailor: {
+          type: 'Atelier de Couture',
+          tags: ['Caftans', 'Broderie', 'Sur-mesure'],
+          usps: "Maître artisan avec 30 ans d'expérience, tissus sélectionnés à la main.",
+        },
+        spices: {
+          type: "Boutique d'Épices",
+          tags: ['Safran', 'Ras el Hanout', 'Cumin'],
+          usps: 'Épices fraîchement moulues, sourcing direct des producteurs locaux.',
+        },
+      };
+
+      function applyPreset(el, name) {
+        const p = PRESETS[name];
+        if (!p) return;
+        document.querySelectorAll('.preset-chip').forEach((c) => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('businessType').value = p.type;
+        clearAllTags();
+        p.tags.forEach((t) => addTagElement(t));
+        document.getElementById('usps').value = p.usps;
+      }
+
+      function addTagElement(text) {
+        const wrap = document.getElementById('tagsWrap');
+        const input = document.getElementById('tagInput');
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.innerHTML =
+          text + ' <button class="remove" onclick="this.parentElement.remove()">&times;</button>';
+        wrap.insertBefore(span, input);
+      }
+
+      function clearAllTags() {
+        document.querySelectorAll('#tagsWrap .tag').forEach((t) => t.remove());
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadHistory();
+
+        // Check for query parameters to pre-fill from Step 3
+        const params = new URLSearchParams(window.location.search);
+        const bType = params.get('businessType');
+        const usps = params.get('usps');
+        const tags = params.get('tags');
+        if (bType) {
+          document.getElementById('businessType').value = decodeURIComponent(bType);
+        }
+        if (usps) {
+          document.getElementById('usps').value = decodeURIComponent(usps);
+        }
+        if (tags) {
+          const tagList = decodeURIComponent(tags).split(',');
+          tagList.forEach((t) => {
+            if (t.trim()) addTagElement(t.trim());
+          });
+        }
+
+        const tagInput = document.getElementById('tagInput');
+        tagInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = tagInput.value.trim();
+            if (val) {
+              addTagElement(val);
+              tagInput.value = '';
+            }
+          }
+        });
+        tagInput.addEventListener('blur', () => {
+          const val = tagInput.value.trim();
+          if (val) {
+            addTagElement(val);
+            tagInput.value = '';
+          }
+        });
+      });
+
+      function getTagValues() {
+        return Array.from(document.querySelectorAll('#tagsWrap .tag')).map((el) => {
+          return el.textContent.replace('×', '').replace('\u00d7', '').trim();
+        });
+      }
+
+      function switchLang(el, lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach((b) => b.classList.remove('active'));
+        el.classList.add('active');
+        generate();
+      }
+
+      function setTone(el, tone) {
+        currentTone = tone;
+        document.querySelectorAll('.tone-chip').forEach((c) => c.classList.remove('active'));
+        el.classList.add('active');
+        generate();
+      }
+
+      async function generate() {
+        const results = document.getElementById('results');
+        const textEl = document.getElementById('generatedText');
+        const shimmer = document.getElementById('shimmer');
+        const countEl = document.getElementById('charCount');
+        const card = document.getElementById('outputCard');
+        const ratingWrap = document.getElementById('ratingWrap');
+
+        results.classList.add('show');
+        textEl.style.display = 'none';
+        shimmer.classList.add('show');
+        ratingWrap.style.display = 'none';
+        resetStars();
+
+        const businessType = document.getElementById('businessType').value.trim();
+        const specialties = getTagValues();
+        const usps = document.getElementById('usps').value.trim();
+        const audience = document.getElementById('audience').value;
+        const length = document.getElementById('wordLength').value;
+
+        if (!businessType) {
+          shimmer.classList.remove('show');
+          textEl.style.display = 'block';
+          textEl.textContent = '⚠️ Please enter a Business Type to start.';
+          return;
+        }
+
+        try {
+          const res = await fetch('http://localhost:5000/api/v1/ai1/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              businessType,
+              specialties,
+              usps,
+              language: currentLang,
+              tone: currentTone,
+              audience,
+              length: length ? parseInt(length) : null,
+              tags: specialties,
+            }),
+          });
+          const data = await res.json();
+
+          setTimeout(() => {
+            shimmer.classList.remove('show');
+            textEl.style.display = 'block';
+
+            if (data.success && data.data) {
+              currentStory = data.data.text;
+              currentId = data.data.id;
+              textEl.textContent = '"' + currentStory + '"';
+              countEl.textContent = currentStory.length + ' CHARACTERS';
+
+              if (currentLang === 'AR') {
+                card.setAttribute('dir', 'rtl');
+              } else {
+                card.removeAttribute('dir');
+              }
+
+              if (currentId) {
+                ratingWrap.style.display = 'flex';
+              }
+              loadHistory();
+            } else {
+              textEl.textContent = 'Error generating description.';
+              countEl.textContent = '0 CHARACTERS';
+            }
+          }, 500);
+        } catch (err) {
+          console.error(err);
+          setTimeout(() => {
+            shimmer.classList.remove('show');
+            textEl.style.display = 'block';
+            textEl.textContent = '❌ Error connecting to server.';
+            countEl.textContent = '0 CHARACTERS';
+          }, 500);
+        }
+      }
+
+      async function loadHistory() {
+        try {
+          const res = await fetch('http://localhost:5000/api/v1/ai1/descriptions');
+          const data = await res.json();
+          const list = document.getElementById('historyList');
+          if (data.success && data.data && data.data.length > 0) {
+            list.innerHTML = '';
+            data.data.slice(0, 5).forEach((item) => {
+              const card = document.createElement('div');
+              card.className = 'history-card';
+              const starsHtml = item.rating ? '⭐'.repeat(item.rating) : 'Unrated';
+              card.innerHTML = `
             <div class="history-meta">
               <span>🏷️ ${item.business_name} (${item.tone})</span>
               <span>${starsHtml}</span>
             </div>
             <div class="history-text">"${item.description}"</div>
           `;
-          list.appendChild(card);
+              list.appendChild(card);
+            });
+          }
+        } catch (e) {
+          console.error('Error fetching descriptions history:', e);
+        }
+      }
+
+      async function rateStory(stars) {
+        if (!currentId) return;
+        try {
+          const res = await fetch(
+            `http://localhost:5000/api/v1/ai1/descriptions/${currentId}/rate`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rating: stars }),
+            }
+          );
+          const data = await res.json();
+          if (data.success) {
+            showToast('Thank you for rating!');
+            highlightStars(stars);
+            loadHistory();
+          }
+        } catch (e) {
+          console.error('Rating failed:', e);
+        }
+      }
+
+      function highlightStars(count) {
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((s, idx) => {
+          if (idx < count) {
+            s.classList.add('selected');
+          } else {
+            s.classList.remove('selected');
+          }
         });
       }
-    } catch (e) {
-      console.error('Error fetching descriptions history:', e);
-    }
-  }
 
-  async function rateStory(stars) {
-    if (!currentId) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/v1/ai1/descriptions/${currentId}/rate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating: stars })
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast('Thank you for rating!');
-        highlightStars(stars);
-        loadHistory();
+      function resetStars() {
+        document.querySelectorAll('.star').forEach((s) => s.classList.remove('selected'));
       }
-    } catch (e) {
-      console.error('Rating failed:', e);
-    }
-  }
 
-  function highlightStars(count) {
-    const stars = document.querySelectorAll('.star');
-    stars.forEach((s, idx) => {
-      if (idx < count) {
-        s.classList.add('selected');
-      } else {
-        s.classList.remove('selected');
+      function copyText() {
+        if (!currentStory) return;
+        navigator.clipboard.writeText(currentStory).then(() => {
+          showToast('Copied to clipboard!');
+        });
       }
-    });
-  }
 
-  function resetStars() {
-    document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-  }
-
-  function copyText() {
-    if (!currentStory) return;
-    navigator.clipboard.writeText(currentStory).then(() => {
-      showToast('Copied to clipboard!');
-    });
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
-  }
-</script>
-</body>
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      }
+    </script>
+  </body>
 </html>

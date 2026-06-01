@@ -1,63 +1,100 @@
-"use client";
+'use client';
 
-export default function ReviewDetailsModal({ onClose }: { onClose: () => void }) {
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { adminFetchJson } from '@/lib/adminApi';
+
+interface Review {
+  id: number;
+  business: string;
+  businessType?: string;
+  location?: string;
+  reviewer: string;
+  rating: number;
+  excerpt: string;
+  toxicity: { level: string; score: number };
+  content?: string;
+  created_at?: string;
+  moderation_status?: string;
+}
+
+interface ReviewDetailsModalProps {
+  review: Review;
+  onClose: () => void;
+}
+
+export default function ReviewDetailsModal({ review, onClose }: ReviewDetailsModalProps) {
+  const queryClient = useQueryClient();
+  const [rejectReason, setRejectReason] = useState('');
+
+  const moderateMutation = useMutation({
+    mutationFn: async ({ id, action }: { id: number; action: 'approved' | 'rejected' }) => {
+      return adminFetchJson(`/reviews/${id}/moderate`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: action, reason: rejectReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
+      onClose();
+    },
+  });
+
+  const status = review.moderation_status || 'pending';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1C1B]/60 backdrop-blur-sm">
       <div className="bg-surface rounded-lg shadow-2xl max-w-2xl w-full max-h-[921px] overflow-hidden flex flex-col border border-outline-variant/20">
         <div className="p-6 border-b border-surface-container-high flex justify-between items-start">
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-lg overflow-hidden border-2 border-primary-container shadow-md">
-              <img
-                alt="Elena G. Detailed"
-                className="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMHQoMbJd0vjdyzTUeWh_JzvoGi5Xk82yVtBa7WUxFHbcUArJaE9_W_toi3T8aVVXqQOQXbrYFbigw72zi57AdzmSDCketyZux8tL8HzAIkN8eI5TgRAZdAEk6t27ALZJQJCj_3l7OPPxp-jvMogtMRGkUujD2TqmhZW4JiU9DN8Nb4G4FIfpyK2fwkDnID7TGX7aXLMcCFmHh3u_qOhN-rQr1lUo0_PjtvpvuGdunKKNYqTgeG2Up0ZIxc8bv5eKJpbf76aaGftY"
-              />
+            <div className="h-16 w-16 rounded-lg overflow-hidden border-2 border-primary-container shadow-md bg-primary-container/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-3xl text-primary">rate_review</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold">Review by Elena G.</h3>
+              <h3 className="text-xl font-bold">Review by {review.reviewer}</h3>
               <p className="text-on-surface-variant text-sm flex items-center gap-1">
                 <span className="material-symbols-outlined text-xs">calendar_today</span>
-                Posted on Oct 24, 2023 • Le Jardin Bleu
+                {review.created_at
+                  ? `Posted on ${new Date(review.created_at).toLocaleDateString()}`
+                  : 'Date unknown'}{' '}
+                • {review.business}
               </p>
             </div>
           </div>
-          <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" onClick={onClose}>
+          <button
+            className="p-2 hover:bg-surface-container-low rounded-full transition-colors"
+            onClick={onClose}
+          >
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <div className="p-8 overflow-y-auto flex-1 space-y-8">
           <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="font-label font-bold text-xs uppercase tracking-widest text-primary flex items-center gap-2">
-                <span className="material-symbols-outlined text-base">translate</span>
-                Original Review (French)
-              </label>
-              <span className="text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold">VERIFIED</span>
-            </div>
-            <p className="text-lg italic font-body text-on-surface-variant leading-relaxed">
-              "L'atmosphère était enchanteresse, comme un paradis caché dans un riad. Le tajine d'agneau aux pruneaux était exceptionnel. Le service est impeccable."
-            </p>
-            <div className="h-px bg-surface-container-high w-full"></div>
-            <label className="font-label font-bold text-xs uppercase tracking-widest text-secondary flex items-center gap-2">
-              <span className="material-symbols-outlined text-base">auto_awesome</span>
-              AI English Translation
+            <label className="font-label font-bold text-xs uppercase tracking-widest text-primary flex items-center gap-2">
+              <span className="material-symbols-outlined text-base">translate</span>
+              Review Content
             </label>
-            <p className="text-lg font-body text-on-surface leading-relaxed">
-              "The atmosphere was enchanting, like a hidden riad paradise. The lamb tagine with prunes was exceptional. The service is impeccable."
+            <p className="text-lg italic font-body text-on-surface-variant leading-relaxed">
+              &quot;{review.content || review.excerpt}&quot;
             </p>
           </section>
 
           <section className="bg-surface-container-low rounded-lg p-6 grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant">
-                Sentiment Analysis
+                Rating
               </label>
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  mood
-                </span>
-                <span className="text-lg font-bold text-secondary">Positive</span>
+              <div className="flex text-primary">
+                {[...Array(5)].map((_, i) => (
+                  <span
+                    key={i}
+                    className="material-symbols-outlined"
+                    style={{ fontVariationSettings: i < review.rating ? "'FILL' 1" : "'FILL' 0" }}
+                  >
+                    star
+                  </span>
+                ))}
               </div>
             </div>
             <div className="space-y-2">
@@ -66,27 +103,76 @@ export default function ReviewDetailsModal({ onClose }: { onClose: () => void })
               </label>
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">verified_user</span>
-                <span className="text-lg font-bold text-secondary">Low (0.08)</span>
+                <span
+                  className={`text-lg font-bold ${review.toxicity.score > 0.5 ? 'text-error' : 'text-secondary'}`}
+                >
+                  {review.toxicity.level} ({review.toxicity.score.toFixed(2)})
+                </span>
               </div>
             </div>
           </section>
 
           <div className="flex justify-center">
-            <span className="bg-primary-fixed text-on-primary-fixed px-4 py-1 rounded-full text-sm font-bold border border-primary/20">
-              Pending Moderation
+            <span
+              className={`px-4 py-1 rounded-full text-sm font-bold border ${
+                status === 'approved'
+                  ? 'bg-secondary-container text-on-secondary-container border-secondary/20'
+                  : status === 'rejected'
+                    ? 'bg-error-container text-on-error-container border-error/20'
+                    : 'bg-primary-fixed text-on-primary-fixed border-primary/20'
+              }`}
+            >
+              {status === 'approved'
+                ? 'Approved'
+                : status === 'rejected'
+                  ? 'Rejected'
+                  : 'Pending Moderation'}
             </span>
           </div>
+
+          {status === 'pending' && (
+            <section className="space-y-2">
+              <label className="font-label font-bold text-[10px] uppercase tracking-widest text-on-surface-variant">
+                Rejection reason
+              </label>
+              <textarea
+                className="w-full min-h-24 rounded-lg border border-outline-variant/30 bg-surface-container-low p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Optional note for the moderation log"
+                value={rejectReason}
+                onChange={(event) => setRejectReason(event.target.value)}
+              />
+            </section>
+          )}
         </div>
 
         <div className="p-6 bg-surface-container-low flex justify-between gap-4">
-          <button className="px-6 py-2.5 bg-error text-on-error font-bold rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">delete</span>
-            Reject Review
-          </button>
-          <button className="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">check_circle</span>
-            Approve Review
-          </button>
+          <div className="flex items-center gap-3 flex-1">
+            {status === 'pending' && (
+              <>
+                <button
+                  className="px-6 py-2.5 bg-error text-on-error font-bold rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+                  onClick={() => moderateMutation.mutate({ id: review.id, action: 'rejected' })}
+                  disabled={moderateMutation.isPending}
+                >
+                  <span className="material-symbols-outlined text-sm">block</span>
+                  {moderateMutation.isPending ? '...' : 'Reject'}
+                </button>
+                <button
+                  className="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+                  onClick={() => moderateMutation.mutate({ id: review.id, action: 'approved' })}
+                  disabled={moderateMutation.isPending}
+                >
+                  <span className="material-symbols-outlined text-sm">check_circle</span>
+                  {moderateMutation.isPending ? '...' : 'Approve'}
+                </button>
+              </>
+            )}
+            {status !== 'pending' && (
+              <span className="text-sm text-on-surface-variant">
+                This review has already been {status}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

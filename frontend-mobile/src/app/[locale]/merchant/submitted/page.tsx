@@ -1,48 +1,69 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import { use } from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function MerchantSubmittedPage({
-  params,
+  params: paramsPromise,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const params = use(paramsPromise);
+  const t = useTranslations('merchantSetup');
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
-        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col items-center overflow-hidden px-6 py-8 text-center bg-[#fbfaf6]">
-          <div className="mobile-fade-up mt-8 rounded-full bg-white p-4 shadow-[0_18px_32px_rgba(31,26,10,0.08)]">
-            <div className="grid h-24 w-24 place-items-center rounded-full bg-[#f2c15d] shadow-[inset_0_0_0_8px_rgba(255,255,255,0.7)]">
-              <span className="material-symbols-outlined text-[42px] text-white">check_circle</span>
+        <div className="mobile-content relative z-10 min-h-[calc(100vh-32px)] flex flex-col items-center justify-center px-6 py-8 overflow-hidden bg-[#f9f9f7]">
+          <div className="w-full max-w-sm text-center space-y-8">
+            <div className="relative flex justify-center">
+              <div className="w-28 h-28 rounded-full border-2 border-[#d7c3ae]/30 flex items-center justify-center">
+                <div className="w-24 h-24 rounded-full bg-[#f4f4f2] flex items-center justify-center shadow-[0_12px_48px_rgba(130,85,0,0.12)]">
+                  <div className="w-16 h-16 rounded-full bg-[#eba020] flex items-center justify-center text-[#5d3b00] shadow-lg">
+                    <span
+                      className="material-symbols-outlined text-4xl font-bold"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      check_circle
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="mobile-fade-up mt-8" style={{ animationDelay: "100ms" }}>
-            <h1 className="text-[3rem] font-extrabold leading-[0.9] tracking-[-0.08em] text-[#9c6a00]">
-              Profile
-              <br />
-              Submitted!
-            </h1>
-            <p className="mx-auto mt-5 max-w-[290px] text-[16px] leading-7 text-[#7d7468]">
-              Your profile is under review by our team. We&apos;ll notify you as soon as it&apos;s live.
-            </p>
-          </div>
+            <div className="space-y-3">
+              <h1 className="font-headline text-4xl font-extrabold tracking-tight text-[#825500]">
+                {t('profileSubmitted')}
+              </h1>
+              <p className="text-[#524534] text-base max-w-xs mx-auto leading-relaxed">
+                {t('profileSubmittedDescription')}
+              </p>
+            </div>
 
-          <Link
-            href={`/${params.locale}/merchant/dashboard`}
-            className="mobile-pill mobile-button-gold mobile-fade-up mt-10 h-14 w-full text-base font-extrabold"
-            style={{ animationDelay: "180ms" }}
-          >
-            Go to Dashboard
-          </Link>
+            <div className="pt-4 flex flex-col items-center gap-5">
+              <Link
+                href={`/${params.locale}/merchant/dashboard`}
+                className="relative px-10 py-5 bg-[#825500] text-[#ffffff] rounded-full font-headline font-bold text-base shadow-[0_16px_32px_rgba(130,85,0,0.2)] hover:shadow-[0_24px_48px_rgba(130,85,0,0.3)] transition-all duration-300 transform hover:-translate-y-1 active:scale-95"
+              >
+                <span className="relative z-10">{t('goToDashboard')}</span>
+              </Link>
 
-          <div className="mobile-fade-up mt-8 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#b8af9f]" style={{ animationDelay: "240ms" }}>
-            Review typically takes 24-48 hours
-          </div>
+              <div className="flex items-center gap-2 text-[#524534]/60 font-label text-xs uppercase tracking-[0.2em] font-bold">
+                <span className="material-symbols-outlined text-base">verified_user</span>
+                <span>{t('reviewTypically')}</span>
+              </div>
+            </div>
 
-          <div className="mt-auto grid w-full grid-cols-2 gap-4 pt-10">
-            <div className="mobile-fade-up h-36 rounded-[30px] bg-[linear-gradient(180deg,rgba(255,255,255,0.76),rgba(242,240,234,0.95))] shadow-[0_10px_20px_rgba(31,26,10,0.05)]" style={{ animationDelay: "300ms" }} />
-            <div className="mobile-fade-up h-28 self-end rounded-[30px] bg-[linear-gradient(180deg,rgba(226,242,235,0.65),rgba(247,245,240,0.9))] shadow-[0_10px_20px_rgba(31,26,10,0.05)]" style={{ animationDelay: "360ms" }} />
+            <div className="grid grid-cols-12 gap-3 mt-8 max-w-xs mx-auto opacity-40">
+              <div className="col-span-8 h-28 rounded-lg bg-[#e8e8e6] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#d7c3ae]/20 to-transparent" />
+              </div>
+              <div className="col-span-4 h-28 rounded-lg bg-[#8af4c5]/20" />
+              <div className="col-span-3 h-28 rounded-lg bg-[#ff926d]/10" />
+              <div className="col-span-9 h-28 rounded-lg bg-[#eeeeec] relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-bl from-[#006c4c]/10 to-transparent" />
+              </div>
+            </div>
           </div>
         </div>
       </section>

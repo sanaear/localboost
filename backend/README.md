@@ -1,23 +1,36 @@
 # Sprint 1 :
+
 Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
 
 ## API LocalBoost
+
 ### (LB-80) =====> LB-126 → LB-129
+
 ### Structure
-- modules/:     architecture par domaine
+
+- modules/: architecture par domaine
 - middlewares/: middlewares globaux
-- config/:      Configuration Base de données
+- config/: Configuration Base de données
+
 ### Routes
+
 - /api/v1/auth
 - /api/v1/users
 - /api/v1/businesses
+
 ### Stack
+
 - Node.js
 - Express.js
+
 ---
+
 ## Database Schema
+
 ### (LB-81) =====> LB-130 → LB-134
+
 ### Tables
+
 - User
 - Business
 - Review
@@ -25,48 +38,66 @@ Setup Node.js / Express.js + architecture modulaire & Schéma PostgreSQL
 - Analytics_events
 - Translations_cache
 - InactivityTracking
+
 ### ORM
+
 - Prisma
+
 ### Commands
+
 ```
 Install :
     => express, cors, dotenv, morgan, express-rate-limit, nodemon, prisma, @prisma/client, ioredis
 Migration:
     npx prisma migrate dev
 Run studio:
-    npx prisma studio 
+    npx prisma studio
 ```
+
 ### Redis
-```Used for caching translations & queries```
----
-# Sprint 2 : 
+
+## `Used for caching translations & queries`
+
+# Sprint 2 :
+
 ### (LB-84) =====> LB-152 → LB-158
+
 API REST — CRUD commerces, utilisateurs, catégories, régions
+
 - GET /api/v1/businesses
-Retourne tous les commerces
+  Retourne tous les commerces
 - GET /api/v1/businesses/search?q=restaurant
 - GET /api/v1/businesses/near?lat=35&lng=-5&distance=10
+
 ---
+
 ### (LB-85) =====> LB-159 → LB-162
+
 Register → hash password → save user
 Login → verify password → generate:
-   - accessToken (15min)
-   - refreshToken (7 days)
+
+- accessToken (15min)
+- refreshToken (7 days)
 
 Protected route:
-   Header: Authorization: Bearer TOKEN
+Header: Authorization: Bearer TOKEN
 
 Refresh:
-   send refreshToken → get new accessToken
+send refreshToken → get new accessToken
+
 ---
 
 # Sprint 3
+
 ### (LB-97) =====> LB-210 → LB-212
+
 ✔ CRUD reviews
 ✔ moderation pipeline
 ✔ rating average
 ✔ protected routes
+
 ### Pipeline Moderation
+
 ```
     User submits review → status = pending
             ↓
@@ -76,28 +107,33 @@ Refresh:
 ```
 
 ### (LB-99) =====> LB-217 → LB-220
+
 ## Email Notification
 
 Trigger:
+
 - When review status = approved
 
 Flow:
 Review approved → fetch business owner → send email
 
 Service:
+
 - Nodemailer (SMTP Gmail)
 
 Template:
+
 - HTML dynamic with variables:
   - businessName
   - rating
   - content
----
 
+---
 
 # 📋 Liste complète des routes API LocalBoost
 
 ### 🔐 **Authentication** (`/api/v1/auth`)
+
 ```
 | Méthode | Route | Description | Auth | Body |
 |---------|-------|-------------|------|------|
@@ -105,9 +141,11 @@ Template:
 | POST | `/login`    | Connexion utilisateur       | ❌ | `{ "email", "password" }` |
 | POST | `/refresh`  | Rafraîchir le token         | ❌ | `{ "refreshToken" }` |
 ```
+
 ---
 
 ### 👥 **Users** (`/api/v1/users`)
+
 ```
 | Méthode | Route | Description                     | Auth| Restrictions |
 |---------|-------|---------------------------------|-----|-------------|
@@ -117,9 +155,11 @@ Template:
 | PUT     | `/:id`| Modifier un utilisateur         | ✅ | User modifies own, Admin modifies all |
 | DELETE  | `/:id`| Supprimer un utilisateur        | ✅ | Admin only |
 ```
+
 ---
 
 ### 🏢 **Businesses** (`/api/v1/businesses`)
+
 ```
 | Méthode | Route    | Description                          | Auth | Query Params |
 |---------|----------|--------------------------------------|------|------------|
@@ -127,27 +167,33 @@ Template:
 | GET     | `/search`| Recherche full-text                  | ❌  | `?q=searchterm` |
 | GET     | `/near`  | Filtrer par localisation (Haversine) | ❌  | `?lat=48.8&lng=2.3&distance=10` |
 ```
+
 ---
 
 ### 📂 **Categories** (`/api/v1/categories`)
+
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
 | GET     | `/`   | Récupérer toutes les catégories | ❌ |
 ```
+
 ---
 
 ### ⭐ **Reviews** (`/api/v1/reviews`)
+
 ```
 | Méthode | Route | Description | Auth |
 |---------|-------|-------------|------|
 | GET     | `/`   | Récupérer tous les avis | ❌ |
 ```
+
 ---
 
 ## 🧪 **Exemples de test avec Postman**
 
 ### 1️: **Inscription**
+
 ```
 POST http://localhost:5000/api/v1/auth/register
 Content-Type: application/json
@@ -158,11 +204,13 @@ Content-Type: application/json
   "role": "user"
 }
 ```
+
 **Response**: `{ "id": 3, "email": "...", "password_hash": "...", "role": "user", ... }`
 
 ---
 
 ### 2️: **Connexion**
+
 ```
 POST http://localhost:5000/api/v1/auth/login
 Content-Type: application/json
@@ -172,11 +220,13 @@ Content-Type: application/json
   "password": "password123"
 }
 ```
+
 **Response**: `{ "accessToken": "eyJ...", "refreshToken": "eyJ..." }`
 
 ---
 
 ### 3️: **Rafraîchir le Token**
+
 ```
 POST http://localhost:5000/api/v1/auth/refresh
 Content-Type: application/json
@@ -185,70 +235,86 @@ Content-Type: application/json
   "refreshToken": "eyJ..."
 }
 ```
+
 **Response**: `{ "accessToken": "eyJ..." }`
 
 ---
 
 ### 4️: **Récupérer les Entreprises**
+
 ```
 GET http://localhost:5000/api/v1/businesses
 ```
+
 **Response**: Array of businesses with category and user info
 
 ---
 
 ### 5️: **Recherche Entreprises**
+
 ```
 GET http://localhost:5000/api/v1/businesses/search?q=restaurant
 ```
+
 **Response**: Filtered businesses matching search
 
 ---
 
 ### 6️: **Entreprises à proximité**
+
 ```
 GET http://localhost:5000/api/v1/businesses/near?lat=48.8566&lng=2.3522&distance=5
 ```
+
 **Response**: Businesses within 5 km of coordinates
 
 ---
 
 ### 7️: **Consulter le profil (Protégé)**
+
 ```
 GET http://localhost:5000/api/v1/users/3
 Authorization: Bearer eyJ...
 
 ```
+
 **Response**: User profile
 
 ---
 
 ### 8️: **Tous les utilisateurs (Admin)**
+
 ```
 GET http://localhost:5000/api/v1/users
 Authorization: Bearer eyJ... (admin token)
 ```
+
 **Response**: All users array
 
 ---
 
 ### 9️: **Récupérer les Catégories**
+
 ```
 GET http://localhost:5000/api/v1/categories
 ```
+
 **Response**: Array of categories
 
 ---
 
 ### 10: **Récupérer les Avis**
+
 ```
 GET http://localhost:5000/api/v1/reviews
 ```
+
 **Response**: `{ message: "Get all reviews" }`
 
 ---
 
 ### 11: **Vérification du système d'envoi d'email**
+
 ```
 POST /api/v1/test/test-email
 {
@@ -258,4 +324,5 @@ POST /api/v1/test/test-email
   "content": "Contenu de l'avis"
 }
 ```
+
 **Response**: `{ message Email }`

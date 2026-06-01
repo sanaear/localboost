@@ -34,20 +34,28 @@ const createProfile = async (req, res, next) => {
 
     // ── Validate ──────────────────────────────────────────
     if (!step1) {
-      return res.status(400).json({ success: false, message: 'Step 1 (business info) is required.' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Step 1 (business info) is required.' });
     }
     if (!step3) {
-      return res.status(400).json({ success: false, message: 'Step 3 (hours & contact) is required.' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Step 3 (hours & contact) is required.' });
     }
 
     const step1Errors = validateStep1(step1);
     if (step1Errors.length > 0) {
-      return res.status(400).json({ success: false, message: 'Validation failed.', errors: step1Errors });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Validation failed.', errors: step1Errors });
     }
 
     const step3Errors = validateStep3(step3);
     if (step3Errors.length > 0) {
-      return res.status(400).json({ success: false, message: 'Validation failed.', errors: step3Errors });
+      return res
+        .status(400)
+        .json({ success: false, message: 'Validation failed.', errors: step3Errors });
     }
 
     // ── Save base64 images/logo to uploads folder ─────────────────
@@ -116,7 +124,7 @@ const createProfile = async (req, res, next) => {
         JSON.stringify(profile.openingHours),
         profile.specialOffers,
         profile.whatsapp,
-        profile.website
+        profile.website,
       ]
     );
 
@@ -127,7 +135,6 @@ const createProfile = async (req, res, next) => {
       message: 'Business profile created successfully!',
       data: profile,
     });
-
   } catch (err) {
     next(err);
   }
@@ -139,7 +146,7 @@ const createProfile = async (req, res, next) => {
 const getProfiles = async (req, res, next) => {
   try {
     const rows = await all(`SELECT * FROM ai2_profiles ORDER BY created_at DESC`);
-    const parsedRows = rows.map(r => ({
+    const parsedRows = rows.map((r) => ({
       id: r.id,
       businessName: r.name,
       category: r.category,
@@ -156,7 +163,7 @@ const getProfiles = async (req, res, next) => {
       whatsapp: r.whatsapp,
       website: r.website,
       createdAt: r.created_at,
-      updatedAt: r.updated_at
+      updatedAt: r.updated_at,
     }));
 
     res.status(200).json({ success: true, data: parsedRows });
@@ -172,7 +179,15 @@ const getProfiles = async (req, res, next) => {
  */
 const generateDescription = async (req, res, next) => {
   try {
-    const { profileId, businessType, specialties = [], usps, tone = 'storytelling', audience, tags = [] } = req.body;
+    const {
+      profileId,
+      businessType,
+      specialties = [],
+      usps,
+      tone = 'storytelling',
+      audience,
+      tags = [],
+    } = req.body;
 
     if (!profileId) {
       return res.status(400).json({ success: false, message: 'profileId is required.' });
@@ -198,7 +213,7 @@ const generateDescription = async (req, res, next) => {
         audience: audience || 'tourists and visitors',
         tags: tags.length > 0 ? tags : [profile.category, profile.city].filter(Boolean),
         length: null,
-        imageUrl: null
+        imageUrl: null,
       });
     }
 
@@ -224,7 +239,7 @@ const generateDescription = async (req, res, next) => {
             audience || 'tourists',
             descriptions[lang],
             descriptions[lang].split(/\s+/).length,
-            null
+            null,
           ]
         );
       } catch (dbErr) {
@@ -242,9 +257,9 @@ const generateDescription = async (req, res, next) => {
         wordCounts: {
           EN: descriptions.EN.split(/\s+/).length,
           FR: descriptions.FR.split(/\s+/).length,
-          AR: descriptions.AR.split(/\s+/).length
-        }
-      }
+          AR: descriptions.AR.split(/\s+/).length,
+        },
+      },
     });
   } catch (err) {
     next(err);
