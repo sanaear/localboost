@@ -24,7 +24,13 @@ export function SkeletonLine({
   className?: string;
   style?: React.CSSProperties;
 }) {
-  return <div className={`lb-skeleton ${className}`} style={style} data-testid="skeleton" />;
+  return (
+    <span
+      className={`lb-skeleton ${className}`}
+      style={style}
+      data-testid="skeleton"
+    />
+  );
 }
 
 export function ErrorState({

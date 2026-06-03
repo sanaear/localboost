@@ -100,11 +100,16 @@ export async function loginWithBackend({
   email: string;
   password: string;
 }): Promise<{ accessToken: string; refreshToken?: string }> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim(), password: password.trim() }),
+    });
+  } catch {
+    throw new Error(`Cannot reach the backend API at ${API_BASE_URL}. Start the backend server and try again.`);
+  }
 
   if (!response.ok) {
     const message = await readErrorMessage(response);

@@ -45,7 +45,10 @@ export default function SignInPage({
     setIsSubmitting(true);
 
     try {
-      const { accessToken, refreshToken } = await loginWithBackend({ email, password });
+      const { accessToken, refreshToken } = await loginWithBackend({
+        email: email.trim(),
+        password: password.trim(),
+      });
       setStoredTokens(accessToken, refreshToken);
       const payload = decodeJwtPayload(accessToken);
 
@@ -54,8 +57,8 @@ export default function SignInPage({
       const target =
         role === 'merchant' ? `/${params.locale}/merchant/dashboard` : `/${params.locale}/home`;
       router.replace(target);
-    } catch {
-      setSubmitError(tCommon('errorDescription'));
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : tCommon('errorDescription'));
       setIsSubmitting(false);
     }
   }
