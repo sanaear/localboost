@@ -172,6 +172,22 @@ async function main() {
     moderation_status: 'pending',
   });
 
+  await ensureReview({
+    business_id: business.id,
+    user_id: tourist.id,
+    rating: 4,
+    content: 'The workshop tour was very informative, and the handmade pieces felt truly authentic.',
+    moderation_status: 'approved',
+  });
+
+  await ensureReview({
+    business_id: business.id,
+    user_id: tourist.id,
+    rating: 5,
+    content: 'Great experience for visitors who want to learn about traditional Fes pottery.',
+    moderation_status: 'approved',
+  });
+
   await prisma.favorite.upsert({
     where: { user_id_business_id: { user_id: tourist.id, business_id: business.id } },
     update: {},

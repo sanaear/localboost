@@ -219,6 +219,12 @@ export default function MerchantEditProfilePage({
     }
   }
 
+  const mapQuery =
+    typeof lat === 'number' && typeof lng === 'number'
+      ? `${lat},${lng}`
+      : [address, city].filter((value) => value.trim()).join(', ') || 'Morocco';
+  const googleMapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed`;
+
   return (
     <main className="mobile-app-shell">
       <section className="mobile-phone mobile-light mobile-pattern-light">
@@ -362,19 +368,19 @@ export default function MerchantEditProfilePage({
                         />
                       </div>
                     </div>
-                    <div className="relative mt-4 group h-40 rounded-xl overflow-hidden bg-surface-container-high">
-                      <div className="w-full h-full flex items-center justify-center bg-surface-container-high">
-                        <span
-                          className="material-symbols-outlined text-primary text-4xl"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          location_on
-                        </span>
-                      </div>
+                    <div className="relative mt-4 h-40 rounded-xl overflow-hidden bg-surface-container-high shadow-sm ring-1 ring-outline-variant/20">
+                      <iframe
+                        title="Business location map"
+                        src={googleMapSrc}
+                        className="h-full w-full border-0"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        allowFullScreen
+                      />
                       <button
                         type="button"
                         onClick={() => void handleUseMyLocation()}
-                        className="absolute bottom-3 right-3 bg-surface-container-lowest/90 backdrop-blur p-2 rounded-full shadow-lg text-primary"
+                        className="absolute bottom-3 right-3 bg-surface-container-lowest/95 backdrop-blur p-2 rounded-full shadow-lg text-primary ring-1 ring-outline-variant/10"
                       >
                         <span className="material-symbols-outlined text-sm">my_location</span>
                       </button>
