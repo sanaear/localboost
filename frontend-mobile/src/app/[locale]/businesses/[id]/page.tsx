@@ -1,0 +1,453 @@
+'use client';
+
+import Link from 'next/link';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { ErrorState, SkeletonLine } from '@/components/UiState';
+import { useFavorites } from '@/lib/favorites';
+import {
+  useBusinessAverageRating,
+  useBusinessDetail,
+  useBusinessReviews,
+} from '@/lib/queries';
+import OptimizedImage from '@/components/OptimizedImage';
+import { API_BASE_URL } from '@/lib/api';
+import { getStoredAccessToken } from '@/lib/auth';
+
+export default function BusinessDetailPage({
+  params: paramsPromise,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const params = use(paramsPromise);
+  const t = useTranslations('businessDetail');
+  const tCommon = useTranslations('common');
+  const businessId = Number(params.id);
+  const favorites = useFavorites();
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewContent, setReviewContent] = useState('');
+  const [reviewMessage, setReviewMessage] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const shareMessageTimerRef = useRef<number | null>(null);
+
+  const businessQuery = useBusinessDetail(businessId);
+  const ratingQuery = useBusinessAverageRating(businessId);
+  const reviewsQuery = useBusinessReviews(businessId);
+
+  const primaryImage = useMemo(() => businessQuery.data?.images?.[0], [businessQuery.data?.images]);
+
+  async function handleSubmitReview() {
+    setReviewSubmitting(true);
+    setReviewMessage(null);
+    setReviewError(null);
+
+    try {
+      const token = getStoredAccessToken();
+      if (!token) throw new Error(t('reviewSignInRequired'));
+      const response = await fetch(`${API_BASE_URL}/reviews`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          business_id: businessId,
+          rating: reviewRating,
+          content: reviewContent.trim(),
+        }),
+      });
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(text || tCommon('errorDescription'));
+      }
+      await response.json().catch(() => null);
+      setReviewContent('');
+      setReviewMessage(t('reviewPending'));
+      await Promise.all([reviewsQuery.refetch(), ratingQuery.refetch()]);
+    } catch (caught) {
+      setReviewError(caught instanceof Error ? caught.message : tCommon('errorDescription'));
+    } finally {
+      setReviewSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!Number.isFinite(businessId)) return;
+    void fetch(`${API_BASE_URL}/analytics/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ businessId, eventType: 'view' }),
+    }).catch(() => null);
+
+    return () => {
+      if (shareMessageTimerRef.current) {
+        window.clearTimeout(shareMessageTimerRef.current);
+      }
+    };
+  }, []);
+
+  async function copyText(text: string) {
+    if (typeof navigator === 'undefined') throw new Error('Clipboard not available');
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  }
+
+  function showShareMessage(message: string) {
+    setShareMessage(message);
+    if (shareMessageTimerRef.current) window.clearTimeout(shareMessageTimerRef.current);
+    shareMessageTimerRef.current = window.setTimeout(() => setShareMessage(null), 2200);
+  }
+
+  function getShareUrl() {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${origin}/${params.locale}/businesses/${businessId}`;
+  }
+
+  async function handleCopyLink() {
+    setShareBusy(true);
+    try {
+      await copyText(getShareUrl());
+      showShareMessage(t('shareCopied'));
+      setShareOpen(false);
+    } catch {
+      showShareMessage(t('shareCopyFailed'));
+    } finally {
+      setShareBusy(false);
+    }
+  }
+
+  function handleOpenLink() {
+    try {
+      window.open(getShareUrl(), '_blank', 'noopener,noreferrer');
+      showShareMessage(t('shareOpened'));
+      setShareOpen(false);
+    } catch {
+      showShareMessage(t('shareOpenFailed'));
+    }
+  }
+
+  function handleShareWhatsApp() {
+    try {
+      const url = getShareUrl();
+      const title = businessQuery.data?.name ? `${businessQuery.data.name} - ` : '';
+      const whatsapp = `https://wa.me/?text=${encodeURIComponent(`${title}${url}`)}`;
+      window.open(whatsapp, '_blank', 'noopener,noreferrer');
+      showShareMessage(t('shareWhatsappOpened'));
+      setShareOpen(false);
+    } catch {
+      showShareMessage(t('shareWhatsappFailed'));
+    }
+  }
+
+  if (!Number.isFinite(businessId)) {
+    return (
+      <main className="mobile-app-shell">
+        <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
+          <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col p-6 text-[14px] font-bold text-[#7f7669]">
+            {t('invalidId')}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="mobile-app-shell">
+      <section className="mobile-phone overflow-hidden bg-[#faf8f2]">
+        <div className="mobile-content flex min-h-[calc(100vh-32px)] flex-col">
+          <div className="relative h-[310px]">
+            {primaryImage ? (
+              <OptimizedImage
+                src={primaryImage}
+                alt={businessQuery.data?.name ?? t('imageAltFallback')}
+                width={1200}
+                height={900}
+                sizes="100vw"
+                widths={[640, 828, 1080, 1200]}
+                priority
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-[#efece6]" />
+            )}
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3">
+              <Link
+                href={`/${params.locale}/discover`}
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              </Link>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void favorites.toggleFavorite(businessId)}
+                  disabled={favorites.isPending(businessId)}
+                  className={`grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm ${favorites.isPending(businessId) ? 'opacity-60' : ''}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {favorites.isPending(businessId)
+                      ? 'progress_activity'
+                      : favorites.isFavorite(businessId)
+                        ? 'favorite'
+                        : 'favorite_border'}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen((current) => !current)}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-white/86 text-[#70685c] shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[18px]">share</span>
+                </button>
+              </div>
+            </div>
+
+            {shareOpen ? (
+              <div className="absolute right-3 top-[58px] z-10 w-[210px] overflow-hidden rounded-[18px] border border-white/60 bg-white/95 shadow-[0_14px_40px_rgba(31,26,10,0.18)] backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => void handleCopyLink()}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? 'opacity-60' : ''}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">content_copy</span>
+                  {t('shareCopy')}
+                </button>
+                <div className="h-px bg-[#ece2d3]" />
+                <button
+                  type="button"
+                  onClick={handleShareWhatsApp}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? 'opacity-60' : ''}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">chat</span>
+                  {t('shareWhatsapp')}
+                </button>
+                <div className="h-px bg-[#ece2d3]" />
+                <button
+                  type="button"
+                  onClick={handleOpenLink}
+                  disabled={shareBusy}
+                  className={`flex w-full items-center gap-2 px-4 py-3 text-left text-[12px] font-extrabold text-[#2a2730] ${shareBusy ? 'opacity-60' : ''}`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">link</span>
+                  {t('shareOpenUrl')}
+                </button>
+              </div>
+            ) : null}
+
+            {shareMessage ? (
+              <div className="absolute inset-x-0 bottom-3 flex justify-center px-3">
+                <div className="rounded-full bg-[#1f1a0a]/75 px-4 py-2 text-[12px] font-extrabold text-white shadow-[0_10px_25px_rgba(0,0,0,0.25)]">
+                  {shareMessage}
+                </div>
+              </div>
+            ) : null}
+          </div>
+
+          <div className="-mt-8 flex-1 rounded-t-[34px] bg-[#faf8f2] px-5 pb-6 pt-6">
+            {favorites.error ? (
+              <div className="mb-4 flex items-center justify-between gap-3 rounded-[22px] border border-[#f1d0d0] bg-white px-4 py-3 text-[12px] font-bold text-[#9b3e3e] shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                <span className="min-w-0 flex-1 truncate">{favorites.error}</span>
+                <button
+                  type="button"
+                  onClick={favorites.clearError}
+                  className="shrink-0 text-[#9b3e3e]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            ) : null}
+            {businessQuery.isLoading ? (
+              <div className="rounded-[26px] border border-[#ece2d3] bg-white px-4 py-5 shadow-[0_8px_24px_rgba(31,26,10,0.05)]">
+                <div className="space-y-3">
+                  <SkeletonLine className="h-7 w-[75%]" />
+                  <SkeletonLine className="h-4 w-[55%]" />
+                  <div className="mt-5 space-y-2">
+                    <SkeletonLine className="h-4 w-[90%]" />
+                    <SkeletonLine className="h-4 w-[92%]" />
+                    <SkeletonLine className="h-4 w-[70%]" />
+                  </div>
+                </div>
+              </div>
+            ) : businessQuery.isError || !businessQuery.data ? (
+              <ErrorState
+                title={t('errorBusiness')}
+                description={tCommon('errorDescription')}
+                onRetry={() => businessQuery.refetch()}
+              />
+            ) : (
+              <>
+                <h1 className="text-[2.15rem] font-extrabold leading-[0.95] tracking-[-0.07em] text-[#23212c]">
+                  {businessQuery.data.name}
+                </h1>
+                <p className="mt-2 text-[15px] text-[#70685d]">
+                  {[businessQuery.data.city, businessQuery.data.user?.address]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-[#7c7367]">
+                  {ratingQuery.data ? (
+                    <span className="flex items-center gap-1 font-extrabold text-[#a36e00]">
+                      <span className="material-symbols-outlined text-[16px]">star</span>
+                      {ratingQuery.data.average.toFixed(1)}{' '}
+                      <span className="font-semibold text-[#8d8476]">
+                        ({t('reviewsCount', { count: ratingQuery.data.count })})
+                      </span>
+                    </span>
+                  ) : null}
+                  {businessQuery.data.category?.name_en ? (
+                    <span className="rounded-full bg-[#ebf8ef] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[#178f60]">
+                      {businessQuery.data.category.name_en}
+                    </span>
+                  ) : null}
+                </div>
+
+                {businessQuery.data.description ? (
+                  <div className="mt-5 rounded-[26px] border border-[#eadfce] bg-white px-4 py-4 text-[13px] leading-6 text-[#7a7266] shadow-[0_10px_25px_rgba(31,26,10,0.05)]">
+                    {businessQuery.data.description}
+                  </div>
+                ) : null}
+
+                <div className="mt-7">
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-[1.45rem] font-extrabold tracking-[-0.05em] text-[#23212c]">
+                      {t('reviews')}
+                    </h2>
+                    <Link
+                      href={`/${params.locale}/rate?businessId=${businessId}`}
+                      className="rounded-full bg-[#ebf8ef] px-3 py-2 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#006c4c]"
+                    >
+                      {t('writeReview')}
+                    </Link>
+                  </div>
+
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void handleSubmitReview();
+                    }}
+                    className="mt-3 rounded-[24px] border border-[#eadfce] bg-white px-4 py-4 shadow-[0_10px_25px_rgba(31,26,10,0.05)]"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-[12px] font-extrabold uppercase tracking-[0.14em] text-[#8d8476]">
+                        {t('yourRating')}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setReviewRating(star)}
+                            className="text-[#e0a11f]"
+                            aria-label={`${star} ${t('stars')}`}
+                          >
+                            <span className="material-symbols-outlined text-[22px]">
+                              {star <= reviewRating ? 'star' : 'star_outline'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <textarea
+                      value={reviewContent}
+                      onChange={(event) => setReviewContent(event.target.value)}
+                      placeholder={t('reviewPlaceholder')}
+                      className="mt-3 min-h-[86px] w-full resize-none rounded-[18px] border border-[#eadfce] bg-[#fbfaf6] px-3 py-3 text-[13px] font-semibold text-[#2a2730] outline-none focus:border-[#c58a12]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={reviewSubmitting}
+                      className="mobile-pill mobile-button-gold mt-3 h-11 w-full text-[13px] font-extrabold disabled:opacity-60"
+                    >
+                      {reviewSubmitting ? tCommon('loading') : t('submitReview')}
+                    </button>
+                    {reviewMessage ? (
+                      <p className="mt-3 text-[12px] font-bold text-[#006c4c]">{reviewMessage}</p>
+                    ) : null}
+                    {reviewError ? (
+                      <p className="mt-3 text-[12px] font-bold text-[#ac3400]">{reviewError}</p>
+                    ) : null}
+                  </form>
+
+                  {reviewsQuery.isLoading ? (
+                    <div className="mt-3 space-y-3">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.04)]"
+                        >
+                          <SkeletonLine className="h-4 w-[45%]" />
+                          <div className="mt-3 space-y-2">
+                            <SkeletonLine className="h-4 w-[90%]" />
+                            <SkeletonLine className="h-4 w-[80%]" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : reviewsQuery.isError ? (
+                    <div className="mt-3">
+                      <ErrorState
+                        title={t('errorReviews')}
+                        description={t('errorReviewsDescription')}
+                        onRetry={() => reviewsQuery.refetch()}
+                        retryLabel={tCommon('retry')}
+                      />
+                    </div>
+                  ) : (reviewsQuery.data ?? []).length === 0 ? (
+                    <div className="mt-3 rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 text-[13px] font-bold text-[#7f7669] shadow-[0_8px_24px_rgba(31,26,10,0.04)]">
+                      {t('noReviews')}
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-3">
+                      {(reviewsQuery.data ?? []).slice(0, 6).map((review) => (
+                        <div
+                          key={review.id}
+                          className="rounded-[20px] border border-[#ece2d3] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(31,26,10,0.04)]"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-[13px] font-extrabold text-[#2a2730]">
+                              {[review.user?.first_name, review.user?.last_name]
+                                .filter(Boolean)
+                                .join(' ') || t('anonymous')}
+                            </span>
+                            <span className="flex items-center gap-1 text-[12px] font-extrabold text-[#a36e00]">
+                              <span className="material-symbols-outlined text-[14px]">star</span>
+                              {review.rating}
+                            </span>
+                          </div>
+                          {review.content ? (
+                            <p className="mt-2 text-[12px] leading-5 text-[#7a7266]">
+                              {review.content}
+                            </p>
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}

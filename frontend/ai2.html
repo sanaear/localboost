@@ -1,0 +1,2230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Business Profile – LocalBoost</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #0f172a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 16px;
+        color: #f8fafc;
+      }
+
+      /* ── Phone shell ── */
+      .phone {
+        background: #1e293b;
+        width: 100%;
+        max-width: 420px;
+        border-radius: 40px;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+        border: 10px solid #334155;
+        min-height: 850px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* ── Progress bar ── */
+      .progress-area {
+        padding: 20px 24px 0;
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      .step-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #f59e0b;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      .pct-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #f59e0b;
+      }
+      .progress-bar {
+        height: 4px;
+        background: #334155;
+        border-radius: 99px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #d97706, #f59e0b);
+        border-radius: 99px;
+        transition: width 0.5s ease;
+      }
+
+      /* ── Scrollable content ── */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px 24px 100px;
+      }
+      .content::-webkit-scrollbar {
+        width: 4px;
+      }
+      .content::-webkit-scrollbar-thumb {
+        background: #475569;
+        border-radius: 4px;
+      }
+
+      /* ── Step headers ── */
+      .step-tag {
+        font-size: 11px;
+        font-weight: 700;
+        color: #f59e0b;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .step-title {
+        font-size: 32px;
+        font-weight: 900;
+        color: #f8fafc;
+        line-height: 1.1;
+        margin-bottom: 10px;
+      }
+      .step-desc {
+        font-size: 14px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+
+      /* ── Form elements ── */
+      .field {
+        margin-bottom: 20px;
+      }
+      .field label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #a8824a;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        border: 1.5px solid #475569;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #f8fafc;
+        background: #334155;
+        outline: none;
+        transition: border-color 0.2s;
+        font-family: inherit;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: #f59e0b;
+      }
+      .field input::placeholder,
+      .field textarea::placeholder {
+        color: #64748b;
+      }
+      .field select {
+        appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+      }
+      .phone-row {
+        display: flex;
+        gap: 8px;
+      }
+      .phone-prefix {
+        flex-shrink: 0;
+        border: 1.5px solid #475569;
+        border-radius: 12px;
+        padding: 14px 14px;
+        background: #334155;
+        font-size: 15px;
+        font-weight: 600;
+        color: #f8fafc;
+        width: 72px;
+        text-align: center;
+      }
+      .phone-row input {
+        flex: 1;
+      }
+
+      /* ── Next/Finish button ── */
+      .btn-next {
+        width: 100%;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: #fff;
+        font-weight: 800;
+        font-size: 17px;
+        border: none;
+        border-radius: 999px;
+        padding: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: inherit;
+        transition: all 0.2s;
+        box-shadow: 0 4px 20px rgba(180, 83, 9, 0.35);
+        margin-top: 24px;
+      }
+      .btn-next:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(180, 83, 9, 0.4);
+      }
+      .btn-next:active {
+        transform: scale(0.98);
+      }
+      .btn-prev {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin: 10px auto 0;
+        font-family: inherit;
+      }
+      .btn-prev:hover {
+        color: #f8fafc;
+      }
+      .save-later {
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: #a8824a;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-top: 12px;
+        cursor: pointer;
+      }
+
+      /* ── Photo Upload ── */
+      .upload-zone {
+        border: 2px dashed #475569;
+        border-radius: 20px;
+        padding: 36px;
+        text-align: center;
+        cursor: pointer;
+        background: #1e293b;
+        transition: all 0.2s;
+        margin-bottom: 16px;
+        position: relative;
+      }
+      .upload-zone:hover,
+      .upload-zone.drag-over {
+        border-color: #f59e0b;
+        background: #334155;
+      }
+      .upload-zone input[type='file'] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .upload-icon {
+        font-size: 36px;
+        margin-bottom: 8px;
+      }
+      .upload-text {
+        font-size: 15px;
+        font-weight: 700;
+        color: #f59e0b;
+        margin-bottom: 4px;
+      }
+      .upload-sub {
+        font-size: 12px;
+        color: #64748b;
+      }
+      .photos-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .photo-thumb {
+        border-radius: 14px;
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 1;
+        background: #334155;
+      }
+      .photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo-thumb .del-btn {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .add-more-tile {
+        border: 2px dashed #475569;
+        border-radius: 14px;
+        aspect-ratio: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: #1e293b;
+        transition: all 0.2s;
+        position: relative;
+      }
+      .add-more-tile:hover {
+        border-color: #f59e0b;
+        background: #334155;
+      }
+      .add-more-tile input[type='file'] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .add-more-tile span {
+        font-size: 24px;
+        margin-bottom: 4px;
+      }
+      .add-more-tile p {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      /* ── Schedule ── */
+      .schedule-section {
+        background: #1e293b;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #334155;
+      }
+      .section-heading {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 16px;
+        font-weight: 800;
+        color: #f8fafc;
+        margin-bottom: 16px;
+      }
+      .day-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 0;
+        border-bottom: 1px solid #334155;
+      }
+      .day-row:last-child {
+        border-bottom: none;
+      }
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        inset: 0;
+        background: #475569;
+        border-radius: 99px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .slider::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: 0.3s;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+      .toggle input:checked + .slider {
+        background: #f59e0b;
+      }
+      .toggle input:checked + .slider::before {
+        transform: translateX(18px);
+      }
+      .day-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f8fafc;
+        flex: 1;
+      }
+      .time-inputs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .time-input {
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #f8fafc;
+        background: #334155;
+        outline: none;
+        width: 70px;
+        text-align: center;
+        font-family: inherit;
+      }
+      .time-input:focus {
+        border-color: #f59e0b;
+      }
+      .time-sep {
+        font-size: 12px;
+        font-weight: 700;
+        color: #a8824a;
+      }
+      .day-row.disabled .time-inputs {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      /* ── Contact ── */
+      .contact-section {
+        background: #1e293b;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #334155;
+      }
+      .contact-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #a8824a;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .whatsapp-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .wa-flag {
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 12px 12px;
+        background: #334155;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .wa-prefix {
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 12px;
+        background: #334155;
+        font-size: 15px;
+        font-weight: 700;
+        color: #f59e0b;
+        flex-shrink: 0;
+      }
+      .wa-input {
+        flex: 1;
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 15px;
+        font-weight: 500;
+        color: #f8fafc;
+        background: #334155;
+        outline: none;
+        font-family: inherit;
+      }
+      .wa-input:focus {
+        border-color: #f59e0b;
+      }
+      .wa-hint {
+        font-size: 12px;
+        color: #f59e0b;
+        margin-bottom: 16px;
+      }
+      .url-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid #475569;
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: #334155;
+        margin-bottom: 12px;
+      }
+      .url-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .url-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 15px;
+        font-weight: 500;
+        color: #f8fafc;
+        font-family: inherit;
+        background: transparent;
+      }
+      .url-input::placeholder {
+        color: #64748b;
+      }
+
+      .social-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+      .social-select {
+        width: 110px !important;
+        flex-shrink: 0;
+      }
+
+      /* ── Profile database listing ── */
+      .profile-history-section {
+        margin-top: 32px;
+      }
+      .history-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #cbd5e1;
+        margin-bottom: 12px;
+      }
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .profile-history-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      }
+      .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .profile-logo-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #334155;
+        object-fit: cover;
+      }
+      .profile-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #f8fafc;
+      }
+      .profile-tagline {
+        font-size: 12px;
+        font-style: italic;
+        color: #94a3b8;
+        margin-bottom: 8px;
+      }
+      .profile-meta-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        font-size: 12px;
+        color: #64748b;
+      }
+
+      /* ── Success screen ── */
+      .success-screen {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 20px 24px;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .success-screen.show {
+        display: flex;
+      }
+      .success-icon {
+        font-size: 54px;
+        margin-bottom: 14px;
+        animation: pop 0.4s ease;
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0);
+        }
+        70% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .success-title {
+        font-size: 24px;
+        font-weight: 900;
+        color: #f8fafc;
+        margin-bottom: 8px;
+      }
+      .success-sub {
+        font-size: 14px;
+        color: #94a3b8;
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+      .score-badge {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: #fff;
+        border-radius: 99px;
+        padding: 8px 22px;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 16px;
+      }
+      .btn-new {
+        background: #f8fafc;
+        color: #1e293b;
+        border: none;
+        border-radius: 16px;
+        padding: 14px 28px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+      }
+
+      /* ── AI Description Section ── */
+      .ai-desc-section {
+        width: 100%;
+        margin-top: 16px;
+        text-align: left;
+      }
+      .ai-desc-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .ai-desc-header h3 {
+        font-size: 15px;
+        font-weight: 800;
+        color: #f59e0b;
+      }
+      .tone-select-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .tone-select-row label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #a8824a;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      .tone-chip {
+        border: 1.5px solid #475569;
+        border-radius: 99px;
+        padding: 6px 14px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #94a3b8;
+        background: #1e293b;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .tone-chip:hover {
+        border-color: #f59e0b;
+        color: #f59e0b;
+      }
+      .tone-chip.active {
+        background: #f59e0b;
+        color: #fff;
+        border-color: #f59e0b;
+      }
+      .lang-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #334155;
+      }
+      .lang-tab {
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: #64748b;
+        font-family: inherit;
+        transition: all 0.25s ease;
+      }
+      .lang-tab:hover {
+        color: #f8fafc;
+      }
+      .lang-tab.active {
+        background: linear-gradient(135deg, #d97706, #f59e0b);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+      }
+      .desc-card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 16px;
+        padding: 16px;
+        position: relative;
+        min-height: 80px;
+        transition: all 0.3s ease;
+      }
+      .desc-card .desc-text {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #cbd5e1;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .desc-card .desc-text[dir='rtl'] {
+        text-align: right;
+      }
+      .desc-card .word-count {
+        display: inline-block;
+        margin-top: 10px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #475569;
+        background: #334155;
+        border-radius: 99px;
+        padding: 3px 10px;
+      }
+      .copy-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #334155;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .copy-btn:hover {
+        background: #475569;
+        color: #f8fafc;
+      }
+      .copy-btn.copied {
+        background: #22c55e;
+        color: #fff;
+        border-color: #22c55e;
+      }
+      .desc-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        gap: 12px;
+      }
+      .desc-loading .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #334155;
+        border-top-color: #f59e0b;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .desc-loading span {
+        font-size: 13px;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+      .desc-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        gap: 8px;
+        color: #475569;
+      }
+      .desc-placeholder span {
+        font-size: 28px;
+      }
+      .desc-placeholder p {
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      /* ── Error toast ── */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ef4444;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        display: none;
+        z-index: 999;
+        max-width: 320px;
+        text-align: center;
+      }
+      .toast.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone">
+      <!-- Header with Language Selector -->
+      <div
+        class="header"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 24px 8px;
+          border-bottom: 1.5px solid #334155;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 8px">
+          <div
+            style="
+              width: 28px;
+              height: 28px;
+              border-radius: 50%;
+              background: #d97706;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              color: #fff;
+              font-weight: 800;
+              font-size: 12px;
+            "
+          >
+            Lb
+          </div>
+          <div style="font-weight: 800; font-size: 16px; color: #f59e0b">LocalBoost</div>
+        </div>
+        <div
+          class="lang-switch text-xs"
+          style="
+            background: #334155;
+            border-radius: 999px;
+            padding: 2px;
+            border: 1.5px solid #475569;
+            display: flex;
+            gap: 2px;
+          "
+        >
+          <button
+            class="lang-btn active"
+            data-lang="EN"
+            onclick="setLanguage('EN')"
+            style="
+              border: none;
+              border-radius: 999px;
+              padding: 4px 10px;
+              font-size: 10px;
+              font-weight: 700;
+              cursor: pointer;
+              background: #f59e0b;
+              color: #fff;
+              font-family: inherit;
+            "
+          >
+            EN
+          </button>
+          <button
+            class="lang-btn"
+            data-lang="FR"
+            onclick="setLanguage('FR')"
+            style="
+              border: none;
+              border-radius: 999px;
+              padding: 4px 10px;
+              font-size: 10px;
+              font-weight: 700;
+              cursor: pointer;
+              background: transparent;
+              color: #94a3b8;
+              font-family: inherit;
+            "
+          >
+            FR
+          </button>
+          <button
+            class="lang-btn"
+            data-lang="AR"
+            onclick="setLanguage('AR')"
+            style="
+              border: none;
+              border-radius: 999px;
+              padding: 4px 10px;
+              font-size: 10px;
+              font-weight: 700;
+              cursor: pointer;
+              background: transparent;
+              color: #94a3b8;
+              font-family: inherit;
+            "
+          >
+            AR
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Progress ── -->
+      <div class="progress-area">
+        <div class="progress-meta">
+          <span class="step-label" id="stepLabel">Step 1 of 3</span>
+          <span class="pct-label" id="pctLabel">33% Complete</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 33%"></div>
+        </div>
+      </div>
+
+      <!-- ══════════ STEP 1 ══════════ -->
+      <div class="content" id="step1">
+        <div class="step-tag">Tell us about your business</div>
+        <h1 class="step-title">Business Info</h1>
+        <p class="step-desc">
+          Help us create a profile that captures the essence of your shop for the 2030 World Cup
+          visitors.
+        </p>
+
+        <div class="field">
+          <label>Business Name</label>
+          <input type="text" id="businessName" placeholder="e.g. Café de la Poste" />
+        </div>
+        <div class="field">
+          <label>Tagline / Slogan</label>
+          <input type="text" id="tagline" placeholder="e.g. The finest mint tea since 1950" />
+        </div>
+        <div class="field">
+          <label>Category</label>
+          <select id="category">
+            <option value="">Select category</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>City</label>
+          <select id="city">
+            <option value="">Choose a city</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <input type="text" id="address" placeholder="Street name and number" />
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <div class="phone-row">
+            <div class="phone-prefix">+212</div>
+            <input type="tel" id="phoneNumber" placeholder="600-000000" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Contact Email</label>
+          <input type="email" id="email" placeholder="e.g. contact@myriad.com" />
+        </div>
+
+        <button class="btn-next" onclick="goStep2()">Next →</button>
+        <div class="save-later">Save for later</div>
+      </div>
+
+      <!-- ══════════ STEP 2 ══════════ -->
+      <div class="content" id="step2" style="display: none">
+        <div class="step-tag">Add your best photos</div>
+        <h1 class="step-title">Media Uploads</h1>
+        <p class="step-desc">
+          Upload a store logo and high-quality photos of your shop and products.
+        </p>
+
+        <!-- Logo Upload -->
+        <div class="field" style="margin-bottom: 24px">
+          <label>Store Logo (Optional)</label>
+          <div style="display: flex; align-items: center; gap: 16px">
+            <div
+              class="add-more-tile"
+              id="logoTile"
+              style="
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                overflow: hidden;
+                flex-shrink: 0;
+              "
+            >
+              <input type="file" accept="image/*" onchange="handleLogo(this.files[0])" />
+              <span id="logoPlus">➕</span>
+              <img
+                id="logoPreview"
+                style="display: none; width: 100%; height: 100%; object-fit: cover"
+              />
+            </div>
+            <div id="logoUploadDesc" style="font-size: 13px; color: #94a3b8">
+              Upload your merchant logo icon.
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Shop Showcase Photos (Max 10)</label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" accept="image/*" multiple onchange="handleFiles(this.files)" />
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Click or drag photos to upload</div>
+            <div class="upload-sub">Supports JPG, PNG (Max 10MB per file)</div>
+          </div>
+        </div>
+
+        <div class="photos-grid" id="photosGrid"></div>
+
+        <button class="btn-next" onclick="goStep3()">Next →</button>
+        <button class="btn-prev" onclick="showStep(1)">← Previous Step</button>
+      </div>
+
+      <!-- ══════════ STEP 3 ══════════ -->
+      <div class="content" id="step3" style="display: none">
+        <div class="step-tag">Final Step</div>
+        <h1 class="step-title">Opening hours & contact</h1>
+        <p class="step-desc">
+          Let tourists know when to visit and how to reach you. Providing clear contact info builds
+          trust with international travelers.
+        </p>
+
+        <!-- Weekly Schedule -->
+        <div class="schedule-section">
+          <div class="section-heading">🕐 Weekly Schedule</div>
+          <div id="scheduleRows"></div>
+        </div>
+
+        <!-- Contact Channels -->
+        <div class="contact-section">
+          <div class="section-heading">📋 Contact Channels</div>
+
+          <div class="contact-label">💬 WhatsApp number</div>
+          <div class="whatsapp-row">
+            <div class="wa-flag">🇲🇦</div>
+            <div class="wa-prefix">+212</div>
+            <input type="tel" class="wa-input" id="whatsapp" placeholder="6 00 00 00 00" />
+          </div>
+          <div class="wa-hint">Shared with tourists for direct bookings.</div>
+
+          <div class="contact-label">🌐 Website URL</div>
+          <div class="url-row">
+            <span class="url-icon">🔗</span>
+            <input type="url" class="url-input" id="website" placeholder="https://yourshop.com" />
+          </div>
+
+          <!-- Social handles -->
+          <div class="contact-label">🔗 Social Media Links</div>
+          <div id="socialLinksContainer"></div>
+          <button type="button" class="btn-prev" onclick="addSocialRow()" style="margin: 0 0 16px">
+            ＋ Add Social Handle
+          </button>
+
+          <!-- Special Offers -->
+          <div class="field" style="margin-top: 14px">
+            <label>🎁 Special Offers / Promos (Optional)</label>
+            <textarea
+              id="specialOffers"
+              rows="2"
+              placeholder="e.g. Free mint tea for every tourist visit!"
+            ></textarea>
+          </div>
+        </div>
+
+        <button
+          class="btn-next"
+          onclick="submitProfile()"
+          style="background: linear-gradient(135deg, #78350f, #b45309)"
+        >
+          ✅ Finish & Save
+        </button>
+        <button class="btn-prev" onclick="showStep(2)">← Previous Step</button>
+      </div>
+
+      <!-- ══════════ SUCCESS ══════════ -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-title">Profile Created!</h2>
+        <p class="success-sub">
+          Your business profile has been submitted successfully and is now saved in the SQLite
+          Database.
+        </p>
+        <div class="score-badge" id="scoreDisplay">Completion: 100%</div>
+
+        <!-- ── AI Description Generator (Inline) ── -->
+        <div class="ai-desc-section" id="aiDescSection">
+          <div class="ai-desc-header">
+            <span style="font-size: 20px">🤖</span>
+            <h3 id="aiDescTitle">AI Description Generator</h3>
+          </div>
+
+          <!-- Tone Selector -->
+          <div class="tone-select-row">
+            <label id="toneLabel">Tone:</label>
+            <button class="tone-chip active" data-tone="storytelling" onclick="selectTone(this)">
+              📖 Storytelling
+            </button>
+            <button class="tone-chip" data-tone="professional" onclick="selectTone(this)">
+              💼 Professional
+            </button>
+            <button class="tone-chip" data-tone="friendly" onclick="selectTone(this)">
+              😊 Friendly
+            </button>
+            <button class="tone-chip" data-tone="luxurious" onclick="selectTone(this)">
+              ✨ Luxurious
+            </button>
+            <button class="tone-chip" data-tone="short" onclick="selectTone(this)">⚡ Short</button>
+          </div>
+
+          <!-- Generate Button -->
+          <button
+            class="btn-new"
+            id="generateAIDescBtn"
+            onclick="generateInlineDescription()"
+            style="
+              background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+              color: white;
+              margin-bottom: 14px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              width: 100%;
+              border-radius: 16px;
+              box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+              font-size: 15px;
+              padding: 14px;
+            "
+          >
+            ⚡ Generate AI Description (EN · FR · AR)
+          </button>
+
+          <!-- Language Tabs -->
+          <div class="lang-tabs" id="descLangTabs" style="display: none">
+            <button class="lang-tab active" data-lang="EN" onclick="switchDescTab('EN', this)">
+              🇬🇧 English
+            </button>
+            <button class="lang-tab" data-lang="FR" onclick="switchDescTab('FR', this)">
+              🇫🇷 Français
+            </button>
+            <button class="lang-tab" data-lang="AR" onclick="switchDescTab('AR', this)">
+              🇲🇦 العربية
+            </button>
+          </div>
+
+          <!-- Description Cards -->
+          <div id="descCardContainer">
+            <div class="desc-placeholder" id="descPlaceholder">
+              <span>✨</span>
+              <p id="descPlaceholderText">
+                Click the button above to generate descriptions in 3 languages
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; width: 100%; margin-top: 14px">
+          <button class="btn-new" onclick="resetForm()" style="flex: 1">
+            + Create Another Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Merchant database list -->
+      <div class="content profile-history-section" id="profileHistorySection">
+        <h3 class="history-title">🏢 Saved Merchants Database (SQLite)</h3>
+        <div class="history-list" id="profileHistoryList">
+          <div style="color: #64748b; font-size: 13px">No merchants registered in DB yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      let uploadedPhotos = []; // base64 strings
+      let logoBase64 = null; // base64 string
+      let currentStep = 1;
+      let currentLang = 'EN';
+
+      // ── Translations dictionary ──
+      const TRANSLATIONS = {
+        EN: {
+          title: 'Create Business Profile – LocalBoost',
+          step: 'Step',
+          of: 'of',
+          complete: 'Complete',
+          tellUs: 'Tell us about your business',
+          businessInfo: 'Business Info',
+          businessInfoDesc:
+            'Help us create a profile that captures the essence of your shop for the 2030 World Cup visitors.',
+          businessName: 'Business Name',
+          businessNamePlaceholder: 'e.g. Café de la Poste',
+          tagline: 'Tagline / Slogan',
+          taglinePlaceholder: 'e.g. The finest mint tea since 1950',
+          category: 'Category',
+          selectCategory: 'Select category',
+          city: 'City',
+          chooseCity: 'Choose a city',
+          address: 'Address',
+          addressPlaceholder: 'Street name and number',
+          phoneNumber: 'Phone Number',
+          phoneNumberPlaceholder: '600-000000',
+          contactEmail: 'Contact Email',
+          contactEmailPlaceholder: 'e.g. contact@myriad.com',
+          next: 'Next →',
+          saveLater: 'Save for later',
+          previous: '← Previous Step',
+          addBestPhotos: 'Add your best photos',
+          mediaUploads: 'Media Uploads',
+          mediaDesc: 'Upload a store logo and high-quality photos of your shop and products.',
+          storeLogo: 'Store Logo (Optional)',
+          uploadLogoDesc: 'Upload your merchant logo icon.',
+          showcasePhotos: 'Shop Showcase Photos (Max 10)',
+          dragDropText: 'Click or drag photos to upload',
+          dragDropSub: 'Supports JPG, PNG (Max 10MB per file)',
+          finalStep: 'Final Step',
+          hoursContact: 'Opening hours & contact',
+          hoursContactDesc:
+            'Let tourists know when to visit and how to reach you. Providing clear contact info builds trust with international travelers.',
+          weeklySchedule: '🕐 Weekly Schedule',
+          contactChannels: '📋 Contact Channels',
+          whatsappNumber: '💬 WhatsApp number',
+          whatsappHint: 'Shared with tourists for direct bookings.',
+          websiteUrl: '🌐 Website URL',
+          socialLinks: '🔗 Social Media Links',
+          addSocial: '＋ Add Social Handle',
+          specialOffers: '🎁 Special Offers / Promos (Optional)',
+          specialOffersPlaceholder: 'e.g. Free mint tea for every tourist visit!',
+          finishSave: '✅ Finish & Save',
+          saving: 'Saving to Database...',
+          profileCreated: 'Profile Created!',
+          profileCreatedDesc:
+            'Your business profile has been submitted successfully and is now saved in the SQLite Database.',
+          completionScore: 'Completion Score',
+          createAnother: '+ Create Another Profile',
+          generateDescBtn: '⚡ Generate AI Description (EN · FR · AR)',
+          aiDescTitle: 'AI Description Generator',
+          toneLabel: 'Tone:',
+          descPlaceholder: 'Click the button above to generate descriptions in 3 languages',
+          generating: 'Generating descriptions...',
+          copyBtn: '📋 Copy',
+          copiedBtn: '✅ Copied!',
+          words: 'words',
+          savedMerchants: '🏢 Saved Merchants Database (SQLite)',
+          noMerchants: 'No merchants registered in DB yet.',
+          to: 'TO',
+          errName: 'Please enter your business name.',
+          errCategory: 'Please select a category.',
+          errCity: 'Please choose a city.',
+          errAddress: 'Please enter your address.',
+          errPhone: 'Please enter your phone number.',
+          errSchedule: 'Please set at least one open day.',
+          toastServerError: '❌ Server error. Make sure the backend is running.',
+        },
+        FR: {
+          title: "Créer un profil d'entreprise – LocalBoost",
+          step: 'Étape',
+          of: 'sur',
+          complete: 'complété',
+          tellUs: 'Parlez-nous de votre commerce',
+          businessInfo: "Infos de l'entreprise",
+          businessInfoDesc:
+            "Aidez-nous à créer un profil qui capture l'essence de votre magasin pour les visiteurs de la Coupe du Monde 2030.",
+          businessName: "Nom de l'entreprise",
+          businessNamePlaceholder: 'ex. Café de la Poste',
+          tagline: 'Slogan / Devise',
+          taglinePlaceholder: 'ex. Le meilleur thé à la menthe depuis 1950',
+          category: 'Catégorie',
+          selectCategory: 'Sélectionner la catégorie',
+          city: 'Ville',
+          chooseCity: 'Choisir une ville',
+          address: 'Adresse',
+          addressPlaceholder: 'Nom de rue et numéro',
+          phoneNumber: 'Numéro de téléphone',
+          phoneNumberPlaceholder: '600-000000',
+          contactEmail: 'E-mail de contact',
+          contactEmailPlaceholder: 'ex. contact@myriad.com',
+          next: 'Suivant →',
+          saveLater: 'Enregistrer pour plus tard',
+          previous: '← Étape précédente',
+          addBestPhotos: 'Ajoutez vos meilleures photos',
+          mediaUploads: 'Photos & Logo',
+          mediaDesc:
+            'Téléchargez un logo de magasin et des photos de haute qualité de votre boutique et de vos produits.',
+          storeLogo: 'Logo du magasin (Optionnel)',
+          uploadLogoDesc: "Téléchargez l'icône du logo de votre commerce.",
+          showcasePhotos: 'Photos de vitrine (Max 10)',
+          dragDropText: 'Cliquez ou glissez les photos pour les télécharger',
+          dragDropSub: 'Prend en charge JPG, PNG (Max 10 Mo par fichier)',
+          finalStep: 'Dernière étape',
+          hoursContact: "Horaires d'ouverture & contact",
+          hoursContactDesc:
+            'Indiquez aux touristes quand vous rendre visite et comment vous joindre. Fournir des informations claires renforce la confiance.',
+          weeklySchedule: '🕐 Horaires hebdomadaires',
+          contactChannels: '📋 Canaux de contact',
+          whatsappNumber: '💬 Numéro WhatsApp',
+          whatsappHint: 'Partagé avec les touristes pour les réservations directes.',
+          websiteUrl: '🌐 URL du site web',
+          socialLinks: '🔗 Liens réseaux sociaux',
+          addSocial: '＋ Ajouter un compte',
+          specialOffers: '🎁 Offres spéciales / Promos (Optionnel)',
+          specialOffersPlaceholder: 'ex. Thé à la menthe offert pour chaque visite de touriste !',
+          finishSave: '✅ Terminer & Enregistrer',
+          saving: 'Enregistrement dans la base...',
+          profileCreated: 'Profil créé !',
+          profileCreatedDesc:
+            'Le profil de votre entreprise a été soumis avec succès et est enregistré dans la base SQLite.',
+          completionScore: 'Score de complétion',
+          createAnother: '+ Créer un autre profil',
+          generateDescBtn: '⚡ Générer la description IA (EN · FR · AR)',
+          aiDescTitle: 'Générateur de description IA',
+          toneLabel: 'Ton :',
+          descPlaceholder:
+            'Cliquez sur le bouton ci-dessus pour générer des descriptions en 3 langues',
+          generating: 'Génération des descriptions...',
+          copyBtn: '📋 Copier',
+          copiedBtn: '✅ Copié !',
+          words: 'mots',
+          savedMerchants: '🏢 Base de données des commerçants (SQLite)',
+          noMerchants: 'Aucun commerçant enregistré pour le moment.',
+          to: 'À',
+          errName: "Veuillez entrer le nom de l'entreprise.",
+          errCategory: 'Veuillez sélectionner une catégorie.',
+          errCity: 'Veuillez choisir une ville.',
+          errAddress: 'Veuillez entrer votre adresse.',
+          errPhone: 'Veuillez entrer votre numéro de téléphone.',
+          errSchedule: "Veuillez configurer au moins un jour d'ouverture.",
+          toastServerError: '❌ Erreur serveur. Assurez-vous que le serveur est démarré.',
+        },
+        AR: {
+          title: 'إنشاء ملف تعريف تجاري – LocalBoost',
+          step: 'الخطوة',
+          of: 'من',
+          complete: 'مكتمل',
+          tellUs: 'أخبرنا عن عملك التجاري',
+          businessInfo: 'معلومات العمل',
+          businessInfoDesc: 'ساعدنا في إنشاء ملف تعريف يبرز جوهر متجرك لزوار كأس العالم 2030.',
+          businessName: 'اسم العمل التجاري',
+          businessNamePlaceholder: 'مثال: مقهى البريد',
+          tagline: 'الشعار اللفظي',
+          taglinePlaceholder: 'مثال: أجود شاي بالنعناع منذ 1950',
+          category: 'الفئة',
+          selectCategory: 'اختر الفئة',
+          city: 'المدينة',
+          chooseCity: 'اختر مدينة',
+          address: 'العنوان',
+          addressPlaceholder: 'اسم الشارع والرقم',
+          phoneNumber: 'رقم الهاتف',
+          phoneNumberPlaceholder: '600-000000',
+          contactEmail: 'البريد الإلكتروني للتواصل',
+          contactEmailPlaceholder: 'مثال: contact@myriad.com',
+          next: 'التالي ←',
+          saveLater: 'حفظ لوقت لاحق',
+          previous: '← الخطوة السابقة',
+          addBestPhotos: 'أضف أفضل صورك',
+          mediaUploads: 'تحميل الوسائط',
+          mediaDesc: 'قم بتحميل شعار المتجر وصور عالية الجودة لمتجرك ومنتجاتك.',
+          storeLogo: 'شعار المتجر (اختياري)',
+          uploadLogoDesc: 'تحميل أيقونة شعار عملك التجاري.',
+          showcasePhotos: 'صور عرض المتجر (حد أقصى 10)',
+          dragDropText: 'انقر أو اسحب الصور هنا للتحميل',
+          dragDropSub: 'يدعم صيغ JPG، PNG (بحد أقصى 10 ميغابايت للملف)',
+          finalStep: 'الخطوة الأخيرة',
+          hoursContact: 'أوقات العمل والتواصل',
+          hoursContactDesc:
+            'دع السياح يعرفون متى يمكنهم زيارتك وكيفية الوصول إليك. توفير معلومات تواصل واضحة يبني الثقة.',
+          weeklySchedule: '🕐 جدول المواعيد الأسبوعي',
+          contactChannels: '📋 قنوات الاتصال',
+          whatsappNumber: '💬 رقم الواتساب',
+          whatsappHint: 'يتم مشاركته مع السياح للحجوزات المباشرة.',
+          websiteUrl: '🌐 رابط الموقع الإلكتروني',
+          socialLinks: '🔗 روابط التواصل الاجتماعي',
+          addSocial: '＋ إضافة حساب تواصل',
+          specialOffers: '🎁 العروض الخاصة / الترويجية (اختياري)',
+          specialOffersPlaceholder: 'مثال: شاي بالنعناع مجاني لكل زائر سائح!',
+          finishSave: '✅ إنهاء وحفظ',
+          saving: 'جاري الحفظ...',
+          profileCreated: 'تم إنشاء الملف بنجاح!',
+          profileCreatedDesc: 'تم إرسال ملف تعريف عملك بنجاح وحفظه في قاعدة بيانات SQLite.',
+          completionScore: 'نسبة اكتمال الملف',
+          createAnother: '+ إنشاء ملف آخر',
+          generateDescBtn: '⚡ توليد وصف بالذكاء الاصطناعي (EN · FR · AR)',
+          aiDescTitle: 'مولّد الوصف بالذكاء الاصطناعي',
+          toneLabel: 'الأسلوب:',
+          descPlaceholder: 'انقر على الزر أعلاه لتوليد أوصاف بـ 3 لغات',
+          generating: 'جاري توليد الأوصاف...',
+          copyBtn: '📋 نسخ',
+          copiedBtn: '✅ تم النسخ!',
+          words: 'كلمة',
+          savedMerchants: '🏢 قاعدة بيانات التجار المسجلين (SQLite)',
+          noMerchants: 'لا يوجد تجار مسجلون في قاعدة البيانات بعد.',
+          to: 'إلى',
+          errName: 'يرجى إدخال اسم العمل التجاري.',
+          errCategory: 'يرجى اختيار الفئة.',
+          errCity: 'يرجى اختيار المدينة.',
+          errAddress: 'يرجى إدخال العنوان.',
+          errPhone: 'يرجى إدخال رقم الهاتف.',
+          errSchedule: 'يرجى تفعيل يوم عمل واحد على الأقل.',
+          toastServerError: '❌ خطأ في الاتصال بالخادم. تأكد من تشغيل خادم البيانات.',
+        },
+      };
+
+      const CATEGORIES_TRANSLATIONS = {
+        EN: [
+          { id: 1, icon: '🍽️', label: 'Traditional Restaurant' },
+          { id: 2, icon: '☕', label: 'Café & Tea House' },
+          { id: 3, icon: '🏺', label: 'Pottery & Ceramics' },
+          { id: 4, icon: '👜', label: 'Leather & Bags' },
+          { id: 5, icon: '🌶️', label: 'Spices & Argan Oil' },
+          { id: 6, icon: '💎', label: 'Jewelry & Silver' },
+          { id: 7, icon: '🧶', label: 'Carpet & Textile' },
+          { id: 8, icon: '🏨', label: 'Riad / Guesthouse' },
+          { id: 9, icon: '🧖', label: 'Hammam & Spa' },
+          { id: 10, icon: '🥐', label: 'Bakery & Patisserie' },
+          { id: 11, icon: '🗺️', label: 'Tour Guide' },
+          { id: 12, icon: '🧵', label: 'Tailor & Couture' },
+          { id: 13, icon: '💊', label: 'Pharmacy' },
+          { id: 14, icon: '🛒', label: 'Supermarket' },
+          { id: 15, icon: '🏪', label: 'Other' },
+        ],
+        FR: [
+          { id: 1, icon: '🍽️', label: 'Restaurant traditionnel' },
+          { id: 2, icon: '☕', label: 'Café & Salon de thé' },
+          { id: 3, icon: '🏺', label: 'Poterie & Céramique' },
+          { id: 4, icon: '👜', label: 'Cuir & Sacs' },
+          { id: 5, icon: '🌶️', label: "Épices & Huile d'argan" },
+          { id: 6, icon: '💎', label: 'Bijoux & Argent' },
+          { id: 7, icon: '🧶', label: 'Tapis & Textile' },
+          { id: 8, icon: '🏨', label: "Riad / Maison d'hôtes" },
+          { id: 9, icon: '🧖', label: 'Hammam & Spa' },
+          { id: 10, icon: '🥐', label: 'Boulangerie & Pâtisserie' },
+          { id: 11, icon: '🗺️', label: 'Guide touristique' },
+          { id: 12, icon: '🧵', label: 'Tailleur & Couture' },
+          { id: 13, icon: '💊', label: 'Pharmacie' },
+          { id: 14, icon: '🛒', label: 'Supermarché' },
+          { id: 15, icon: '🏪', label: 'Autre' },
+        ],
+        AR: [
+          { id: 1, icon: '🍽️', label: 'مطعم تقليدي' },
+          { id: 2, icon: '☕', label: 'مقهى ودار شاي' },
+          { id: 3, icon: '🏺', label: 'فخار وسيراميك' },
+          { id: 4, icon: '👜', label: 'جلود وحقائب' },
+          { id: 5, icon: '🌶️', label: 'توابل وزيت أركان' },
+          { id: 6, icon: '💎', label: 'مجوهرات وفضة' },
+          { id: 7, icon: '🧶', label: 'سجاد ومنسوجات' },
+          { id: 8, icon: '🏨', label: 'رياض / دار ضيافة' },
+          { id: 9, icon: '🧖', label: 'حمام وسبا' },
+          { id: 10, icon: '🥐', label: 'مخبز وحلويات' },
+          { id: 11, icon: '🗺️', label: 'مرشد سياحي' },
+          { id: 12, icon: '🧵', label: 'خياط ومصمم أزياء' },
+          { id: 13, icon: '💊', label: 'صيدلية' },
+          { id: 14, icon: '🛒', label: 'سوبرماركت' },
+          { id: 15, icon: '🏪', label: 'آخر' },
+        ],
+      };
+
+      const DAYS_TRANSLATIONS = {
+        EN: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        FR: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'],
+        AR: ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
+      };
+
+      const CITIES_DATA = [
+        'Casablanca',
+        'Rabat',
+        'Fès',
+        'Marrakech',
+        'Agadir',
+        'Tanger',
+        'Meknès',
+        'Oujda',
+        'Tétouan',
+        'Safi',
+        'Ifrane',
+        'Errachidia',
+        'Ouarzazate',
+        'Essaouira',
+        'Chefchaouen',
+        'El Jadida',
+        'Beni Mellal',
+        'Kenitra',
+        'Nador',
+        'Dakhla',
+      ];
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadDropdowns();
+        buildSchedule();
+        setupDragDrop();
+        loadProfileHistory();
+        addSocialRow();
+        setLanguage('EN'); // Default to English
+      });
+
+      // Switch Active Language and translate all fields
+      function setLanguage(lang) {
+        currentLang = lang;
+
+        // Update active state in language selector UI
+        document.querySelectorAll('.lang-switch .lang-btn').forEach((btn) => {
+          if (btn.getAttribute('data-lang') === lang) {
+            btn.classList.add('active');
+            btn.style.background = '#f59e0b';
+            btn.style.color = '#fff';
+          } else {
+            btn.classList.remove('active');
+            btn.style.background = 'transparent';
+            btn.style.color = '#94a3b8';
+          }
+        });
+
+        // Set layout direction for RTL/Arabic
+        const phone = document.querySelector('.phone');
+        if (lang === 'AR') {
+          phone.setAttribute('dir', 'rtl');
+          document.querySelectorAll('.phone-row').forEach((row) => {
+            row.style.flexDirection = 'row-reverse';
+          });
+        } else {
+          phone.removeAttribute('dir');
+          document.querySelectorAll('.phone-row').forEach((row) => {
+            row.style.flexDirection = 'row';
+          });
+        }
+
+        const t = TRANSLATIONS[lang];
+
+        // Translate Step 1
+        document.querySelector('#step1 .step-tag').textContent = t.tellUs;
+        document.querySelector('#step1 .step-title').textContent = t.businessInfo;
+        document.querySelector('#step1 .step-desc').textContent = t.businessInfoDesc;
+
+        const fieldsStep1 = document.querySelectorAll('#step1 .field');
+        fieldsStep1[0].querySelector('label').textContent = t.businessName;
+        document.getElementById('businessName').placeholder = t.businessNamePlaceholder;
+
+        fieldsStep1[1].querySelector('label').textContent = t.tagline;
+        document.getElementById('tagline').placeholder = t.taglinePlaceholder;
+
+        fieldsStep1[2].querySelector('label').textContent = t.category;
+        fieldsStep1[3].querySelector('label').textContent = t.city;
+        fieldsStep1[4].querySelector('label').textContent = t.address;
+        document.getElementById('address').placeholder = t.addressPlaceholder;
+
+        fieldsStep1[5].querySelector('label').textContent = t.phoneNumber;
+        document.getElementById('phoneNumber').placeholder = t.phoneNumberPlaceholder;
+
+        fieldsStep1[6].querySelector('label').textContent = t.contactEmail;
+        document.getElementById('email').placeholder = t.contactEmailPlaceholder;
+
+        document.querySelector('#step1 .btn-next').textContent = t.next;
+        document.querySelector('#step1 .save-later').textContent = t.saveLater;
+
+        // Translate Step 2
+        document.querySelector('#step2 .step-tag').textContent = t.addBestPhotos;
+        document.querySelector('#step2 .step-title').textContent = t.mediaUploads;
+        document.querySelector('#step2 .step-desc').textContent = t.mediaDesc;
+
+        const fieldsStep2 = document.querySelectorAll('#step2 .field');
+        fieldsStep2[0].querySelector('label').textContent = t.storeLogo;
+        document.getElementById('logoUploadDesc').textContent = t.uploadLogoDesc;
+
+        fieldsStep2[1].querySelector('label').textContent = t.showcasePhotos;
+        document.querySelector('.upload-text').textContent = t.dragDropText;
+        document.querySelector('.upload-sub').textContent = t.dragDropSub;
+
+        document.querySelector('#step2 .btn-next').textContent = t.next;
+        document.querySelector('#step2 .btn-prev').textContent = t.previous;
+
+        // Translate Step 3
+        document.querySelector('#step3 .step-tag').textContent = t.finalStep;
+        document.querySelector('#step3 .step-title').textContent = t.hoursContact;
+        document.querySelector('#step3 .step-desc').textContent = t.hoursContactDesc;
+
+        document.querySelector('.schedule-section .section-heading').textContent = t.weeklySchedule;
+        document.querySelector('.contact-section .section-heading').textContent = t.contactChannels;
+
+        const contactLabels = document.querySelectorAll('.contact-section .contact-label');
+        contactLabels[0].textContent = t.whatsappNumber;
+        document.querySelector('.wa-hint').textContent = t.whatsappHint;
+        contactLabels[1].textContent = t.websiteUrl;
+        contactLabels[2].textContent = t.socialLinks;
+
+        document.querySelector('.contact-section button.btn-prev').textContent = t.addSocial;
+
+        const specialOffersField = document.querySelector('#specialOffers').parentElement;
+        specialOffersField.querySelector('label').textContent = t.specialOffers;
+        document.getElementById('specialOffers').placeholder = t.specialOffersPlaceholder;
+
+        document.querySelector('#step3 .btn-next').textContent = t.finishSave;
+        document.querySelector('#step3 .btn-prev').textContent = t.previous;
+
+        // Success Screen & Saved List Header
+        document.querySelector('.success-title').textContent = t.profileCreated;
+        document.querySelector('.success-sub').textContent = t.profileCreatedDesc;
+        document.querySelector('#generateAIDescBtn').textContent = t.generateDescBtn;
+        document.querySelector('#aiDescTitle').textContent = t.aiDescTitle;
+        document.querySelector('#toneLabel').textContent = t.toneLabel;
+        document.querySelector('#descPlaceholderText').textContent = t.descPlaceholder;
+        document.querySelector('.history-title').textContent = t.savedMerchants;
+
+        // Update existing social handle placeholders
+        const placeholders = {
+          EN: '@username or link',
+          FR: '@nom_utilisateur ou lien',
+          AR: '@اسم_المستخدم أو الرابط',
+        };
+        document.querySelectorAll('.social-row .social-handle').forEach((input) => {
+          input.placeholder = placeholders[lang];
+        });
+
+        // Reload options & Schedule label strings
+        loadDropdowns();
+        updateScheduleDays();
+        updateProgressBar();
+      }
+
+      function loadDropdowns() {
+        const catSel = document.getElementById('category');
+        const selectedCat = catSel.value;
+        catSel.innerHTML = `<option value="">${TRANSLATIONS[currentLang].selectCategory}</option>`;
+        CATEGORIES_TRANSLATIONS[currentLang].forEach((c) => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.icon + ' ' + c.label;
+          if (c.id == selectedCat) opt.selected = true;
+          catSel.appendChild(opt);
+        });
+
+        const citySel = document.getElementById('city');
+        const selectedCity = citySel.value;
+        citySel.innerHTML = `<option value="">${TRANSLATIONS[currentLang].chooseCity}</option>`;
+        CITIES_DATA.forEach((city) => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = '📍 ' + city;
+          if (city === selectedCity) opt.selected = true;
+          citySel.appendChild(opt);
+        });
+      }
+
+      function buildSchedule() {
+        const container = document.getElementById('scheduleRows');
+        DAYS.forEach((day) => {
+          const isWeekend = day === 'Saturday' || day === 'Sunday';
+          const row = document.createElement('div');
+          row.className = 'day-row' + (isWeekend ? ' disabled' : '');
+          row.id = 'row-' + day;
+          row.innerHTML = `
+        <label class="toggle">
+          <input type="checkbox" id="toggle-${day}" ${!isWeekend ? 'checked' : ''} onchange="toggleDay('${day}')"/>
+          <span class="slider"></span>
+        </label>
+        <span class="day-name" id="label-${day}">${day}</span>
+        <div class="time-inputs">
+          <input type="time" class="time-input" id="open-${day}" value="${!isWeekend ? '09:00' : ''}" />
+          <span class="time-sep">TO</span>
+          <input type="time" class="time-input" id="close-${day}" value="${!isWeekend ? '19:00' : ''}" />
+        </div>
+      `;
+          container.appendChild(row);
+        });
+      }
+
+      function updateScheduleDays() {
+        DAYS.forEach((day, index) => {
+          const label = document.getElementById(`label-${day}`);
+          if (label) {
+            label.textContent = DAYS_TRANSLATIONS[currentLang][index];
+          }
+          const row = document.getElementById(`row-${day}`);
+          if (row) {
+            const sep = row.querySelector('.time-sep');
+            if (sep) sep.textContent = TRANSLATIONS[currentLang].to;
+          }
+        });
+      }
+
+      function updateProgressBar() {
+        const pcts = { 1: '33%', 2: '66%', 3: '100%' };
+        const t = TRANSLATIONS[currentLang];
+        const labels = {
+          1: `${t.step} 1 ${t.of} 3`,
+          2: `${t.step} 2 ${t.of} 3`,
+          3: `${t.step} 3 ${t.of} 3`,
+        };
+        document.getElementById('progressFill').style.width = pcts[currentStep];
+        document.getElementById('stepLabel').textContent = labels[currentStep];
+        document.getElementById('pctLabel').textContent = pcts[currentStep] + ' ' + t.complete;
+      }
+
+      function toggleDay(day) {
+        const checked = document.getElementById('toggle-' + day).checked;
+        const row = document.getElementById('row-' + day);
+        if (checked) {
+          row.classList.remove('disabled');
+          document.getElementById('open-' + day).value = '09:00';
+          document.getElementById('close-' + day).value = '19:00';
+        } else {
+          row.classList.add('disabled');
+          document.getElementById('open-' + day).value = '';
+          document.getElementById('close-' + day).value = '';
+        }
+      }
+
+      function setupDragDrop() {
+        const zone = document.getElementById('uploadZone');
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('drag-over');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('drag-over');
+          handleFiles(e.dataTransfer.files);
+        });
+      }
+
+      function handleLogo(file) {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) return showToast('Logo is too large (max 5MB).');
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          logoBase64 = e.target.result;
+          document.getElementById('logoPlus').style.display = 'none';
+          const img = document.getElementById('logoPreview');
+          img.src = logoBase64;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function addSocialRow() {
+        const container = document.getElementById('socialLinksContainer');
+        const row = document.createElement('div');
+        row.className = 'social-row';
+        const placeholders = {
+          EN: '@username or link',
+          FR: '@nom_utilisateur ou lien',
+          AR: '@اسم_المستخدم أو الرابط',
+        };
+        const placeholder = placeholders[currentLang] || '@username';
+        row.innerHTML = `
+      <select class="field social-select" style="margin-bottom:0; padding:10px 10px 10px 10px;">
+        <option value="instagram">📸 Instagram</option>
+        <option value="facebook">👥 Facebook</option>
+        <option value="tiktok">🎵 TikTok</option>
+        <option value="twitter">🐦 X / Twitter</option>
+      </select>
+      <input type="text" class="wa-input social-handle" placeholder="${placeholder}" style="border-radius:10px; padding:8px 12px;" />
+      <button type="button" class="del-btn" onclick="this.parentElement.remove()" style="background:none; border:none; color:#ef4444; font-size:18px; cursor:pointer; padding:0 8px;">✕</button>
+    `;
+        container.appendChild(row);
+      }
+
+      function getSocialLinks() {
+        const links = [];
+        document.querySelectorAll('.social-row').forEach((row) => {
+          const type = row.querySelector('.social-select').value;
+          const handle = row.querySelector('.social-handle').value.trim();
+          if (handle) {
+            links.push({ type, handle });
+          }
+        });
+        return links;
+      }
+
+      function showStep(n) {
+        currentStep = n;
+        [1, 2, 3].forEach((i) => {
+          const el = document.getElementById('step' + i);
+          if (el) el.style.display = i === n ? 'block' : 'none';
+        });
+        updateProgressBar();
+        document.getElementById('successScreen').classList.remove('show');
+
+        // Hide merchant database list on Step 2, Step 3, and Success Screen
+        if (n === 1) {
+          document.getElementById('profileHistorySection').style.display = 'block';
+        } else {
+          document.getElementById('profileHistorySection').style.display = 'none';
+        }
+      }
+
+      function goStep2() {
+        const name = document.getElementById('businessName').value.trim();
+        const cat = document.getElementById('category').value;
+        const city = document.getElementById('city').value;
+        const addr = document.getElementById('address').value.trim();
+        const phone = document.getElementById('phoneNumber').value.trim();
+
+        const t = TRANSLATIONS[currentLang];
+        if (!name) return showToast(t.errName);
+        if (!cat) return showToast(t.errCategory);
+        if (!city) return showToast(t.errCity);
+        if (!addr) return showToast(t.errAddress);
+        if (!phone) return showToast(t.errPhone);
+        showStep(2);
+      }
+
+      function goStep3() {
+        showStep(3);
+      }
+
+      function handleFiles(files) {
+        const remaining = 10 - uploadedPhotos.length;
+        const toProcess = Array.from(files).slice(0, remaining);
+        if (toProcess.length === 0) return showToast('Maximum 10 photos allowed.');
+        toProcess.forEach((file) => {
+          if (file.size > 10 * 1024 * 1024)
+            return showToast(file.name + ' is too large (max 10MB).');
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            uploadedPhotos.push(e.target.result);
+            renderPhotos();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function renderPhotos() {
+        const grid = document.getElementById('photosGrid');
+        grid.innerHTML = '';
+        uploadedPhotos.forEach((src, idx) => {
+          const thumb = document.createElement('div');
+          thumb.className = 'photo-thumb';
+          thumb.innerHTML = `
+        <img src="${src}" alt="photo ${idx + 1}" />
+        <button class="del-btn" onclick="removePhoto(${idx})">🗑</button>
+      `;
+          grid.appendChild(thumb);
+        });
+        if (uploadedPhotos.length < 10) {
+          const addMore = document.createElement('div');
+          addMore.className = 'add-more-tile';
+          addMore.innerHTML = `
+        <input type="file" accept="image/*" multiple onchange="handleFiles(this.files)" />
+        <span>＋</span>
+        <p>Add More</p>
+      `;
+          grid.appendChild(addMore);
+        }
+      }
+
+      function removePhoto(idx) {
+        uploadedPhotos.splice(idx, 1);
+        renderPhotos();
+      }
+
+      function getOpeningHours() {
+        const hours = {};
+        DAYS.forEach((day) => {
+          const isOpen = document.getElementById('toggle-' + day).checked;
+          if (isOpen) {
+            hours[day] = {
+              open: document.getElementById('open-' + day).value || '09:00',
+              close: document.getElementById('close-' + day).value || '19:00',
+            };
+          } else {
+            hours[day] = { closed: true };
+          }
+        });
+        return hours;
+      }
+
+      async function submitProfile() {
+        const whatsapp = document.getElementById('whatsapp').value.trim();
+        const website = document.getElementById('website').value.trim();
+        const offers = document.getElementById('specialOffers').value.trim();
+        const hours = getOpeningHours();
+
+        const openDays = Object.values(hours).filter((h) => !h.closed).length;
+        if (openDays === 0) return showToast(TRANSLATIONS[currentLang].errSchedule);
+
+        const payload = {
+          step1: {
+            businessName: document.getElementById('businessName').value.trim(),
+            tagline: document.getElementById('tagline').value.trim(),
+            category: document
+              .getElementById('category')
+              .options[
+                document.getElementById('category').selectedIndex
+              ].text.replace(/^[^\s]+\s+/, ''),
+            city: document.getElementById('city').value,
+            address: document.getElementById('address').value.trim(),
+            phoneNumber: '+212' + document.getElementById('phoneNumber').value.trim(),
+            email: document.getElementById('email').value.trim() || null,
+          },
+          step2: {
+            photos: uploadedPhotos,
+            logo: logoBase64,
+          },
+          step3: {
+            openingHours: hours,
+            whatsapp: whatsapp ? '+212' + whatsapp.replace(/^0/, '') : null,
+            website: website || null,
+            socialLinks: getSocialLinks(),
+            specialOffers: offers || null,
+          },
+        };
+
+        try {
+          const btn = document.querySelector('#step3 .btn-next');
+          btn.textContent = TRANSLATIONS[currentLang].saving;
+          btn.disabled = true;
+
+          const res = await fetch('http://localhost:5000/api/v1/ai2/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+
+          btn.textContent = TRANSLATIONS[currentLang].finishSave;
+          btn.disabled = false;
+
+          if (data.success) {
+            showSuccess(data.data.completionScore, data.data.id);
+          } else {
+            const msg = data.errors ? data.errors.join(' ') : data.message;
+            showToast('❌ ' + msg);
+          }
+        } catch (e) {
+          document.querySelector('#step3 .btn-next').textContent =
+            TRANSLATIONS[currentLang].finishSave;
+          document.querySelector('#step3 .btn-next').disabled = false;
+          showToast(TRANSLATIONS[currentLang].toastServerError);
+        }
+      }
+
+      async function loadProfileHistory() {
+        try {
+          const res = await fetch('http://localhost:5000/api/v1/ai2/profiles');
+          const data = await res.json();
+          const list = document.getElementById('profileHistoryList');
+          if (data.success && data.data && data.data.length > 0) {
+            list.innerHTML = '';
+            data.data.forEach((p) => {
+              const card = document.createElement('div');
+              card.className = 'profile-history-card';
+
+              const logoImg = p.logoPath
+                ? `http://localhost:5000${p.logoPath}`
+                : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=80';
+              const taglineHtml = p.tagline
+                ? `<div class="profile-tagline">"${p.tagline}"</div>`
+                : '';
+
+              card.innerHTML = `
+            <div class="profile-header">
+              <img class="profile-logo-img" src="${logoImg}" onerror="this.src='https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=80'" />
+              <div>
+                <div class="profile-title">${p.businessName}</div>
+                <div style="font-size: 11px; color: #f59e0b;">${p.category}</div>
+              </div>
+            </div>
+            ${taglineHtml}
+            <div class="profile-meta-grid">
+              <span>📍 City: ${p.city}</span>
+              <span>📞 Phone: ${p.phoneNumber}</span>
+              <span>📧 Email: ${p.email || 'N/A'}</span>
+              <span>🌐 Web: ${p.website ? 'Yes' : 'No'}</span>
+            </div>
+          `;
+              list.appendChild(card);
+            });
+          }
+        } catch (e) {
+          console.error('Error loading profiles history:', e);
+        }
+      }
+
+      let lastSavedProfileId = null;
+      let generatedDescs = null; // {EN, FR, AR}
+      let selectedTone = 'storytelling';
+      let activeDescLang = 'EN';
+
+      function selectTone(btn) {
+        document.querySelectorAll('.tone-chip').forEach((c) => c.classList.remove('active'));
+        btn.classList.add('active');
+        selectedTone = btn.getAttribute('data-tone');
+      }
+
+      function switchDescTab(lang, btn) {
+        activeDescLang = lang;
+        document.querySelectorAll('.lang-tab').forEach((t) => t.classList.remove('active'));
+        btn.classList.add('active');
+        if (generatedDescs && generatedDescs[lang]) {
+          renderDescriptionCard(lang, generatedDescs[lang]);
+        }
+      }
+
+      function renderDescriptionCard(lang, text) {
+        const container = document.getElementById('descCardContainer');
+        const wordCount = text.split(/\s+/).length;
+        const t = TRANSLATIONS[currentLang];
+        const isRTL = lang === 'AR';
+        container.innerHTML = `
+      <div class="desc-card">
+        <button class="copy-btn" onclick="copyDescription(this)">${t.copyBtn}</button>
+        <div class="desc-text" ${isRTL ? 'dir="rtl"' : ''}>${text}</div>
+        <span class="word-count">${wordCount} ${t.words}</span>
+      </div>
+    `;
+      }
+
+      function copyDescription(btn) {
+        const text = btn.parentElement.querySelector('.desc-text').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const t = TRANSLATIONS[currentLang];
+          btn.textContent = t.copiedBtn;
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = t.copyBtn;
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      }
+
+      async function generateInlineDescription() {
+        if (!lastSavedProfileId) {
+          showToast('No profile ID. Please save a profile first.');
+          return;
+        }
+
+        const t = TRANSLATIONS[currentLang];
+        const container = document.getElementById('descCardContainer');
+        const tabsEl = document.getElementById('descLangTabs');
+        const btn = document.getElementById('generateAIDescBtn');
+
+        // Show loading
+        btn.disabled = true;
+        btn.textContent = t.generating;
+        container.innerHTML = `
+      <div class="desc-loading">
+        <div class="spinner"></div>
+        <span>${t.generating}</span>
+      </div>
+    `;
+
+        // Collect profile info for the generator
+        const bName = document.getElementById('businessName').value.trim();
+        const catSel = document.getElementById('category');
+        const catText = catSel.options[catSel.selectedIndex]
+          ? catSel.options[catSel.selectedIndex].text
+          : '';
+        const category = catText.replace(/^[^\s]+\s+/, '');
+        const city = document.getElementById('city').value;
+        const tagline = document.getElementById('tagline').value.trim();
+        const specialOffers = document.getElementById('specialOffers').value.trim();
+
+        const payload = {
+          profileId: lastSavedProfileId,
+          businessType: `${bName} (${category} in ${city})`,
+          specialties: [category],
+          usps:
+            tagline + (specialOffers ? `. Special Promo: ${specialOffers}` : '') ||
+            'great quality and service',
+          tone: selectedTone,
+          audience: 'tourists and visitors',
+          tags: [category, city].filter(Boolean),
+        };
+
+        try {
+          const res = await fetch('http://localhost:5000/api/v1/ai2/generate-description', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+
+          btn.disabled = false;
+          btn.textContent = t.generateDescBtn;
+
+          if (data.success) {
+            generatedDescs = data.data.descriptions;
+            // Show tabs
+            tabsEl.style.display = 'flex';
+            // Reset to EN tab
+            activeDescLang = 'EN';
+            document.querySelectorAll('.lang-tab').forEach((tb) => {
+              tb.classList.toggle('active', tb.getAttribute('data-lang') === 'EN');
+            });
+            renderDescriptionCard('EN', generatedDescs.EN);
+            showToast('✅ Descriptions generated in 3 languages!');
+          } else {
+            container.innerHTML = `<div class="desc-placeholder"><span>⚠️</span><p>${data.message || 'Error generating descriptions'}</p></div>`;
+          }
+        } catch (e) {
+          btn.disabled = false;
+          btn.textContent = t.generateDescBtn;
+          container.innerHTML = `<div class="desc-placeholder"><span>⚠️</span><p>${t.toastServerError}</p></div>`;
+        }
+      }
+
+      function showSuccess(score, profileId) {
+        lastSavedProfileId = profileId;
+        generatedDescs = null;
+        activeDescLang = 'EN';
+
+        [1, 2, 3].forEach((i) => {
+          const el = document.getElementById('step' + i);
+          if (el) el.style.display = 'none';
+        });
+
+        document.getElementById('progressFill').style.width = '100%';
+        document.getElementById('pctLabel').textContent =
+          '100% ' + TRANSLATIONS[currentLang].complete;
+        document.getElementById('scoreDisplay').textContent =
+          TRANSLATIONS[currentLang].completionScore + ': ' + score + '%';
+
+        // Reset AI desc section
+        document.getElementById('descLangTabs').style.display = 'none';
+        document.getElementById('descCardContainer').innerHTML = `
+      <div class="desc-placeholder" id="descPlaceholder">
+        <span>✨</span>
+        <p id="descPlaceholderText">${TRANSLATIONS[currentLang].descPlaceholder}</p>
+      </div>
+    `;
+        // Reset tone chips
+        document.querySelectorAll('.tone-chip').forEach((c) => {
+          c.classList.toggle('active', c.getAttribute('data-tone') === 'storytelling');
+        });
+        selectedTone = 'storytelling';
+
+        document.getElementById('successScreen').classList.add('show');
+        document.getElementById('profileHistorySection').style.display = 'block';
+        loadProfileHistory();
+      }
+
+      function resetForm() {
+        uploadedPhotos = [];
+        logoBase64 = null;
+        document.getElementById('businessName').value = '';
+        document.getElementById('tagline').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('phoneNumber').value = '';
+        document.getElementById('email').value = '';
+
+        document.getElementById('logoPlus').style.display = 'inline';
+        document.getElementById('logoPreview').style.display = 'none';
+        document.getElementById('logoPreview').src = '';
+
+        document.getElementById('photosGrid').innerHTML = '';
+        document.getElementById('whatsapp').value = '';
+        document.getElementById('website').value = '';
+        document.getElementById('specialOffers').value = '';
+        document.getElementById('socialLinksContainer').innerHTML = '';
+        addSocialRow();
+
+        showStep(1);
+      }
+
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3500);
+      }
+    </script>
+  </body>
+</html>

@@ -1,23 +1,37 @@
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
-import prettierConfig from 'eslint-config-prettier';
+import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
-    ignores: ['node_modules', '.next', 'dist', 'build', 'coverage'],
+    ignores: ['**/node_modules/**', '**/.next/**', '**/dist/**', '**/build/**', '**/coverage/**'],
   },
   {
-    files: ['**/*.{ts,tsx,js}'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      parser: tsparser,
-    },
-    plugins: {
-      '@typescript-eslint': tseslint,
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
     },
     rules: {
       'no-console': 'warn',
-      '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
-  prettierConfig,
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      'no-console': 'warn',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
 ];

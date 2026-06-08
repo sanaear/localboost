@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  role           String
+  preferred_lang String?
+  first_name     String?
+  last_name      String?
+  email          String     @unique
+  password_hash  String
+  date_of_birth  DateTime?
+  gender         String?
+  phone          String?
+  address        String?
+  profile_image  String?
+  status         String     @default("active")
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+
+  businesses     Business[]
+  reviews        Review[]
+  favorites      Favorite[]
+  reviewReplies  ReviewReply[]
+}
+
+model Category {
+  id         Int        @id @default(autoincrement())
+  name_ar    String?
+  name_fr    String?
+  name_en    String?
+  name_es    String?
+  icon       String?
+  businesses Business[]
+}
+
+model Business {
+  id               Int                 @id @default(autoincrement())
+  user_id          Int
+  category_id      Int?
+  name             String
+  city             String?
+  address          String?
+  postal_code      String?
+  phone            String?
+  whatsapp         String?
+  website          String?
+  lat              Float?
+  lng              Float?
+  description      String?
+  images           String[]
+  opening_hours    Json?
+  status           String?
+  created_at       DateTime            @default(now())
+  updated_at       DateTime            @updatedAt
+  region_id        Int?
+  analytics_events AnalyticsEvent[]
+  category         Category?           @relation(fields: [category_id], references: [id])
+  regionRel        Region?             @relation(fields: [region_id], references: [id])
+  user             User                @relation(fields: [user_id], references: [id])
+  inactivity       InactivityTracking?
+  reviews          Review[]
+  favorites        Favorite[]
+}
+
+model Review {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  business_id       Int
+  rating            Int
+  content           String?
+  moderation_status String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  business          Business @relation(fields: [business_id], references: [id])
+  user              User     @relation(fields: [user_id], references: [id])
+  reply             ReviewReply?
+}
+
+model ReviewReply {
+  id         Int      @id @default(autoincrement())
+  review_id  Int      @unique
+  user_id    Int
+  message    String
+  created_at DateTime @default(now())
+
+  review Review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [user_id], references: [id])
+}
+
+model AnalyticsEvent {
+  id          Int      @id @default(autoincrement())
+  business_id Int
+  event_type  String
+  metadata    Json?
+  created_at  DateTime @default(now())
+  business    Business @relation(fields: [business_id], references: [id])
+}
+
+model AiChatMessage {
+  id         Int      @id @default(autoincrement())
+  message    String
+  response   String
+  lang       String?
+  tone       String?
+  tags       Json?
+  created_at DateTime @default(now())
+}
+
+model TranslationCache {
+  cache_key  String
+  lang       String
+  value      String
+  created_at DateTime @default(now())
+
+  @@id([cache_key, lang])
+}
+
+model InactivityTracking {
+  id               Int       @id @default(autoincrement())
+  business_id      Int       @unique
+  last_updated_at  DateTime?
+  last_notified_at DateTime?
+  business         Business  @relation(fields: [business_id], references: [id])
+}
+
+model Favorite {
+  user_id     Int
+  business_id Int
+  created_at  DateTime @default(now())
+
+  user     User     @relation(fields: [user_id], references: [id])
+  business Business @relation(fields: [business_id], references: [id])
+
+  @@id([user_id, business_id])
+}
+
+model Region {
+  id         Int        @id @default(autoincrement())
+  name       String
+  businesses Business[]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "LocalBoost Mobile",
+  "short_name": "LocalBoost",
+  "start_url": "/en/home",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf6",
+  "theme_color": "#a36e00",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
